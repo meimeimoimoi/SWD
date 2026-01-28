@@ -8,7 +8,6 @@
 /workspaces/SWD/SWD.Presentation/bin/Debug/net9.0/SWD.Presentation.pdb
 /workspaces/SWD/SWD.Presentation/bin/Debug/net9.0/Azure.Core.dll
 /workspaces/SWD/SWD.Presentation/bin/Debug/net9.0/Azure.Identity.dll
-/workspaces/SWD/SWD.Presentation/bin/Debug/net9.0/Microsoft.AspNetCore.OpenApi.dll
 /workspaces/SWD/SWD.Presentation/bin/Debug/net9.0/Microsoft.Bcl.AsyncInterfaces.dll
 /workspaces/SWD/SWD.Presentation/bin/Debug/net9.0/Microsoft.Data.SqlClient.dll
 /workspaces/SWD/SWD.Presentation/bin/Debug/net9.0/Microsoft.EntityFrameworkCore.dll
@@ -86,3 +85,6 @@
 /workspaces/SWD/SWD.Presentation/obj/Debug/net9.0/SWD.Presentation.pdb
 /workspaces/SWD/SWD.Presentation/obj/Debug/net9.0/SWD.Presentation.genruntimeconfig.cache
 /workspaces/SWD/SWD.Presentation/obj/Debug/net9.0/ref/SWD.Presentation.dll
+/workspaces/SWD/SWD.Presentation/bin/Debug/net9.0/Swashbuckle.AspNetCore.Swagger.dll
+/workspaces/SWD/SWD.Presentation/bin/Debug/net9.0/Swashbuckle.AspNetCore.SwaggerGen.dll
+/workspaces/SWD/SWD.Presentation/bin/Debug/net9.0/Swashbuckle.AspNetCore.SwaggerUI.dll
