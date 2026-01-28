@@ -1,36 +1,42 @@
 {
   "format": 1,
   "restore": {
-    "/workspaces/SWD/SWD.Presentation/SWD.Presentation.csproj": {}
+    "E:\\FPTUer\\Sen7\\SWD392\\Project\\SWD.Presentation\\SWD.Presentation.csproj": {}
   },
   "projects": {
-    "/workspaces/SWD/SWD.Business/SWD.Business.csproj": {
+    "E:\\FPTUer\\Sen7\\SWD392\\Project\\SWD.Business\\SWD.Business.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/workspaces/SWD/SWD.Business/SWD.Business.csproj",
+        "projectUniqueName": "E:\\FPTUer\\Sen7\\SWD392\\Project\\SWD.Business\\SWD.Business.csproj",
         "projectName": "SWD.Business",
-        "projectPath": "/workspaces/SWD/SWD.Business/SWD.Business.csproj",
-        "packagesPath": "/home/codespace/.nuget/packages/",
-        "outputPath": "/workspaces/SWD/SWD.Business/obj/",
+        "projectPath": "E:\\FPTUer\\Sen7\\SWD392\\Project\\SWD.Business\\SWD.Business.csproj",
+        "packagesPath": "C:\\Users\\vuong\\.nuget\\packages\\",
+        "outputPath": "E:\\FPTUer\\Sen7\\SWD392\\Project\\SWD.Business\\obj\\",
         "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
         "configFilePaths": [
-          "/home/codespace/.nuget/NuGet/NuGet.Config"
+          "C:\\Users\\vuong\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
           "net9.0"
         ],
         "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
           "net9.0": {
             "targetAlias": "net9.0",
             "projectReferences": {
-              "/workspaces/SWD/SWD.Data/SWD.Data.csproj": {
-                "projectPath": "/workspaces/SWD/SWD.Data/SWD.Data.csproj"
+              "E:\\FPTUer\\Sen7\\SWD392\\Project\\SWD.Data\\SWD.Data.csproj": {
+                "projectPath": "E:\\FPTUer\\Sen7\\SWD392\\Project\\SWD.Data\\SWD.Data.csproj"
               },
-              "/workspaces/SWD/SWD.Shared/SWD.Shared.csproj": {
-                "projectPath": "/workspaces/SWD/SWD.Shared/SWD.Shared.csproj"
+              "E:\\FPTUer\\Sen7\\SWD392\\Project\\SWD.Shared\\SWD.Shared.csproj": {
+                "projectPath": "E:\\FPTUer\\Sen7\\SWD392\\Project\\SWD.Shared\\SWD.Shared.csproj"
               }
             }
           }
@@ -45,7 +51,7 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "10.0.100"
+        "SdkAnalysisLevel": "9.0.300"
       },
       "frameworks": {
         "net9.0": {
@@ -61,49 +67,45 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
-          "downloadDependencies": [
-            {
-              "name": "Microsoft.AspNetCore.App.Ref",
-              "version": "[9.0.11, 9.0.11]"
-            },
-            {
-              "name": "Microsoft.NETCore.App.Ref",
-              "version": "[9.0.11, 9.0.11]"
-            }
-          ],
           "frameworkReferences": {
             "Microsoft.NETCore.App": {
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/10.0.100/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.307/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
-    "/workspaces/SWD/SWD.Data/SWD.Data.csproj": {
+    "E:\\FPTUer\\Sen7\\SWD392\\Project\\SWD.Data\\SWD.Data.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/workspaces/SWD/SWD.Data/SWD.Data.csproj",
+        "projectUniqueName": "E:\\FPTUer\\Sen7\\SWD392\\Project\\SWD.Data\\SWD.Data.csproj",
         "projectName": "SWD.Data",
-        "projectPath": "/workspaces/SWD/SWD.Data/SWD.Data.csproj",
-        "packagesPath": "/home/codespace/.nuget/packages/",
-        "outputPath": "/workspaces/SWD/SWD.Data/obj/",
+        "projectPath": "E:\\FPTUer\\Sen7\\SWD392\\Project\\SWD.Data\\SWD.Data.csproj",
+        "packagesPath": "C:\\Users\\vuong\\.nuget\\packages\\",
+        "outputPath": "E:\\FPTUer\\Sen7\\SWD392\\Project\\SWD.Data\\obj\\",
         "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
         "configFilePaths": [
-          "/home/codespace/.nuget/NuGet/NuGet.Config"
+          "C:\\Users\\vuong\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
           "net9.0"
         ],
         "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
           "net9.0": {
             "targetAlias": "net9.0",
             "projectReferences": {
-              "/workspaces/SWD/SWD.Shared/SWD.Shared.csproj": {
-                "projectPath": "/workspaces/SWD/SWD.Shared/SWD.Shared.csproj"
+              "E:\\FPTUer\\Sen7\\SWD392\\Project\\SWD.Shared\\SWD.Shared.csproj": {
+                "projectPath": "E:\\FPTUer\\Sen7\\SWD392\\Project\\SWD.Shared\\SWD.Shared.csproj"
               }
             }
           }
@@ -118,7 +120,7 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "10.0.100"
+        "SdkAnalysisLevel": "9.0.300"
       },
       "frameworks": {
         "net9.0": {
@@ -150,52 +152,48 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
-          "downloadDependencies": [
-            {
-              "name": "Microsoft.AspNetCore.App.Ref",
-              "version": "[9.0.11, 9.0.11]"
-            },
-            {
-              "name": "Microsoft.NETCore.App.Ref",
-              "version": "[9.0.11, 9.0.11]"
-            }
-          ],
           "frameworkReferences": {
             "Microsoft.NETCore.App": {
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/10.0.100/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.307/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
-    "/workspaces/SWD/SWD.Presentation/SWD.Presentation.csproj": {
+    "E:\\FPTUer\\Sen7\\SWD392\\Project\\SWD.Presentation\\SWD.Presentation.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/workspaces/SWD/SWD.Presentation/SWD.Presentation.csproj",
+        "projectUniqueName": "E:\\FPTUer\\Sen7\\SWD392\\Project\\SWD.Presentation\\SWD.Presentation.csproj",
         "projectName": "SWD.Presentation",
-        "projectPath": "/workspaces/SWD/SWD.Presentation/SWD.Presentation.csproj",
-        "packagesPath": "/home/codespace/.nuget/packages/",
-        "outputPath": "/workspaces/SWD/SWD.Presentation/obj/",
+        "projectPath": "E:\\FPTUer\\Sen7\\SWD392\\Project\\SWD.Presentation\\SWD.Presentation.csproj",
+        "packagesPath": "C:\\Users\\vuong\\.nuget\\packages\\",
+        "outputPath": "E:\\FPTUer\\Sen7\\SWD392\\Project\\SWD.Presentation\\obj\\",
         "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
         "configFilePaths": [
-          "/home/codespace/.nuget/NuGet/NuGet.Config"
+          "C:\\Users\\vuong\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
           "net9.0"
         ],
         "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
           "net9.0": {
             "targetAlias": "net9.0",
             "projectReferences": {
-              "/workspaces/SWD/SWD.Business/SWD.Business.csproj": {
-                "projectPath": "/workspaces/SWD/SWD.Business/SWD.Business.csproj"
+              "E:\\FPTUer\\Sen7\\SWD392\\Project\\SWD.Business\\SWD.Business.csproj": {
+                "projectPath": "E:\\FPTUer\\Sen7\\SWD392\\Project\\SWD.Business\\SWD.Business.csproj"
               },
-              "/workspaces/SWD/SWD.Shared/SWD.Shared.csproj": {
-                "projectPath": "/workspaces/SWD/SWD.Shared/SWD.Shared.csproj"
+              "E:\\FPTUer\\Sen7\\SWD392\\Project\\SWD.Shared\\SWD.Shared.csproj": {
+                "projectPath": "E:\\FPTUer\\Sen7\\SWD392\\Project\\SWD.Shared\\SWD.Shared.csproj"
               }
             }
           }
@@ -210,7 +208,7 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "10.0.100"
+        "SdkAnalysisLevel": "9.0.300"
       },
       "frameworks": {
         "net9.0": {
@@ -232,20 +230,6 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
-          "downloadDependencies": [
-            {
-              "name": "Microsoft.AspNetCore.App.Ref",
-              "version": "[9.0.11, 9.0.11]"
-            },
-            {
-              "name": "Microsoft.NETCore.App.Host.linux-x64",
-              "version": "[9.0.11, 9.0.11]"
-            },
-            {
-              "name": "Microsoft.NETCore.App.Ref",
-              "version": "[9.0.11, 9.0.11]"
-            }
-          ],
           "frameworkReferences": {
             "Microsoft.AspNetCore.App": {
               "privateAssets": "none"
@@ -254,26 +238,32 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/10.0.100/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.307/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
-    "/workspaces/SWD/SWD.Shared/SWD.Shared.csproj": {
+    "E:\\FPTUer\\Sen7\\SWD392\\Project\\SWD.Shared\\SWD.Shared.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/workspaces/SWD/SWD.Shared/SWD.Shared.csproj",
+        "projectUniqueName": "E:\\FPTUer\\Sen7\\SWD392\\Project\\SWD.Shared\\SWD.Shared.csproj",
         "projectName": "SWD.Shared",
-        "projectPath": "/workspaces/SWD/SWD.Shared/SWD.Shared.csproj",
-        "packagesPath": "/home/codespace/.nuget/packages/",
-        "outputPath": "/workspaces/SWD/SWD.Shared/obj/",
+        "projectPath": "E:\\FPTUer\\Sen7\\SWD392\\Project\\SWD.Shared\\SWD.Shared.csproj",
+        "packagesPath": "C:\\Users\\vuong\\.nuget\\packages\\",
+        "outputPath": "E:\\FPTUer\\Sen7\\SWD392\\Project\\SWD.Shared\\obj\\",
         "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
         "configFilePaths": [
-          "/home/codespace/.nuget/NuGet/NuGet.Config"
+          "C:\\Users\\vuong\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
           "net9.0"
         ],
         "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -292,7 +282,7 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "10.0.100"
+        "SdkAnalysisLevel": "9.0.300"
       },
       "frameworks": {
         "net9.0": {
@@ -308,22 +298,12 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
-          "downloadDependencies": [
-            {
-              "name": "Microsoft.AspNetCore.App.Ref",
-              "version": "[9.0.11, 9.0.11]"
-            },
-            {
-              "name": "Microsoft.NETCore.App.Ref",
-              "version": "[9.0.11, 9.0.11]"
-            }
-          ],
           "frameworkReferences": {
             "Microsoft.NETCore.App": {
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/10.0.100/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.307/PortableRuntimeIdentifierGraph.json"
         }
       }
     }
