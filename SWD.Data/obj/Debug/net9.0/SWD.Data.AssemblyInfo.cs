@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("SWD.Data")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+034b7dc667ecad4e6d735ceb5cf3bb1278616c4e")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+5ad7a748837f1ec69dc94aae3eec86f0d4ea4b5e")]
 [assembly: System.Reflection.AssemblyProductAttribute("SWD.Data")]
 [assembly: System.Reflection.AssemblyTitleAttribute("SWD.Data")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
