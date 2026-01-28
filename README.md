@@ -233,6 +233,43 @@ Khi làm việc với dự án:
 4. Không Push main
    
 Quan trọng: commit điên t đấm vỡ mồm
+
+---
+
+## ⚠️ Lưu ý khi clone project lần đầu
+
+### Vấn đề với build artifacts
+Khi clone project về lần đầu, .NET sẽ tự động generate các file trong `bin/` và `obj/`. Các file này **đã được ignore** bởi `.gitignore`.
+
+**Sau khi clone, chạy:**
+```bash
+git pull origin main
+dotnet clean
+dotnet restore
+dotnet build
+```
+
+**Quan trọng:**
+- ❌ **KHÔNG commit** các file trong `bin/` và `obj/`
+- ❌ **KHÔNG commit** các file `*.user`, `*.suo`
+- ✅ Chỉ commit source code (`.cs`, `.csproj`, `.json`)
+- ✅ Nếu thấy nhiều file changes không liên quan, check `.gitignore`
+
+### Khi gặp conflict với build artifacts:
+```bash
+# Xóa cache local
+dotnet clean
+
+# Pull code mới nhất
+git pull origin main
+
+# Restore lại packages
+dotnet restore
+
+# Build lại
+dotnet build
+```
+
 ---
 
 ## 📞 Liên hệ
