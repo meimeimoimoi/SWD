@@ -43,8 +43,9 @@ dotnet ef database update --project SWD.Data --startup-project SWD.Presentation
 ```
 
 ## Dependencies
-- Entity Framework Core 10.0.2
-- Entity Framework Core SQL Server
-- Entity Framework Core Tools
-- ASP.NET Core Web API
+- .NET 9.0
+- Entity Framework Core 9.0.4
+- Entity Framework Core SQL Server 9.0.4
+- Entity Framework Core Tools 9.0.4
+- ASP.NET Core Web API 9.0.4
 Nhận diện bênh trên cây lúa sử dụng model ResNet18
