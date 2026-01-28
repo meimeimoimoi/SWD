@@ -1,4 +1,4 @@
-# SWD - Rice Disease Detection - 3-Layer Architecture .NET Application
+# SWD - Rice Disease Detection - 3-Layer Architecture .NET Application ( Đọc cho hết làm ơn )
 
 ## 📋 Mô tả dự án
 Đây là một ứng dụng Web API xây dựng theo kiến trúc 3 lớp (3-Layer Architecture), được thiết kế để nhận diện bệnh trên cây lúa sử dụng mô hình ResNet18. Dự án sử dụng .NET 9.0 và Entity Framework Core.
@@ -56,12 +56,12 @@ public class DiseaseService : BaseService<DiseaseDTO>
 - `Controllers/HealthController.cs` - Health check endpoint
 - `Models/` - View models
 - `Program.cs` - Cấu hình ứng dụng và dependency injection
-- `appsettings.json` - Cấu hình ứng dụng (connection string, logging, etc.)
+- `appsettings.json` - Cấu hình ứng dụng (connection string, logging, etc.) về tự kết nối db của mình
 - **Swagger UI** - API documentation (truy cập tại `/`)
 
 **API Endpoints:**
 ```
-GET /api/health - Health check
+GET /api/health - Health check ( test )
 ```
 
 ---
@@ -135,7 +135,7 @@ Swagger UI sẽ hiển thị tất cả các API endpoints và cho phép bạn t
 
 ```
 ┌─────────────────────────────────────────┐
-│   SWD.Presentation (Web API / UI)      │  ← Controllers, Swagger UI
+│   SWD.Presentation (Web API / UI)       │  ← Controllers, Swagger UI
 ├─────────────────────────────────────────┤
 │   SWD.Business (Business Logic)         │  ← Services, DTOs, Validation
 ├─────────────────────────────────────────┤
@@ -230,7 +230,9 @@ Khi làm việc với dự án:
 1. Tạo branch mới từ `main`
 2. Commit changes với message rõ ràng
 3. Push và tạo Pull Request
-
+4. Không Push main
+   
+Quan trọng: commit điên t đấm vỡ mồm
 ---
 
 ## 📞 Liên hệ
@@ -243,3 +245,4 @@ Khi làm việc với dự án:
 - Sử dụng DTOs để truyền dữ liệu giữa các lớp
 - Implement validation trong Business Logic Layer
 - Sử dụng async/await cho các hoạt động I/O
+- Kiểm tra thật kĩ những thứ trên
