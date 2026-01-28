@@ -53,6 +53,11 @@ public class ResNet18Predictor
         var prediction = _predictionEngine.Predict(input);
 
         // Find the predicted class with highest score
+        if (prediction.Score == null || prediction.Score.Length == 0)
+        {
+            throw new InvalidOperationException("Model prediction returned no scores");
+        }
+        
         var maxScore = prediction.Score.Max();
         var predictedIndex = Array.IndexOf(prediction.Score, maxScore);
         var predictedLabel = predictedIndex >= 0 && predictedIndex < _labels.Length 
@@ -92,7 +97,6 @@ public class ResNet18Predictor
 public class ImageInput
 {
     [LoadColumn(0)]
-    [ImageType(224, 224)]
     public byte[]? ImageData { get; set; }
 }
 

@@ -1,5 +1,6 @@
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Runtime.Versioning;
 
 namespace SWD.Business.ML;
 
@@ -31,6 +32,9 @@ public static class ImagePreprocessor
     /// <summary>
     /// Validate if the byte array is a valid image
     /// </summary>
+    [SupportedOSPlatform("windows")]
+    [SupportedOSPlatform("linux")]
+    [SupportedOSPlatform("macos")]
     public static bool IsValidImage(byte[] imageBytes)
     {
         try
@@ -48,6 +52,9 @@ public static class ImagePreprocessor
     /// <summary>
     /// Get image dimensions
     /// </summary>
+    [SupportedOSPlatform("windows")]
+    [SupportedOSPlatform("linux")]
+    [SupportedOSPlatform("macos")]
     public static (int width, int height) GetImageDimensions(byte[] imageBytes)
     {
         using var ms = new MemoryStream(imageBytes);
