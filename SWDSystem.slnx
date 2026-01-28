@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="SWD.Business/SWD.Business.csproj" />
+  <Project Path="SWD.Data/SWD.Data.csproj" />
+  <Project Path="SWD.Presentation/SWD.Presentation.csproj" />
+  <Project Path="SWD.Shared/SWD.Shared.csproj" />
+</Solution>

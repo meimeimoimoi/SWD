@@ -1,0 +1,12 @@
+/workspaces/SWD/SWD.Shared/bin/Debug/net10.0/SWD.Shared.deps.json
+/workspaces/SWD/SWD.Shared/bin/Debug/net10.0/SWD.Shared.dll
+/workspaces/SWD/SWD.Shared/bin/Debug/net10.0/SWD.Shared.pdb
+/workspaces/SWD/SWD.Shared/obj/Debug/net10.0/SWD.Shared.GeneratedMSBuildEditorConfig.editorconfig
+/workspaces/SWD/SWD.Shared/obj/Debug/net10.0/SWD.Shared.AssemblyInfoInputs.cache
+/workspaces/SWD/SWD.Shared/obj/Debug/net10.0/SWD.Shared.AssemblyInfo.cs
+/workspaces/SWD/SWD.Shared/obj/Debug/net10.0/SWD.Shared.csproj.CoreCompileInputs.cache
+/workspaces/SWD/SWD.Shared/obj/Debug/net10.0/SWD.Shared.sourcelink.json
+/workspaces/SWD/SWD.Shared/obj/Debug/net10.0/SWD.Shared.dll
+/workspaces/SWD/SWD.Shared/obj/Debug/net10.0/refint/SWD.Shared.dll
+/workspaces/SWD/SWD.Shared/obj/Debug/net10.0/SWD.Shared.pdb
+/workspaces/SWD/SWD.Shared/obj/Debug/net10.0/ref/SWD.Shared.dll
