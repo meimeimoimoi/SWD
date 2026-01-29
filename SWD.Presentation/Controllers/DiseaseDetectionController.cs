@@ -43,7 +43,7 @@ public class DiseaseDetectionController : BaseController
     /// <returns>Prediction result</returns>
     [HttpPost("predict/upload")]
     [Consumes("multipart/form-data")]
-    public async Task<IActionResult> PredictFromUpload([FromForm] IFormFile file)
+    public async Task<IActionResult> PredictFromUpload(IFormFile file)
     {
         if (file == null || file.Length == 0)
         {
