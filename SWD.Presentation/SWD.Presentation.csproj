@@ -4,6 +4,7 @@
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>d7fa46cc-3033-4c89-b2ff-21a09efff781</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
@@ -13,6 +14,12 @@
   <ItemGroup>
     <ProjectReference Include="..\SWD.Business\SWD.Business.csproj" />
     <ProjectReference Include="..\SWD.Shared\SWD.Shared.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Update="appsettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
 </Project>
