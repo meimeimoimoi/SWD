@@ -1,6 +1,0 @@
-@SWD.Presentation_HostAddress = http://localhost:5191
-
-GET {{SWD.Presentation_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###
