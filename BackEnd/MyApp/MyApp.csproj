@@ -1,0 +1,64 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+	<PropertyGroup>
+		<TargetFramework>net9.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<Folder Include="Api\Filters\" />
+		<Folder Include="Api\Middlewares\" />
+		<Folder Include="Application\Behaviors\" />
+		<Folder Include="Application\Features\Orders\Commands\" />
+		<Folder Include="Application\Features\Orders\Handlers\" />
+		<Folder Include="Application\Features\Orders\Queries\" />
+		<Folder Include="Application\Features\Users\Commands\" />
+		<Folder Include="Application\Features\Users\Handlers\" />
+		<Folder Include="Application\Features\Users\Queries\" />
+		<Folder Include="Application\Features\Users\Validators\" />
+		<Folder Include="Application\Mappings\" />
+		<Folder Include="Domain\Enums\" />
+		<Folder Include="Domain\Events\" />
+		<Folder Include="Domain\Exceptions\" />
+		<Folder Include="Domain\Interfaces\" />
+		<Folder Include="Domain\ValueObjects\" />
+		<Folder Include="Infrastructure\Auth\" />
+		<Folder Include="Infrastructure\Cache\" />
+		<Folder Include="Infrastructure\Messaging\" />
+		<Folder Include="Infrastructure\Storage\" />
+		<Folder Include="Persistence\Migrations\" />
+		<Folder Include="Shared\Constants\" />
+		<Folder Include="Shared\Exceptions\" />
+		<Folder Include="Shared\Extensions\" />
+		<Folder Include="Shared\Helpers\" />
+		<Folder Include="Shared\Results\" />
+	</ItemGroup>
+
+
+	<ItemGroup>
+		<PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
+		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.8" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.6">
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+			<PrivateAssets>all</PrivateAssets>
+		</PackageReference>
+		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.6" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.6">
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+			<PrivateAssets>all</PrivateAssets>
+		</PackageReference>
+		<PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.6" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.6" />
+		<PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.6" />
+	</ItemGroup>
+
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.6" />
+		<PackageReference Include="Swashbuckle.AspNetCore.Swagger" Version="9.0.6" />
+		<PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="9.0.6" />
+		<PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="9.0.6" />
+	</ItemGroup>
+
+</Project>

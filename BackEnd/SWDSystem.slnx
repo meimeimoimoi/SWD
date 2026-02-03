@@ -1,6 +1,3 @@
 <Solution>
-  <Project Path="SWD.Business/SWD.Business.csproj" />
-  <Project Path="SWD.Data/SWD.Data.csproj" />
-  <Project Path="SWD.Presentation/SWD.Presentation.csproj" />
-  <Project Path="SWD.Shared/SWD.Shared.csproj" />
+  <Project Path="MyApp/MyApp.csproj" Id="9e1a1759-8a5a-4665-aa9c-47f53c25c20f" />
 </Solution>
