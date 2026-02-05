@@ -8,12 +8,14 @@ class AppButton extends StatelessWidget {
     this.onPressed,
     this.icon,
     this.variant = AppButtonVariant.primary,
+    this.expand = true,
   });
 
   final String label;
   final VoidCallback? onPressed;
   final IconData? icon;
   final AppButtonVariant variant;
+  final bool expand;
 
   @override
   Widget build(BuildContext context) {
@@ -29,41 +31,45 @@ class AppButton extends StatelessWidget {
           )
         : Text(label);
 
+    Widget button;
     if (variant == AppButtonVariant.ghost) {
-      return SizedBox(
-        width: double.infinity,
-        child: TextButton(
-          onPressed: onPressed,
-          style: TextButton.styleFrom(
-            padding: const EdgeInsets.symmetric(vertical: 14),
-            foregroundColor: Theme.of(context).colorScheme.primary,
-          ),
-          child: child,
+      button = TextButton(
+        onPressed: onPressed,
+        style: TextButton.styleFrom(
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          foregroundColor: Theme.of(context).colorScheme.primary,
         ),
+        child: child,
       );
+    } else if (variant == AppButtonVariant.outlined) {
+      button = OutlinedButton(
+        onPressed: onPressed,
+        style: OutlinedButton.styleFrom(
+          minimumSize: const Size.fromHeight(52),
+          foregroundColor: Theme.of(context).colorScheme.primary,
+          side: const BorderSide(color: AppColors.borderLight),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+        child: child,
+      );
+    } else {
+      button = ElevatedButton(onPressed: onPressed, child: child);
     }
 
-    if (variant == AppButtonVariant.outlined) {
-      return SizedBox(
-        width: double.infinity,
-        child: OutlinedButton(
-          onPressed: onPressed,
-          style: OutlinedButton.styleFrom(
-            minimumSize: const Size.fromHeight(52),
-            foregroundColor: Theme.of(context).colorScheme.primary,
-            side: const BorderSide(color: AppColors.borderLight),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
-          child: child,
-        ),
-      );
-    }
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (!expand) return button;
 
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton(onPressed: onPressed, child: child),
+        if (constraints.hasBoundedWidth) {
+          return SizedBox(width: double.infinity, child: button);
+        }
+        return ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 360, minWidth: 0),
+          child: button,
+        );
+      },
     );
   }
 }

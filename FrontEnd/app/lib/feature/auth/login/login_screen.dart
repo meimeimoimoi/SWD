@@ -32,6 +32,7 @@ class _LoginScreenState extends State<LoginScreen> {
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(const SnackBar(content: Text('Signed in (demo only).')));
+    Navigator.pushReplacementNamed(context, AppRouter.dashboard);
   }
 
   @override
@@ -67,24 +68,26 @@ class _LoginScreenState extends State<LoginScreen> {
             );
           }
 
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _HeroPanel(isWide: isWide),
-              const SizedBox(height: 24),
-              _AuthCard(
-                formKey: _formKey,
-                emailController: _emailController,
-                passwordController: _passwordController,
-                rememberMe: _rememberMe,
-                obscurePassword: _obscurePassword,
-                onRememberChanged: (value) =>
-                    setState(() => _rememberMe = value),
-                onTogglePassword: () =>
-                    setState(() => _obscurePassword = !_obscurePassword),
-                onSubmit: _submit,
-              ),
-            ],
+          return SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _HeroPanel(isWide: isWide),
+                const SizedBox(height: 24),
+                _AuthCard(
+                  formKey: _formKey,
+                  emailController: _emailController,
+                  passwordController: _passwordController,
+                  rememberMe: _rememberMe,
+                  obscurePassword: _obscurePassword,
+                  onRememberChanged: (value) =>
+                      setState(() => _rememberMe = value),
+                  onTogglePassword: () =>
+                      setState(() => _obscurePassword = !_obscurePassword),
+                  onSubmit: _submit,
+                ),
+              ],
+            ),
           );
         },
       ),
@@ -148,8 +151,9 @@ class _AuthCard extends StatelessWidget {
               obscureText: obscurePassword,
               hint: '••••••••',
               validator: (value) {
-                if (value == null || value.isEmpty)
+                if (value == null || value.isEmpty) {
                   return 'Password is required';
+                }
                 if (value.length < 6) return 'At least 6 characters';
                 return null;
               },
@@ -260,11 +264,11 @@ class _HeroPanel extends StatelessWidget {
           Wrap(
             spacing: 12,
             runSpacing: 12,
-            children: const [
-              _ChipLabel(text: 'AI Predictions'),
-              _ChipLabel(text: 'Live monitoring'),
-              _ChipLabel(text: 'Insights'),
-            ],
+            // children: const [
+            //   _ChipLabel(text: 'AI Predictions'),
+            //   _ChipLabel(text: 'Live monitoring'),
+            //   _ChipLabel(text: 'Insights'),
+            // ],
           ),
           if (!isWide) const SizedBox(height: 12),
         ],

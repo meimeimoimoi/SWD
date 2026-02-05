@@ -1,3 +1,4 @@
+import 'package:app/feature/auth/login/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -30,6 +31,8 @@ class MyApp extends StatelessWidget {
             themeMode: notifier.themeMode,
             initialRoute: AppRouter.initialRoute,
             onGenerateRoute: AppRouter.onGenerateRoute,
+            onUnknownRoute: (_) =>
+                MaterialPageRoute(builder: (_) => const LoginScreen()),
           );
         },
       ),

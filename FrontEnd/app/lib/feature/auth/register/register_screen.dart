@@ -85,7 +85,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Account created (demo only).')),
     );
-    Navigator.pushReplacementNamed(context, AppRouter.login);
+    Navigator.pushReplacementNamed(context, AppRouter.dashboard);
   }
 
   @override
