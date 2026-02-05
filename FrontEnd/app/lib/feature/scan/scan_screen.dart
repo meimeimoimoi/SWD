@@ -106,7 +106,7 @@ class _UploadCard extends StatelessWidget {
             children: [
               Expanded(
                 child: AppButton(
-                  label: 'Upload from files',
+                  label: 'Upload files',
                   icon: Icons.folder_open,
                   onPressed: () {},
                 ),
