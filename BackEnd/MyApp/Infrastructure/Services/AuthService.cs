@@ -1,11 +1,9 @@
-﻿using Microsoft.AspNetCore.Identity.Data;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using MyApp.Application.Features.Users.DTOs;
 using MyApp.Application.Interfaces;
 using MyApp.Domain.Entities;
 using MyApp.Persistence.Context;
 using MyApp.Persistence.Repositories;
-using System.Security.Claims;
 
 namespace MyApp.Infrastructure.Services
 {
@@ -15,52 +13,115 @@ namespace MyApp.Infrastructure.Services
         private readonly IPasswordHasher _passwordHasher;
         private readonly JwtTokenGeneratior _jwtTokenGeneratior;
         private readonly AppDbContext _context;
-        public AuthService(UserRepository userRepository, IPasswordHasher passwordHasher, JwtTokenGeneratior jwtTokenGeneratior)
+        private readonly ILogger<AuthService> _logger;
+
+        public AuthService(
+            UserRepository userRepository, 
+            IPasswordHasher passwordHasher, 
+            JwtTokenGeneratior jwtTokenGeneratior,
+            AppDbContext context,
+            ILogger<AuthService> logger)
         {
             _userRepository = userRepository;
             _passwordHasher = passwordHasher;
             _jwtTokenGeneratior = jwtTokenGeneratior;
+            _context = context;
+            _logger = logger;
         }
 
         public async Task<string> LoginAsync(LoginRequestDTO request)
         {
-            var User = await _userRepository.GetByUserNameAsync(request.Username);
-
-            if (User == null || !_passwordHasher.verify(request.Password, User.PasswordHash))
+            try
             {
-                throw new UnauthorizedAccessException("Invalid username or password.");
+                _logger.LogInformation("Login attempt for: {UsernameOrEmail}", request.UsernameOrEmail);
+
+                // Find user by username or email
+                var user = await _userRepository.FindByUsernameOrEmailAsync(request.UsernameOrEmail);
+
+                if (user == null)
+                {
+                    _logger.LogWarning("Login failed - User not found: {UsernameOrEmail}", request.UsernameOrEmail);
+                    throw new UnauthorizedAccessException("Invalid username/email or password.");
+                }
+
+                // Verify password
+                if (!_passwordHasher.verify(request.Password, user.PasswordHash))
+                {
+                    _logger.LogWarning("Login failed - Invalid password for user: {Username}", user.Username);
+                    throw new UnauthorizedAccessException("Invalid username/email or password.");
+                }
+
+                // Check account status
+                if (user.AccountStatus != "Active")
+                {
+                    _logger.LogWarning("Login failed - Account not active: {Username}, Status: {Status}", 
+                        user.Username, user.AccountStatus);
+                    throw new UnauthorizedAccessException($"Account is {user.AccountStatus}. Please contact administrator.");
+                }
+
+                // Update last login time
+                user.LastLoginAt = DateTime.UtcNow;
+                await _context.SaveChangesAsync();
+
+                _logger.LogInformation("Login successful for user: {Username}", user.Username);
+
+                // Generate JWT token
+                return _jwtTokenGeneratior.GenerateToken(user);
             }
-
-            return _jwtTokenGeneratior.GenerateToken(User);
-
-
+            catch (UnauthorizedAccessException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error during login for: {UsernameOrEmail}", request.UsernameOrEmail);
+                throw new Exception("An error occurred during login", ex);
+            }
         }
 
         public Task LogoutAsync(string token)
         {
+            // TODO: Implement token revocation if needed
             return Task.CompletedTask;
         }
 
         public async Task RegisterAsync(ResgisterRequestDTO request)
         {
-            if (string.IsNullOrWhiteSpace(request.Username) || string.IsNullOrWhiteSpace(request.Password)) 
-                throw new ArgumentException("Username and password are required");
-
-            bool exists = await _context.Users.AnyAsync(u => u.Username == request.Username);
-            if (exists)
-                throw new InvalidOperationException("Username already exists.");
-
-
-            var user = new User
+            try
             {
-                Username = request.Username,
-                PasswordHash = _passwordHasher.Hash(request.Password),
-                CreatedAt = DateTime.UtcNow,
-                AccountStatus = "Active",
-                Role = "User"
-            };
+                if (string.IsNullOrWhiteSpace(request.Username) || string.IsNullOrWhiteSpace(request.Password))
+                {
+                    throw new ArgumentException("Username and password are required");
+                }
 
-            await _userRepository.AddUserAsync(user);
+                // Check if username already exists
+                bool exists = await _context.Users.AnyAsync(u => u.Username == request.Username);
+                if (exists)
+                {
+                    throw new InvalidOperationException("Username already exists.");
+                }
+
+                // Create new user
+                var user = new User
+                {
+                    Username = request.Username,
+                    Email = $"{request.Username}@temp.local", // Set temporary email
+                    PasswordHash = _passwordHasher.Hash(request.Password),
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow,
+                    AccountStatus = "Active",
+                    Role = "User"
+                };
+
+                await _userRepository.AddUserAsync(user);
+                
+                _logger.LogInformation("User registered successfully: {Username}", user.Username);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error during registration for: {Username}", request.Username);
+                throw;
+            }
         }
     }
 }

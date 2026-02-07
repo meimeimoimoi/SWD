@@ -9,6 +9,8 @@ namespace MyApp.Api
         public static IServiceCollection AddApplicationSerivce(this IServiceCollection service)
         {
             service.AddScoped<IAuthService, AuthService>();
+            service.AddScoped<IAdminService, AdminService>();
+            service.AddScoped<IMessageService, MessageService>();
             service.AddScoped<UserRepository>();
             service.AddScoped<JwtTokenGeneratior>();
             service.AddScoped<IPasswordHasher, BCryptPasswordHasher>();
