@@ -19,6 +19,8 @@ public partial class AppDbContext : DbContext
     public virtual DbSet<ImageUpload> ImageUploads { get; set; }
 
     public virtual DbSet<ModelVersion> ModelVersions { get; set; }
+    
+    public virtual DbSet<ModelThreshold> ModelThresholds { get; set; }
 
     public virtual DbSet<Prediction> Predictions { get; set; }
 
