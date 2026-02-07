@@ -11,7 +11,13 @@ namespace MyApp.Api
             service.AddScoped<IAuthService, AuthService>();
             service.AddScoped<IAdminService, AdminService>();
             service.AddScoped<IMessageService, MessageService>();
+            service.AddScoped<IModelService, ModelService>();
+            service.AddScoped<IAIService, AIService>();
+            
             service.AddScoped<UserRepository>();
+            service.AddScoped<ModelRepository>();
+            service.AddScoped<ImageRepository>();
+            
             service.AddScoped<JwtTokenGeneratior>();
             service.AddScoped<IPasswordHasher, BCryptPasswordHasher>();
 
