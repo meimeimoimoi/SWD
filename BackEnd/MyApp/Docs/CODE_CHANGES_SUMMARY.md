@@ -2,7 +2,7 @@
 
 ## ?? M?c tiêu
 Implement ch?c nãng qu?n l? Model và x? l? AI cho Technical Guy:
-- Qu?n l? model versions (ch?n, b?t/t?t, set threshold)
+- Qu?n l? model versions (ch?n, b?t/t?t, set default)
 - X? l? ?nh (resize, normalize)
 - Ch?y inference (d? ðoán b?nh cây lúa)
 
@@ -57,7 +57,6 @@ MyApp\Persistence\Repositories\ModelRepository.cs
 - `ActivateModelAsync(id)` - B?t model
 - `DeactivateModelAsync(id)` - T?t model
 - `GetThresholdByModelIdAsync(id)` - L?y threshold
-- `UpdateThresholdAsync(id, value)` - C?p nh?t threshold
 - `SetDefaultModelAsync(id)` - Set model làm default
 
 #### b) ImageRepository.cs
@@ -79,7 +78,6 @@ MyApp\Persistence\Repositories\ImageRepository.cs
 ```
 MyApp\Application\Features\Models\DTOs\
 ??? ModelVersionDto.cs              # Response model info
-??? UpdateModelThresholdDto.cs      # Request update threshold
 
 MyApp\Application\Features\AI\DTOs\
 ??? PreprocessImageRequestDto.cs    # Request preprocess
@@ -87,9 +85,6 @@ MyApp\Application\Features\AI\DTOs\
 ??? InferenceRequestDto.cs          # Request inference
 ??? InferenceResponseDto.cs         # Response inference + predictions
 ```
-
-**Validation:**
-- `UpdateModelThresholdDto.MinConfidence`: Range(0.0, 1.0)
 
 ---
 
@@ -104,7 +99,6 @@ MyApp\Application\Interfaces\IModelService.cs
 - `GetModelByIdAsync(id)` - GET model by ID
 - `ActivateModelAsync(id)` - Activate model
 - `DeactivateModelAsync(id)` - Deactivate model
-- `UpdateModelThresholdAsync(id, value)` - Update threshold
 - `GetDefaultModelAsync()` - GET default model
 - `SetDefaultModelAsync(id)` - Set default model
 
@@ -161,8 +155,7 @@ MyApp\Api\Controllers\ModelsController.cs
 | GET | `/api/models/default` | Get default model |
 | PUT | `/api/models/{id}/activate` | Activate model |
 | PUT | `/api/models/{id}/deactivate` | Deactivate model |
-| PUT | `/api/models/{id}/set-default` | Set default model |
-| PUT | `/api/models/{id}/threshold` | Update threshold |
+| PUT | `/api/models/{id}/set-default` | Set as default |
 
 **Authorization:** `[Authorize(Roles = "Technical,Admin")]`
 
@@ -245,7 +238,7 @@ dotnet add package SixLabors.ImageSharp --version 3.1.7
 ### 1. T?o Migration
 ```bash
 cd F:\project\SWD\BackEnd\MyApp
-dotnet ef migrations add AddModelThresholdAndAIFeatures
+dotnet ef migrations add AddModelAndAIFeatures
 ```
 
 ### 2. Apply vào Database
@@ -272,15 +265,10 @@ GET /api/models
 Authorization: Bearer {your_jwt_token}
 ```
 
-### 2. Update Threshold
+### 2. Set Model as Default
 ```http
-PUT /api/models/1/threshold
+PUT /api/models/1/set-default
 Authorization: Bearer {your_jwt_token}
-Content-Type: application/json
-
-{
-  "minConfidence": 0.85
-}
 ```
 
 ### 3. Process & Predict Image
@@ -363,12 +351,12 @@ Content-Type: application/json
 - ? ModelThresholdConfiguration
 
 ### Persistence Layer
-- ? ModelRepository (8 methods)
+- ? ModelRepository (7 methods)
 - ? ImageRepository (6 methods)
 - ? AppDbContext updated
 
 ### Application Layer
-- ? 6 DTOs t?o m?i
+- ? 5 DTOs t?o m?i
 - ? IModelService interface
 - ? IAIService interface
 
@@ -377,7 +365,7 @@ Content-Type: application/json
 - ? AIService implementation (v?i mock inference)
 
 ### API Layer
-- ? ModelsController (7 endpoints)
+- ? ModelsController (6 endpoints)
 - ? AIController (3 endpoints)
 - ? DependencyInjection updated
 
@@ -394,7 +382,6 @@ Content-Type: application/json
 - ? Ch?n model version
 - ? B?t / t?t model
 - ? Set model default
-- ? Thi?t l?p threshold (min_confidence)
 
 ### 3.2 X? l? ?nh ?
 - ? Resize ?nh (224x224)
@@ -439,21 +426,10 @@ Không có issues - t?t c? ð? test và build thành công! ?
 
 ---
 
-## ?? Tài Li?u Tham Kh?o
-
-Các file documentation ð? t?o:
-1. `MODEL_AI_API_DOCUMENTATION.md` - API reference ð?y ð?
-2. `QUICK_START_GUIDE.md` - Hý?ng d?n nhanh
-3. `IMPLEMENTATION_SUMMARY.md` - T?ng quan implementation
-4. `EF_CORE_MIGRATION_GUIDE.md` - Hý?ng d?n EF Core Migration
-5. `SETUP_DATABASE_VI.md` - Hý?ng d?n setup database (Ti?ng Vi?t)
-
----
-
 ## ?? Next Steps
 
 ### Immediate (Ngay l?p t?c)
-1. ? Ch?y migration: `dotnet ef migrations add AddModelThresholdAndAIFeatures`
+1. ? Ch?y migration: `dotnet ef migrations add AddModelAndAIFeatures`
 2. ? Update database: `dotnet ef database update`
 3. ? Test APIs qua Swagger
 4. ? Verify role-based access
@@ -477,13 +453,13 @@ Các file documentation ð? t?o:
 
 | Metric | Count |
 |--------|-------|
-| Files Created | 18 |
+| Files Created | 17 |
 | Files Modified | 3 |
 | Controllers | 2 |
 | Services | 2 |
 | Repositories | 2 |
-| DTOs | 6 |
-| Endpoints | 10 |
+| DTOs | 5 |
+| Endpoints | 9 |
 | Database Tables | 1 (new) |
 
 ---
@@ -491,7 +467,7 @@ Các file documentation ð? t?o:
 ## ? Summary
 
 **Ð? implement thành công:**
-- ? 7 endpoints qu?n l? models
+- ? 6 endpoints qu?n l? models
 - ? 3 endpoints x? l? AI
 - ? Image preprocessing v?i ImageSharp
 - ? Mock inference pipeline

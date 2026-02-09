@@ -127,32 +127,6 @@ public class ModelService : IModelService
         }
     }
 
-    public async Task<bool> UpdateModelThresholdAsync(int modelVersionId, decimal minConfidence)
-    {
-        try
-        {
-            var model = await _modelRepository.GetModelByIdAsync(modelVersionId);
-            if (model == null)
-            {
-                _logger.LogWarning("Model {ModelVersionId} not found for threshold update", modelVersionId);
-                return false;
-            }
-
-            var result = await _modelRepository.UpdateThresholdAsync(modelVersionId, minConfidence);
-            
-            if (result)
-                _logger.LogInformation("Model {ModelVersionId} threshold updated to {MinConfidence}", 
-                    modelVersionId, minConfidence);
-
-            return result;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error updating model threshold: {ModelVersionId}", modelVersionId);
-            throw;
-        }
-    }
-
     public async Task<ModelVersionDto?> GetDefaultModelAsync()
     {
         try

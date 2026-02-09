@@ -3,10 +3,10 @@
 ## ?? Tóm t?t ng?n g?n
 
 ### Ð? implement:
-? **Qu?n l? Model** - 7 API endpoints  
+? **Qu?n l? Model** - 6 API endpoints  
 ? **X? l? AI** - 3 API endpoints  
 ? **Database** - 1 b?ng m?i (model_thresholds)  
-? **Code** - 18 files m?i, 3 files s?a  
+? **Code** - 17 files m?i, 3 files s?a  
 ? **Build** - Thành công, không l?i  
 
 ---
@@ -30,7 +30,7 @@ Ch?a T?T C? thông tin:
 
 ```bash
 # 1. T?o migration
-dotnet ef migrations add AddModelThresholdAndAIFeatures
+dotnet ef migrations add AddModelAndAIFeatures
 
 # 2. Update database
 dotnet ef database update
@@ -51,12 +51,10 @@ GET /api/models
 Authorization: Bearer {token}
 ```
 
-### Set threshold:
+### Set default model:
 ```http
-PUT /api/models/1/threshold
-Content-Type: application/json
-
-{ "minConfidence": 0.85 }
+PUT /api/models/1/set-default
+Authorization: Bearer {token}
 ```
 
 ### X? l? + D? ðoán:
@@ -73,13 +71,13 @@ Content-Type: application/json
 
 | M?c | S? lý?ng |
 |-----|----------|
-| Files m?i | 18 |
+| Files m?i | 17 |
 | Files s?a | 3 |
-| API endpoints | 10 |
+| API endpoints | 9 |
 | Services | 2 |
 | Repositories | 2 |
 | Controllers | 2 |
-| DTOs | 6 |
+| DTOs | 5 |
 | B?ng m?i | 1 |
 
 ---
@@ -161,7 +159,7 @@ T?t c? features ð? ðý?c implement thành công theo yêu c?u:
 ? **3.1 Qu?n l? Model**
 - Ch?n version model ?
 - B?t / t?t model ?
-- Thi?t l?p threshold (min_confidence) ?
+- Set model default ?
 
 ? **3.2 X? l? ?nh**
 - Resize ?nh ?

@@ -231,47 +231,4 @@ public class ModelsController : ControllerBase
             });
         }
     }
-
-    /// <summary>
-    /// Update model confidence threshold
-    /// </summary>
-    [HttpPut("{id}/threshold")]
-    public async Task<IActionResult> UpdateThreshold(int id, [FromBody] UpdateModelThresholdDto dto)
-    {
-        try
-        {
-            if (!ModelState.IsValid)
-                return BadRequest(new
-                {
-                    success = false,
-                    message = "Invalid input",
-                    errors = ModelState.Values.SelectMany(v => v.Errors.Select(e => e.ErrorMessage))
-                });
-
-            var result = await _modelService.UpdateModelThresholdAsync(id, dto.MinConfidence);
-            
-            if (!result)
-                return NotFound(new
-                {
-                    success = false,
-                    message = $"Model with ID {id} not found"
-                });
-
-            return Ok(new
-            {
-                success = true,
-                message = $"Model {id} threshold updated to {dto.MinConfidence} successfully"
-            });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error updating threshold for model {ModelId}", id);
-            return StatusCode(500, new
-            {
-                success = false,
-                message = "An error occurred while updating the model threshold",
-                error = ex.Message
-            });
-        }
-    }
 }
