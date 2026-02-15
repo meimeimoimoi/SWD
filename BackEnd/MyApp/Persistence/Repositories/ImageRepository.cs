@@ -56,6 +56,36 @@ public class ImageRepository
             .Include(p => p.ModelVersion)
             .Include(p => p.Tree)
             .Include(p => p.Illness)
+            .Include(p => p.Upload)
             .FirstOrDefaultAsync(p => p.PredictionId == predictionId);
+    }
+
+    public async Task<List<Prediction>> GetPredictionHistoryAsync(int? userId = null, DateTime? fromDate = null, DateTime? toDate = null)
+    {
+        var query = _context.Predictions
+            .Include(p => p.Tree)
+            .Include(p => p.Illness)
+            .Include(p => p.Upload)
+            .Include(p => p.ModelVersion)
+            .AsQueryable();
+
+        if (userId.HasValue)
+        {
+            query = query.Where(p => p.Upload.UserId == userId.Value);
+        }
+
+        if (fromDate.HasValue)
+        {
+            query = query.Where(p => p.CreatedAt >= fromDate.Value);
+        }
+
+        if (toDate.HasValue)
+        {
+            query = query.Where(p => p.CreatedAt <= toDate.Value);
+        }
+
+        return await query
+            .OrderByDescending(p => p.CreatedAt)
+            .ToListAsync();
     }
 }

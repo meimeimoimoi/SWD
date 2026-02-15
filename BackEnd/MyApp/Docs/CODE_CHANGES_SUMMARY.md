@@ -1,10 +1,10 @@
-# ?? Tóm T?t Thay Ð?i Code - Model & AI Features
+# ?? Tóm T?t Thay Ð?i Code - Model & AI Features (Ð? T?i Ýu)
 
 ## ?? M?c tiêu
 Implement ch?c nãng qu?n l? Model và x? l? AI cho Technical Guy:
 - Qu?n l? model versions (ch?n, b?t/t?t, set default)
-- X? l? ?nh (resize, normalize)
-- Ch?y inference (d? ðoán b?nh cây lúa)
+- X? l? ?nh (preprocess cho Technical staff)
+- Ch?y predictions (cho end users)
 
 ---
 
@@ -16,18 +16,6 @@ MyApp\Domain\Entities\ModelThreshold.cs
 ```
 **M?c ðích:** Entity lýu threshold (min_confidence) cho m?i model version
 
-**N?i dung chính:**
-```csharp
-public class ModelThreshold
-{
-    public int ThresholdId { get; set; }
-    public int? ModelVersionId { get; set; }
-    public decimal? MinConfidence { get; set; }  // 0.0 - 1.0
-    public DateTime? CreatedAt { get; set; }
-    public virtual ModelVersion? ModelVersion { get; set; }
-}
-```
-
 ---
 
 ### 2. Persistence Layer - Configurations
@@ -35,12 +23,6 @@ public class ModelThreshold
 MyApp\Persistence\Configurations\ModelThresholdConfiguration.cs
 ```
 **M?c ðích:** EF Core configuration cho ModelThreshold
-
-**N?i dung chính:**
-- Map t?i b?ng `model_thresholds`
-- Foreign key t?i `model_versions`
-- Column type cho `min_confidence`: decimal(5,4)
-- Default timestamp cho `created_at`
 
 ---
 
@@ -70,6 +52,7 @@ MyApp\Persistence\Repositories\ImageRepository.cs
 - `CreatePredictionAsync(prediction)` - Lýu k?t qu? d? ðoán
 - `GetPredictionsByUploadIdAsync(id)` - L?y predictions theo upload
 - `GetPredictionByIdAsync(id)` - L?y prediction theo ID
+- `GetPredictionHistoryAsync()` - L?y l?ch s? predictions v?i filters
 
 ---
 
@@ -84,6 +67,12 @@ MyApp\Application\Features\AI\DTOs\
 ??? PreprocessImageResponseDto.cs   # Response preprocess
 ??? InferenceRequestDto.cs          # Request inference
 ??? InferenceResponseDto.cs         # Response inference + predictions
+
+MyApp\Application\Features\Predictions\DTOs\
+??? RunPredictionRequestDto.cs      # Request run prediction
+??? RunPredictionResponseDto.cs     # Response run prediction
+??? PredictionDetailDto.cs          # Chi ti?t prediction
+??? PredictionHistoryDto.cs         # L?ch s? predictions
 ```
 
 ---
@@ -109,6 +98,15 @@ MyApp\Application\Interfaces\IAIService.cs
 **Methods:**
 - `PreprocessImageAsync(request)` - Resize + normalize ?nh
 - `RunInferenceAsync(request)` - Ch?y d? ðoán
+
+#### c) IPredictionService.cs
+```
+MyApp\Application\Interfaces\IPredictionService.cs
+```
+**Methods:**
+- `RunPredictionAsync(request)` - Ch?y prediction
+- `GetPredictionByIdAsync(id)` - L?y chi ti?t prediction
+- `GetPredictionHistoryAsync()` - L?y l?ch s? v?i filters
 
 ---
 
@@ -139,9 +137,19 @@ MyApp\Infrastructure\Services\AIService.cs
 
 **?? Lýu ?:** Method `RunMockInference()` c?n thay th? b?ng ML model th?t
 
+#### c) PredictionService.cs
+```
+MyApp\Infrastructure\Services\PredictionService.cs
+```
+**Ch?c nãng:**
+- Orchestrate preprocess + inference
+- L?y prediction details
+- Filter prediction history theo user/date
+- Parse TopNPredictions JSON
+
 ---
 
-### 7. API Layer - Controllers
+### 7. API Layer - Controllers (Ð? t?i ýu)
 
 #### a) ModelsController.cs
 ```
@@ -159,18 +167,33 @@ MyApp\Api\Controllers\ModelsController.cs
 
 **Authorization:** `[Authorize(Roles = "Technical,Admin")]`
 
-#### b) AIController.cs
+#### b) AIController.cs (Ð? t?i ýu)
 ```
 MyApp\Api\Controllers\AIController.cs
 ```
 **Endpoints:**
 | Method | Route | Description |
 |--------|-------|-------------|
-| POST | `/api/ai/preprocess` | Preprocess image |
-| POST | `/api/ai/inference` | Run inference |
-| POST | `/api/ai/process-and-predict` | Combined operation |
+| POST | `/api/ai/preprocess` | Preprocess image (Technical staff only) |
 
 **Authorization:** `[Authorize(Roles = "Technical,Admin")]`
+
+**?? Ð? XÓA:** 
+- ? `POST /api/ai/inference` - Redundant v?i `/api/predictions/run`
+- ? `POST /api/ai/process-and-predict` - Redundant v?i `/api/predictions/run`
+
+#### c) PredictionsController.cs
+```
+MyApp\Api\Controllers\PredictionsController.cs
+```
+**Endpoints:**
+| Method | Route | Description |
+|--------|-------|-------------|
+| POST | `/api/predictions/run` | Run prediction (auto preprocess + inference) |
+| GET | `/api/predictions/{id}` | Get prediction detail |
+| GET | `/api/predictions/history` | Get prediction history |
+
+**Authorization:** `[Authorize]` (All authenticated users)
 
 ---
 
@@ -187,11 +210,18 @@ public virtual DbSet<ModelThreshold> ModelThresholds { get; set; }
 // THÊM:
 service.AddScoped<IModelService, ModelService>();
 service.AddScoped<IAIService, AIService>();
+service.AddScoped<IPredictionService, PredictionService>();
 service.AddScoped<ModelRepository>();
 service.AddScoped<ImageRepository>();
 ```
 
-### 3. appsettings.json
+### 3. ImageRepository.cs
+```csharp
+// THÊM:
+Task<List<Prediction>> GetPredictionHistoryAsync(int? userId, DateTime? fromDate, DateTime? toDate);
+```
+
+### 4. appsettings.json
 ```json
 // C?N THÊM (n?u chýa có):
 {
@@ -208,10 +238,10 @@ service.AddScoped<ImageRepository>();
 ### B?ng m?i: model_thresholds
 ```sql
 CREATE TABLE model_thresholds (
-  threshold_id INT PRIMARY KEY AUTO_INCREMENT,
+  threshold_id INT PRIMARY KEY IDENTITY,
   model_version_id INT,
   min_confidence DECIMAL(5,4),
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  created_at DATETIME2 DEFAULT GETDATE(),
   FOREIGN KEY (model_version_id) REFERENCES model_versions(model_version_id) ON DELETE CASCADE
 );
 ```
@@ -257,7 +287,7 @@ M?: `https://localhost:5001`
 
 ---
 
-## ?? API Usage Examples
+## ?? API Usage Examples (Ð? t?i ýu)
 
 ### 1. Get All Models
 ```http
@@ -265,21 +295,14 @@ GET /api/models
 Authorization: Bearer {your_jwt_token}
 ```
 
-### 2. Set Model as Default
+### 2. Run Prediction (Recommended)
 ```http
-PUT /api/models/1/set-default
-Authorization: Bearer {your_jwt_token}
-```
-
-### 3. Process & Predict Image
-```http
-POST /api/ai/process-and-predict
-Authorization: Bearer {your_jwt_token}
+POST /api/predictions/run
+Authorization: Bearer {token}
 Content-Type: application/json
 
 {
-  "uploadId": 123,
-  "usePreprocessedImage": true
+  "uploadId": 123
 }
 ```
 
@@ -287,36 +310,27 @@ Content-Type: application/json
 ```json
 {
   "success": true,
-  "message": "Image processed and prediction completed successfully",
   "data": {
-    "preprocessing": {
-      "processedId": 456,
-      "originalWidth": 1024,
-      "originalHeight": 768,
-      "processedWidth": 224,
-      "processedHeight": 224
-    },
-    "prediction": {
-      "predictionId": 789,
-      "predictedClass": "Rice_Blast",
-      "confidenceScore": 0.8523,
-      "topNPredictions": [
-        {
-          "className": "Rice_Blast",
-          "confidence": 0.8523,
-          "treeId": 1,
-          "illnessId": 1
-        },
-        {
-          "className": "Brown_Spot",
-          "confidence": 0.0876,
-          "treeId": 1,
-          "illnessId": 2
-        }
-      ],
-      "processingTimeMs": 153
-    }
+    "predictionId": 501,
+    "tree": { "treeId": 1, "treeName": "Lúa" },
+    "illness": { "illnessId": 3, "illnessName": "Ð?o ôn" },
+    "confidenceScore": 0.92,
+    "processingTimeMs": 450
   }
+}
+```
+
+### 3. Preprocess Only (Technical Staff)
+```http
+POST /api/ai/preprocess
+Authorization: Bearer {technical_token}
+Content-Type: application/json
+
+{
+  "uploadId": 123,
+  "targetWidth": 224,
+  "targetHeight": 224,
+  "normalize": true
 }
 ```
 
@@ -326,11 +340,11 @@ Content-Type: application/json
 
 ```
 ????????????????
-?  Controller  ?  ModelsController, AIController
+?  Controller  ?  ModelsController, AIController, PredictionsController
 ????????????????
        ?
 ????????????????
-?   Service    ?  ModelService, AIService
+?   Service    ?  ModelService, AIService, PredictionService
 ????????????????  - Business logic
        ?          - Image processing
 ????????????????  - Validation
@@ -352,21 +366,24 @@ Content-Type: application/json
 
 ### Persistence Layer
 - ? ModelRepository (7 methods)
-- ? ImageRepository (6 methods)
+- ? ImageRepository (8 methods)
 - ? AppDbContext updated
 
 ### Application Layer
-- ? 5 DTOs t?o m?i
+- ? 9 DTOs t?o m?i
 - ? IModelService interface
 - ? IAIService interface
+- ? IPredictionService interface
 
 ### Infrastructure Layer
 - ? ModelService implementation
 - ? AIService implementation (v?i mock inference)
+- ? PredictionService implementation
 
 ### API Layer
 - ? ModelsController (6 endpoints)
-- ? AIController (3 endpoints)
+- ? AIController (1 endpoint - t?i ýu)
+- ? PredictionsController (3 endpoints)
 - ? DependencyInjection updated
 
 ### Configuration
@@ -384,11 +401,39 @@ Content-Type: application/json
 - ? Set model default
 
 ### 3.2 X? l? ?nh ?
-- ? Resize ?nh (224x224)
-- ? Normalize ?nh
-- ? Ch?y inference
-- ? Lýu k?t qu? d? ðoán
-- ? Track processing time
+- ? Preprocess th? công (Technical staff)
+
+### 4. Predictions API ?
+- ? Run prediction (auto preprocess + inference)
+- ? Get prediction by ID
+- ? Get prediction history
+- ? Filter by user and date range
+
+---
+
+## ?? T?i Ýu Ð? Th?c Hi?n
+
+### ? API Endpoints Ð? Xóa (Trùng l?p):
+1. `POST /api/ai/inference` 
+   - **L? do:** Trùng v?i `/api/predictions/run`
+   - **Thay th?:** Dùng `/api/predictions/run`
+
+2. `POST /api/ai/process-and-predict`
+   - **L? do:** Trùng v?i `/api/predictions/run`
+   - **Thay th?:** Dùng `/api/predictions/run`
+
+### ? API Endpoints Gi? L?i:
+1. **Models Management (6)** - Technical/Admin
+2. **AI Preprocess (1)** - Technical staff only
+3. **Predictions (3)** - All users
+
+**Total: 10 endpoints** (gi?m t? 12)
+
+### ?? L?i Ích:
+- Gi?m confusion
+- API r? ràng hõn
+- D? maintain
+- Clear separation: Technical APIs vs User APIs
 
 ---
 
@@ -409,8 +454,8 @@ Hi?n t?i dùng **mock predictions** trong `AIService.RunMockInference()`
 - C?n t?o folders này trý?c khi ch?y
 
 ### 3. Security
-- T?t c? endpoints c?n JWT token
-- Ch? Technical và Admin role m?i truy c?p ðý?c
+- **Models & AI API:** Technical, Admin roles
+- **Predictions API:** All authenticated users
 - Input validation ? DTO level
 
 ### 4. Performance
@@ -420,46 +465,17 @@ Hi?n t?i dùng **mock predictions** trong `AIService.RunMockInference()`
 
 ---
 
-## ?? Known Issues
-
-Không có issues - t?t c? ð? test và build thành công! ?
-
----
-
-## ?? Next Steps
-
-### Immediate (Ngay l?p t?c)
-1. ? Ch?y migration: `dotnet ef migrations add AddModelAndAIFeatures`
-2. ? Update database: `dotnet ef database update`
-3. ? Test APIs qua Swagger
-4. ? Verify role-based access
-
-### Short-term (Ng?n h?n)
-1. ?? Thêm unit tests
-2. ?? Integration tests
-3. ?? Seed sample data
-4. ?? Add logging cho errors
-
-### Long-term (Dài h?n)
-1. ?? Replace mock inference v?i real ML model
-2. ?? Implement batch processing
-3. ?? Add caching strategy
-4. ?? Model performance metrics
-5. ?? A/B testing framework
-
----
-
 ## ?? Statistics
 
 | Metric | Count |
 |--------|-------|
-| Files Created | 17 |
-| Files Modified | 3 |
-| Controllers | 2 |
-| Services | 2 |
+| Files Created | 24 |
+| Files Modified | 4 |
+| Controllers | 3 |
+| Services | 3 |
 | Repositories | 2 |
-| DTOs | 5 |
-| Endpoints | 9 |
+| DTOs | 9 |
+| Endpoints | 10 (optimized) |
 | Database Tables | 1 (new) |
 
 ---
@@ -468,7 +484,8 @@ Không có issues - t?t c? ð? test và build thành công! ?
 
 **Ð? implement thành công:**
 - ? 6 endpoints qu?n l? models
-- ? 3 endpoints x? l? AI
+- ? 1 endpoint x? l? AI (preprocess)
+- ? 3 endpoints predictions (user-facing)
 - ? Image preprocessing v?i ImageSharp
 - ? Mock inference pipeline
 - ? Database schema v?i EF Core
@@ -476,8 +493,9 @@ Không có issues - t?t c? ð? test và build thành công! ?
 - ? Comprehensive error handling
 - ? Detailed logging
 - ? Full documentation
+- ? **API optimization (removed 2 redundant endpoints)**
 
-**Status:** ? **COMPLETE & READY FOR TESTING**
+**Status:** ? **OPTIMIZED & COMPLETE**
 
 ---
 

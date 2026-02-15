@@ -4,25 +4,19 @@
 
 ### Ð? implement:
 ? **Qu?n l? Model** - 6 API endpoints  
-? **X? l? AI** - 3 API endpoints  
+? **X? l? AI** - 1 API endpoint (t?i ýu)  
+? **Predictions API** - 3 API endpoints 
 ? **Database** - 1 b?ng m?i (model_thresholds)  
-? **Code** - 17 files m?i, 3 files s?a  
+? **Code** - Ð? t?i ýu, lo?i b? API trùng l?p  
 ? **Build** - Thành công, không l?i  
 
 ---
 
 ## ?? Tài li?u
 
-### File duy nh?t c?n ð?c:
-?? **[CODE_CHANGES_SUMMARY.md](CODE_CHANGES_SUMMARY.md)** ??
-
-Ch?a T?T C? thông tin:
-- Danh sách files t?o/s?a
-- API endpoints và examples
-- Database changes
-- Deployment steps
-- Architecture
-- Usage examples
+### Files c?n ð?c:
+?? **[CODE_CHANGES_SUMMARY.md](CODE_CHANGES_SUMMARY.md)** - Overview  
+?? **[PREDICTIONS_API.md](PREDICTIONS_API.md)** - Predictions API chi ti?t
 
 ---
 
@@ -43,26 +37,137 @@ dotnet run
 
 ---
 
-## ?? API Nhanh
+## ?? API Endpoints (Ð? t?i ýu)
 
-### Xem models:
-```http
-GET /api/models
-Authorization: Bearer {token}
+### Models API (6 endpoints)
+**Authorization:** Technical, Admin roles
+```
+GET    /api/models                      # Xem t?t c? models
+GET    /api/models/{id}                 # Xem model theo ID
+GET    /api/models/default              # L?y default model
+PUT    /api/models/{id}/activate        # B?t model
+PUT    /api/models/{id}/deactivate      # T?t model
+PUT    /api/models/{id}/set-default     # Set model default
 ```
 
-### Set default model:
-```http
-PUT /api/models/1/set-default
-Authorization: Bearer {token}
+### AI Processing API (1 endpoint - Dành cho Technical staff)
+**Authorization:** Technical, Admin roles
+```
+POST   /api/ai/preprocess               # X? l? ?nh th? công
 ```
 
-### X? l? + D? ðoán:
+### ?? Predictions API (3 endpoints - Dành cho End Users)
+**Authorization:** All authenticated users
+```
+POST   /api/predictions/run             # Ch?y prediction (auto preprocess + inference)
+GET    /api/predictions/{id}            # Xem chi ti?t prediction
+GET    /api/predictions/history         # Xem l?ch s? predictions
+```
+
+**T?ng c?ng: 10 API endpoints** (Ð? t?i ýu t? 12 ? 10)
+
+---
+
+## ?? API Usage Flow
+
+### Workflow chính (End Users):
+```
+User Upload Image
+      ?
+POST /api/predictions/run
+      ?
+T? ð?ng: Preprocess + Inference
+      ?
+Return prediction result
+```
+
+### Workflow Technical staff:
+```
+Technical Staff
+      ?
+POST /api/ai/preprocess (n?u mu?n x? l? ?nh th? công)
+      ?
+POST /api/predictions/run (v?i preprocessed image)
+```
+
+---
+
+## ?? Example: Predictions API
+
+### 1. Run Prediction (Recommended)
 ```http
-POST /api/ai/process-and-predict
+POST /api/predictions/run
+Authorization: Bearer {token}
 Content-Type: application/json
 
-{ "uploadId": 123 }
+{
+  "uploadId": 123
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "predictionId": 501,
+    "tree": {
+      "treeId": 1,
+      "treeName": "Lúa"
+    },
+    "illness": {
+      "illnessId": 3,
+      "illnessName": "Ð?o ôn"
+    },
+    "confidenceScore": 0.92,
+    "processingTimeMs": 450
+  }
+}
+```
+
+### 2. Get Prediction Detail
+```http
+GET /api/predictions/501
+Authorization: Bearer {token}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "predictionId": 501,
+    "predictedClass": "Rice_Blast",
+    "confidenceScore": 0.92,
+    "topNPredictions": [
+      { "class": "Rice_Blast", "score": 0.92 },
+      { "class": "Brown_Spot", "score": 0.05 }
+    ]
+  }
+}
+```
+
+### 3. Get History
+```http
+GET /api/predictions/history
+Authorization: Bearer {token}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "count": 3,
+  "data": [
+    {
+      "predictionId": 501,
+      "treeName": "Lúa",
+      "illnessName": "Ð?o ôn",
+      "confidenceScore": 0.92,
+      "createdAt": "2025-01-01"
+    }
+  ]
+}
 ```
 
 ---
@@ -71,14 +176,11 @@ Content-Type: application/json
 
 | M?c | S? lý?ng |
 |-----|----------|
-| Files m?i | 17 |
-| Files s?a | 3 |
-| API endpoints | 9 |
-| Services | 2 |
+| API endpoints | 10 (t?i ýu) |
+| Controllers | 3 |
+| Services | 3 |
 | Repositories | 2 |
-| Controllers | 2 |
-| DTOs | 5 |
-| B?ng m?i | 1 |
+| DTOs | 9 |
 
 ---
 
@@ -94,7 +196,9 @@ MyApp\Infrastructure\Services\AIService.cs
 ```
 
 ### 2. Authorization
-Ch? **Technical** và **Admin** roles m?i truy c?p ðý?c endpoints
+- **Models API:** Technical, Admin roles only
+- **AI API (Preprocess):** Technical, Admin roles only
+- **Predictions API:** All authenticated users
 
 ### 3. Image Storage
 T?o folders trý?c khi ch?y:
@@ -111,60 +215,84 @@ uploads/
 ```
 ? Build: SUCCESS
 ? No compilation errors
+? API endpoints optimized (12 ? 10)
+? Removed redundant endpoints
 ? All packages installed
 ? EF Core configured
-? Controllers registered
-? Services registered
+? 3 Controllers registered
+? 3 Services registered
 ? Ready for deployment
 ```
 
 ---
 
-## ?? Next Steps
+## ?? Features Hoàn Thành
 
-### Ngay bây gi?:
-1. ? Run migrations
-2. ? Test APIs qua Swagger
-3. ? Verify database
+### 3.1 Qu?n l? Model ?
+- Ch?n version model ?
+- B?t / t?t model ?
+- Set model default ?
 
-### Sau này:
-- ?? Replace mock inference
-- ?? Add unit tests
-- ?? Production deployment
+### 3.2 X? l? ?nh ?
+- Preprocess th? công (Technical staff) ?
+
+### 4. Predictions API ?
+- Run prediction (auto preprocess + inference) ?
+- Get prediction by ID ?
+- Get prediction history ?
+
+---
+
+## ?? T?i ýu ð? th?c hi?n
+
+### ? Ð? xóa (API trùng l?p):
+- `POST /api/ai/inference` - Thay b?ng `/api/predictions/run`
+- `POST /api/ai/process-and-predict` - Thay b?ng `/api/predictions/run`
+
+### ? Gi? l?i:
+- `POST /api/ai/preprocess` - Cho Technical staff x? l? th? công
+- `POST /api/predictions/run` - API chính cho end users
+
+### ?? L?i ích:
+- Gi?m confusion cho developers
+- API endpoints r? ràng hõn
+- D? maintain
+- Clear separation of concerns
 
 ---
 
 ## ?? H? tr?
 
 **Ð?c tài li?u ð?y ð?:**  
-?? [CODE_CHANGES_SUMMARY.md](CODE_CHANGES_SUMMARY.md)
+- Overview: [CODE_CHANGES_SUMMARY.md](CODE_CHANGES_SUMMARY.md)
+- Predictions API: [PREDICTIONS_API.md](PREDICTIONS_API.md)
 
 **Check code:**  
-- Entity: `Domain/Entities/ModelThreshold.cs`
-- Service: `Infrastructure/Services/AIService.cs`
-- Controller: `Api/Controllers/ModelsController.cs`
+- Controllers: 
+  - `Api/Controllers/ModelsController.cs` (6 endpoints)
+  - `Api/Controllers/AIController.cs` (1 endpoint)
+  - `Api/Controllers/PredictionsController.cs` (3 endpoints)
+- Services: 
+  - `Infrastructure/Services/ModelService.cs`
+  - `Infrastructure/Services/AIService.cs`
+  - `Infrastructure/Services/PredictionService.cs`
 
 ---
 
 **Framework:** .NET 9.0  
-**Status:** ? COMPLETE  
+**Status:** ? OPTIMIZED & COMPLETE  
 **Date:** 2024
 
 ---
 
 ## ?? K?t lu?n
 
-T?t c? features ð? ðý?c implement thành công theo yêu c?u:
+**API ð? ðý?c t?i ýu và chu?n hóa:**
 
-? **3.1 Qu?n l? Model**
-- Ch?n version model ?
-- B?t / t?t model ?
-- Set model default ?
+? **Models Management** - 6 endpoints cho Technical/Admin  
+? **AI Processing** - 1 endpoint cho Technical staff  
+? **Predictions** - 3 endpoints cho t?t c? users  
 
-? **3.2 X? l? ?nh**
-- Resize ?nh ?
-- Normalize ?nh ?
-- Ch?y inference ?
-- Lýu k?t qu? d? ðoán ?
+**Total: 10 endpoints (gi?m t? 12)**
 
-**Code clean, build success, documentation complete!** ??
+**Code clean, optimized, build success, fully documented!** ??

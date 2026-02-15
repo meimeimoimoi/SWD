@@ -13,6 +13,7 @@ namespace MyApp.Api
             service.AddScoped<IMessageService, MessageService>();
             service.AddScoped<IModelService, ModelService>();
             service.AddScoped<IAIService, AIService>();
+            service.AddScoped<IPredictionService, PredictionService>();
             
             service.AddScoped<UserRepository>();
             service.AddScoped<ModelRepository>();
