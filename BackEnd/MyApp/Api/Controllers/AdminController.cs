@@ -244,12 +244,6 @@ namespace MyApp.Api.Controllers
             }
         }
 
-        
-        /// <summary>
-        /// Delete user by ID (Soft delete - sets status to "Deleted")
-        /// </summary>
-        /// <param name="userId">User ID</param>
-        /// <returns>Success status</returns>
         [HttpDelete("users/{userId}")]
       
         public async Task<IActionResult> DeleteUser(int userId)

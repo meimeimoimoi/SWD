@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using MyApp.Api;
 using MyApp.Application.Interfaces;
@@ -25,8 +25,6 @@ namespace MyApp
             // Add JWT Authentication
             builder.Services.AddJwtAuthentication(builder.Configuration);
 
-            // Register DataSeeder
-            builder.Services.AddScoped<DataSeeder>();
 
             var app = builder.Build();
 
