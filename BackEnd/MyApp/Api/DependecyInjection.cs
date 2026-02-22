@@ -22,6 +22,16 @@ namespace MyApp.Api
             service.AddScoped<JwtTokenGeneratior>();
             service.AddScoped<IPasswordHasher, BCryptPasswordHasher>();
 
+            // NEW: Tree & Illness management services
+            service.AddScoped<ITreeService, TreeService>();
+            service.AddScoped<IIllnessService, IllnessService>();
+            service.AddScoped<ITreeIllnessService, TreeIllnessService>();
+            service.AddScoped<ISolutionService, SolutionService>();
+            
+            // NEW: Tree data repositories
+            service.AddScoped<TreeDataRepository>();
+            service.AddScoped<SolutionRepository>();
+
             return service;
         }
     }
