@@ -12,6 +12,7 @@ namespace MyApp.Infrastructure
             services.AddScoped<IPasswordHasher, BCryptPasswordHasher>();
             services.AddScoped<IMessageService, MessageService>();
             services.AddScoped<IAdminService, AdminService>();
+            services.AddScoped<IImageUploadService, ImageUploadService>();
             // Register infrastructure services here
         }
     }
