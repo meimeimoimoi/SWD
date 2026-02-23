@@ -75,52 +75,47 @@ namespace MyApp.Api.Controllers
         /// <param name="request">Registration data</param>
         /// <returns>Success message</returns>
         [HttpPost("register")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Register([FromBody] ResgisterRequestDTO request)
         {
+            // 1. Kiểm tra Model (Validation từ DTO)
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = "Dữ liệu đầu vào không hợp lệ",
+                    errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage)
+                });
+            }
+
             try
             {
-                if (!ModelState.IsValid)
+                // 2. Gọi Service và nhận kết quả ApiResponse
+                var result = await _authService.RegisterAsync(request);
+
+                // 3. Kiểm tra kết quả trả về từ Service
+                if (!result.Success)
                 {
                     return BadRequest(new
                     {
                         success = false,
-                        message = "Invalid input data",
-                        errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage)
+                        message = result.Message
                     });
                 }
 
-                await _authService.RegisterAsync(request);
                 return Ok(new
                 {
                     success = true,
-                    message = "Registration successful."
-                });
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(new
-                {
-                    success = false,
-                    message = ex.Message
-                });
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(new
-                {
-                    success = false,
-                    message = ex.Message
+                    message = result.Message
                 });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error during registration");
+                _logger.LogError(ex, "Lỗi hệ thống khi đăng ký");
                 return StatusCode(500, new
                 {
                     success = false,
-                    message = "An error occurred during registration",
+                    message = "Lỗi máy chủ nội bộ",
                     error = ex.Message
                 });
             }

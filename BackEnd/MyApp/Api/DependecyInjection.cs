@@ -1,5 +1,6 @@
 ﻿using MyApp.Application.Interfaces;
 using MyApp.Infrastructure.Data;
+using MyApp.Infrastructure.Helpers;
 using MyApp.Infrastructure.Services;
 using MyApp.Persistence.Repositories;
 
@@ -26,6 +27,7 @@ namespace MyApp.Api
             // Data Seeder
             service.AddScoped<DataSeeder>();
 
+            service.AddTransient<ApiResponse>();
             return service;
         }
     }

@@ -1,10 +1,11 @@
 ﻿using MyApp.Application.Features.Users.DTOs;
+using MyApp.Infrastructure.Helpers;
 namespace MyApp.Application.Interfaces
 {
     public interface IAuthService
     {
-        Task<string> LoginAsync(LoginRequestDTO request);
-        Task RegisterAsync(ResgisterRequestDTO request);
+        Task<LoginResponseDTO> LoginAsync(LoginRequestDTO request);
+        Task<ApiResponse> RegisterAsync(ResgisterRequestDTO request);
         Task LogoutAsync(string token);
     }
 }
