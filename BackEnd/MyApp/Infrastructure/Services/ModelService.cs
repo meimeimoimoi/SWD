@@ -21,13 +21,13 @@ public class ModelService : IModelService
         try
         {
             var models = await _modelRepository.GetAllModelsAsync();
-            var modelDtos = new List<ModelVersionDto>();
+            var result = new List<ModelVersionDto>();
 
             foreach (var model in models)
             {
                 var threshold = await _modelRepository.GetThresholdByModelIdAsync(model.ModelVersionId);
                 
-                modelDtos.Add(new ModelVersionDto
+                result.Add(new ModelVersionDto
                 {
                     ModelVersionId = model.ModelVersionId,
                     ModelName = model.ModelName,
@@ -41,8 +41,7 @@ public class ModelService : IModelService
                 });
             }
 
-            _logger.LogInformation("Retrieved {Count} models", modelDtos.Count);
-            return modelDtos;
+            return result;
         }
         catch (Exception ex)
         {
@@ -59,7 +58,7 @@ public class ModelService : IModelService
             if (model == null)
                 return null;
 
-            var threshold = await _modelRepository.GetThresholdByModelIdAsync(modelVersionId);
+            var threshold = await _modelRepository.GetThresholdByModelIdAsync(model.ModelVersionId);
 
             return new ModelVersionDto
             {
@@ -90,7 +89,7 @@ public class ModelService : IModelService
             if (result)
                 _logger.LogInformation("Model {ModelVersionId} activated successfully", modelVersionId);
             else
-                _logger.LogWarning("Failed to activate model {ModelVersionId} - not found", modelVersionId);
+                _logger.LogWarning("Failed to activate model {ModelVersionId}", modelVersionId);
 
             return result;
         }
@@ -157,6 +156,72 @@ public class ModelService : IModelService
         }
     }
 
+    public async Task<ModelVersionDto?> GetLatestActiveModelAsync()
+    {
+        try
+        {
+            var model = await _modelRepository.GetLatestActiveModelAsync();
+            if (model == null)
+                return null;
+
+            var threshold = await _modelRepository.GetThresholdByModelIdAsync(model.ModelVersionId);
+
+            _logger.LogInformation("Latest active model retrieved: {ModelName} v{Version}", 
+                model.ModelName, model.Version);
+
+            return new ModelVersionDto
+            {
+                ModelVersionId = model.ModelVersionId,
+                ModelName = model.ModelName,
+                Version = model.Version,
+                ModelType = model.ModelType,
+                Description = model.Description,
+                IsActive = model.IsActive,
+                IsDefault = model.IsDefault,
+                MinConfidence = threshold?.MinConfidence,
+                CreatedAt = model.CreatedAt
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting latest active model");
+            throw;
+        }
+    }
+
+    public async Task<ModelVersionDto?> GetLatestModelByNameAsync(string modelName)
+    {
+        try
+        {
+            var model = await _modelRepository.GetLatestModelByNameAsync(modelName);
+            if (model == null)
+                return null;
+
+            var threshold = await _modelRepository.GetThresholdByModelIdAsync(model.ModelVersionId);
+
+            _logger.LogInformation("Latest model for {ModelName} retrieved: v{Version}", 
+                modelName, model.Version);
+
+            return new ModelVersionDto
+            {
+                ModelVersionId = model.ModelVersionId,
+                ModelName = model.ModelName,
+                Version = model.Version,
+                ModelType = model.ModelType,
+                Description = model.Description,
+                IsActive = model.IsActive,
+                IsDefault = model.IsDefault,
+                MinConfidence = threshold?.MinConfidence,
+                CreatedAt = model.CreatedAt
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting latest model by name: {ModelName}", modelName);
+            throw;
+        }
+    }
+
     public async Task<bool> SetDefaultModelAsync(int modelVersionId)
     {
         try
@@ -164,9 +229,9 @@ public class ModelService : IModelService
             var result = await _modelRepository.SetDefaultModelAsync(modelVersionId);
             
             if (result)
-                _logger.LogInformation("Model {ModelVersionId} set as default", modelVersionId);
+                _logger.LogInformation("Model {ModelVersionId} set as default successfully", modelVersionId);
             else
-                _logger.LogWarning("Failed to set model {ModelVersionId} as default - not found", modelVersionId);
+                _logger.LogWarning("Failed to set model {ModelVersionId} as default", modelVersionId);
 
             return result;
         }

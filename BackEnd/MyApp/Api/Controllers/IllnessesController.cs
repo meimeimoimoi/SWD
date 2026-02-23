@@ -80,7 +80,7 @@ public class IllnessesController : ControllerBase
             return StatusCode(500, new
             {
                 success = false,
-                message = "An error occurred while retrieving the illness",
+                message = "An error occurred while retrieving illness",
                 error = ex.Message
             });
         }
@@ -121,7 +121,7 @@ public class IllnessesController : ControllerBase
             return StatusCode(500, new
             {
                 success = false,
-                message = "An error occurred while creating the illness",
+                message = "An error occurred while creating illness",
                 error = ex.Message
             });
         }
@@ -165,7 +165,7 @@ public class IllnessesController : ControllerBase
             return StatusCode(500, new
             {
                 success = false,
-                message = "An error occurred while updating the illness",
+                message = "An error occurred while updating illness",
                 error = ex.Message
             });
         }
@@ -201,7 +201,7 @@ public class IllnessesController : ControllerBase
             return StatusCode(500, new
             {
                 success = false,
-                message = "An error occurred while deleting the illness",
+                message = "An error occurred while deleting illness",
                 error = ex.Message
             });
         }

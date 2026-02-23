@@ -80,7 +80,7 @@ public class SolutionsController : ControllerBase
             return StatusCode(500, new
             {
                 success = false,
-                message = "An error occurred while retrieving the solution",
+                message = "An error occurred while retrieving solution",
                 error = ex.Message
             });
         }
@@ -103,7 +103,7 @@ public class SolutionsController : ControllerBase
                 message = "Solutions retrieved successfully",
                 predictionId = predictionId,
                 count = solutions.Count,
-                data = solutions
+                solutions = solutions
             });
         }
         catch (Exception ex)
@@ -135,7 +135,7 @@ public class SolutionsController : ControllerBase
                 message = "Solutions retrieved successfully",
                 illnessId = illnessId,
                 count = solutions.Count,
-                data = solutions
+                solutions = solutions
             });
         }
         catch (Exception ex)
@@ -185,7 +185,7 @@ public class SolutionsController : ControllerBase
             return StatusCode(500, new
             {
                 success = false,
-                message = "An error occurred while creating the solution",
+                message = "An error occurred while creating solution",
                 error = ex.Message
             });
         }
@@ -229,7 +229,7 @@ public class SolutionsController : ControllerBase
             return StatusCode(500, new
             {
                 success = false,
-                message = "An error occurred while updating the solution",
+                message = "An error occurred while updating solution",
                 error = ex.Message
             });
         }
@@ -265,7 +265,7 @@ public class SolutionsController : ControllerBase
             return StatusCode(500, new
             {
                 success = false,
-                message = "An error occurred while deleting the solution",
+                message = "An error occurred while deleting solution",
                 error = ex.Message
             });
         }

@@ -30,23 +30,32 @@ public class ModelRepository
     public async Task<ModelVersion?> GetDefaultModelAsync()
     {
         return await _context.ModelVersions
-            .FirstOrDefaultAsync(m => m.IsDefault == true && m.IsActive == true);
+            .Where(m => m.IsActive == true)
+            .OrderByDescending(m => m.IsDefault)
+            .ThenByDescending(m => m.CreatedAt)
+            .FirstOrDefaultAsync();
     }
 
-    public async Task<ModelVersion?> GetActiveModelByNameAndVersionAsync(string modelName, string version)
+    public async Task<ModelVersion?> GetLatestActiveModelAsync()
     {
         return await _context.ModelVersions
-            .FirstOrDefaultAsync(m => 
-                m.ModelName == modelName && 
-                m.Version == version && 
-                m.IsActive == true);
+            .Where(m => m.IsActive == true)
+            .OrderByDescending(m => m.CreatedAt)
+            .FirstOrDefaultAsync();
+    }
+
+    public async Task<ModelVersion?> GetLatestModelByNameAsync(string modelName)
+    {
+        return await _context.ModelVersions
+            .Where(m => m.ModelName == modelName && m.IsActive == true)
+            .OrderByDescending(m => m.CreatedAt)
+            .FirstOrDefaultAsync();
     }
 
     public async Task<bool> ActivateModelAsync(int modelVersionId)
     {
-        var model = await GetModelByIdAsync(modelVersionId);
-        if (model == null)
-            return false;
+        var model = await _context.ModelVersions.FindAsync(modelVersionId);
+        if (model == null) return false;
 
         model.IsActive = true;
         await _context.SaveChangesAsync();
@@ -55,13 +64,12 @@ public class ModelRepository
 
     public async Task<bool> DeactivateModelAsync(int modelVersionId)
     {
-        var model = await GetModelByIdAsync(modelVersionId);
-        if (model == null)
-            return false;
+        var model = await _context.ModelVersions.FindAsync(modelVersionId);
+        if (model == null) return false;
 
         // Don't allow deactivating the default model
         if (model.IsDefault == true)
-            throw new InvalidOperationException("Cannot deactivate the default model");
+            throw new InvalidOperationException("Cannot deactivate the default model. Set another model as default first.");
 
         model.IsActive = false;
         await _context.SaveChangesAsync();
@@ -108,20 +116,22 @@ public class ModelRepository
 
     public async Task<bool> SetDefaultModelAsync(int modelVersionId)
     {
-        var model = await GetModelByIdAsync(modelVersionId);
-        if (model == null)
-            return false;
+        var model = await _context.ModelVersions.FindAsync(modelVersionId);
+        if (model == null) return false;
 
         // Remove default from all other models
-        var allModels = await _context.ModelVersions.ToListAsync();
-        foreach (var m in allModels)
+        var currentDefault = await _context.ModelVersions
+            .Where(m => m.IsDefault == true)
+            .ToListAsync();
+
+        foreach (var m in currentDefault)
         {
             m.IsDefault = false;
         }
 
-        // Set this model as default
+        // Set this model as default and active
         model.IsDefault = true;
-        model.IsActive = true; // Default model must be active
+        model.IsActive = true;
 
         await _context.SaveChangesAsync();
         return true;

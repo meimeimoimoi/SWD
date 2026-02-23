@@ -19,19 +19,6 @@ public class ImageRepository
             .FirstOrDefaultAsync(i => i.UploadId == uploadId);
     }
 
-    public async Task<ProcessedImage?> GetProcessedImageByUploadIdAsync(int uploadId)
-    {
-        return await _context.ProcessedImages
-            .FirstOrDefaultAsync(p => p.UploadId == uploadId);
-    }
-
-    public async Task<ProcessedImage> CreateProcessedImageAsync(ProcessedImage processedImage)
-    {
-        _context.ProcessedImages.Add(processedImage);
-        await _context.SaveChangesAsync();
-        return processedImage;
-    }
-
     public async Task<Prediction> CreatePredictionAsync(Prediction prediction)
     {
         _context.Predictions.Add(prediction);

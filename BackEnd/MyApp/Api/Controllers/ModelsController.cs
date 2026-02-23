@@ -120,6 +120,78 @@ public class ModelsController : ControllerBase
     }
 
     /// <summary>
+    /// Get latest active model (newest version)
+    /// </summary>
+    [HttpGet("latest")]
+    public async Task<IActionResult> GetLatestActiveModel()
+    {
+        try
+        {
+            var model = await _modelService.GetLatestActiveModelAsync();
+            
+            if (model == null)
+                return NotFound(new
+                {
+                    success = false,
+                    message = "No active model found"
+                });
+
+            return Ok(new
+            {
+                success = true,
+                message = "Latest active model retrieved successfully",
+                data = model
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting latest active model");
+            return StatusCode(500, new
+            {
+                success = false,
+                message = "An error occurred while retrieving the latest model",
+                error = ex.Message
+            });
+        }
+    }
+
+    /// <summary>
+    /// Get latest model by name (newest version of specific model)
+    /// </summary>
+    [HttpGet("latest/{modelName}")]
+    public async Task<IActionResult> GetLatestModelByName(string modelName)
+    {
+        try
+        {
+            var model = await _modelService.GetLatestModelByNameAsync(modelName);
+            
+            if (model == null)
+                return NotFound(new
+                {
+                    success = false,
+                    message = $"No active model found with name '{modelName}'"
+                });
+
+            return Ok(new
+            {
+                success = true,
+                message = $"Latest version of '{modelName}' retrieved successfully",
+                data = model
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting latest model by name: {ModelName}", modelName);
+            return StatusCode(500, new
+            {
+                success = false,
+                message = "An error occurred while retrieving the model",
+                error = ex.Message
+            });
+        }
+    }
+
+    /// <summary>
     /// Activate a model version
     /// </summary>
     [HttpPut("{id}/activate")]

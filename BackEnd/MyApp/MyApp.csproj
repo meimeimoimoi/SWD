@@ -10,6 +10,7 @@
 		<Folder Include="Api\Filters\" />
 		<Folder Include="Api\Middlewares\" />
 		<Folder Include="Application\Behaviors\" />
+		<Folder Include="Application\Features\AI\DTOs\" />
 		<Folder Include="Application\Features\Orders\Commands\" />
 		<Folder Include="Application\Features\Orders\Handlers\" />
 		<Folder Include="Application\Features\Orders\Queries\" />

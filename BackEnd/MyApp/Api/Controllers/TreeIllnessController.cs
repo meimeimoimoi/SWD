@@ -10,12 +10,12 @@ namespace MyApp.Api.Controllers;
 [Authorize(Roles = "Admin")]
 public class TreeIllnessController : ControllerBase
 {
-    private readonly ITreeIllnessService _treeIllnessService;
+    private readonly ITreeIllnessService _service;
     private readonly ILogger<TreeIllnessController> _logger;
 
-    public TreeIllnessController(ITreeIllnessService treeIllnessService, ILogger<TreeIllnessController> logger)
+    public TreeIllnessController(ITreeIllnessService service, ILogger<TreeIllnessController> logger)
     {
-        _treeIllnessService = treeIllnessService;
+        _service = service;
         _logger = logger;
     }
 
@@ -35,19 +35,19 @@ public class TreeIllnessController : ControllerBase
                     errors = ModelState.Values.SelectMany(v => v.Errors.Select(e => e.ErrorMessage))
                 });
 
-            var result = await _treeIllnessService.MapTreeIllnessAsync(mapDto.TreeId, mapDto.IllnessId);
+            var result = await _service.MapTreeIllnessAsync(mapDto.TreeId, mapDto.IllnessId);
             
             if (!result)
                 return BadRequest(new
                 {
                     success = false,
-                    message = "Failed to create mapping. Tree or Illness may not exist, or mapping already exists."
+                    message = $"Failed to map tree {mapDto.TreeId} to illness {mapDto.IllnessId}. Either tree or illness does not exist, or mapping already exists."
                 });
 
             return Ok(new
             {
                 success = true,
-                message = $"Tree {mapDto.TreeId} successfully mapped to Illness {mapDto.IllnessId}"
+                message = $"Tree {mapDto.TreeId} mapped to illness {mapDto.IllnessId} successfully"
             });
         }
         catch (Exception ex)
@@ -56,7 +56,7 @@ public class TreeIllnessController : ControllerBase
             return StatusCode(500, new
             {
                 success = false,
-                message = "An error occurred while creating the mapping",
+                message = "An error occurred while mapping tree to illness",
                 error = ex.Message
             });
         }
@@ -66,31 +66,30 @@ public class TreeIllnessController : ControllerBase
     /// Unmap tree from illness (Admin only)
     /// </summary>
     [HttpDelete("unmap")]
-    public async Task<IActionResult> UnmapTreeIllness([FromBody] MapTreeIllnessDto mapDto)
+    public async Task<IActionResult> UnmapTreeIllness([FromQuery] int treeId, [FromQuery] int illnessId)
     {
         try
         {
-            if (!ModelState.IsValid)
+            if (treeId <= 0 || illnessId <= 0)
                 return BadRequest(new
                 {
                     success = false,
-                    message = "Invalid input",
-                    errors = ModelState.Values.SelectMany(v => v.Errors.Select(e => e.ErrorMessage))
+                    message = "TreeId and IllnessId must be positive integers"
                 });
 
-            var result = await _treeIllnessService.UnmapTreeIllnessAsync(mapDto.TreeId, mapDto.IllnessId);
+            var result = await _service.UnmapTreeIllnessAsync(treeId, illnessId);
             
             if (!result)
                 return NotFound(new
                 {
                     success = false,
-                    message = $"Mapping between Tree {mapDto.TreeId} and Illness {mapDto.IllnessId} not found"
+                    message = $"Mapping between tree {treeId} and illness {illnessId} not found"
                 });
 
             return Ok(new
             {
                 success = true,
-                message = $"Tree {mapDto.TreeId} successfully unmapped from Illness {mapDto.IllnessId}"
+                message = $"Tree {treeId} unmapped from illness {illnessId} successfully"
             });
         }
         catch (Exception ex)
@@ -99,7 +98,7 @@ public class TreeIllnessController : ControllerBase
             return StatusCode(500, new
             {
                 success = false,
-                message = "An error occurred while removing the mapping",
+                message = "An error occurred while unmapping tree from illness",
                 error = ex.Message
             });
         }

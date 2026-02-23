@@ -9,5 +9,7 @@ public interface IModelService
     Task<bool> ActivateModelAsync(int modelVersionId);
     Task<bool> DeactivateModelAsync(int modelVersionId);
     Task<ModelVersionDto?> GetDefaultModelAsync();
+    Task<ModelVersionDto?> GetLatestActiveModelAsync();
+    Task<ModelVersionDto?> GetLatestModelByNameAsync(string modelName);
     Task<bool> SetDefaultModelAsync(int modelVersionId);
 }

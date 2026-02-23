@@ -80,7 +80,7 @@ public class TreesController : ControllerBase
             return StatusCode(500, new
             {
                 success = false,
-                message = "An error occurred while retrieving the tree",
+                message = "An error occurred while retrieving tree",
                 error = ex.Message
             });
         }
@@ -121,7 +121,7 @@ public class TreesController : ControllerBase
             return StatusCode(500, new
             {
                 success = false,
-                message = "An error occurred while creating the tree",
+                message = "An error occurred while creating tree",
                 error = ex.Message
             });
         }
@@ -165,7 +165,7 @@ public class TreesController : ControllerBase
             return StatusCode(500, new
             {
                 success = false,
-                message = "An error occurred while updating the tree",
+                message = "An error occurred while updating tree",
                 error = ex.Message
             });
         }
@@ -201,7 +201,7 @@ public class TreesController : ControllerBase
             return StatusCode(500, new
             {
                 success = false,
-                message = "An error occurred while deleting the tree",
+                message = "An error occurred while deleting tree",
                 error = ex.Message
             });
         }
