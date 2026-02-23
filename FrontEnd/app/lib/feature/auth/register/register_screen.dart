@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../routes/app_router.dart';
+import '../../../share/services/auth_api_service.dart';
 import '../../../share/widgets/app_button.dart';
 import '../../../share/widgets/app_card.dart';
 import '../../../share/widgets/app_input.dart';
@@ -14,39 +15,31 @@ class RegisterScreen extends StatefulWidget {
 
 class _RegisterScreenState extends State<RegisterScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  final TextEditingController _fullNameController = TextEditingController();
-  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmController = TextEditingController();
+  bool _isLoading = false;
 
   @override
   void dispose() {
-    _fullNameController.dispose();
-    _emailController.dispose();
+    _usernameController.dispose();
     _passwordController.dispose();
     _confirmController.dispose();
     super.dispose();
   }
 
-  Widget _buildNameField() {
+  Widget _buildUsernameField() {
     return AppInput(
-      label: 'Full name',
-      hint: 'Tran Van A',
-      controller: _fullNameController,
-      validator: (value) =>
-          (value == null || value.isEmpty) ? 'Full name required' : null,
-    );
-  }
-
-  Widget _buildEmailField() {
-    return AppInput(
-      label: 'Email',
-      hint: 'you@example.com',
-      controller: _emailController,
-      keyboardType: TextInputType.emailAddress,
+      label: 'Username',
+      hint: 'john_doe',
+      controller: _usernameController,
       validator: (value) {
-        if (value == null || value.isEmpty) return 'Email required';
-        if (!value.contains('@')) return 'Invalid email';
+        if (value == null || value.isEmpty) {
+          return 'Username required';
+        }
+        if (value.trim().length < 2) {
+          return 'Username must be at least 2 characters';
+        }
         return null;
       },
     );
@@ -59,8 +52,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
       controller: _passwordController,
       obscureText: true,
       validator: (value) {
-        if (value == null || value.isEmpty) return 'Password required';
-        if (value.length < 6) return 'At least 6 characters';
+        if (value == null || value.isEmpty) {
+          return 'Password required';
+        }
+        if (value.length < 6) {
+          return 'At least 6 characters';
+        }
         return null;
       },
     );
@@ -73,19 +70,59 @@ class _RegisterScreenState extends State<RegisterScreen> {
       controller: _confirmController,
       obscureText: true,
       validator: (value) {
-        if (value == null || value.isEmpty) return 'Confirm password';
-        if (value != _passwordController.text) return 'Passwords do not match';
+        if (value == null || value.isEmpty) {
+          return 'Confirm password required';
+        }
+        if (value != _passwordController.text) {
+          return 'Passwords do not match';
+        }
         return null;
       },
     );
   }
 
-  void _submit() {
+  void _submit() async {
     if (!_formKey.currentState!.validate()) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Account created (demo only).')),
-    );
-    Navigator.pushReplacementNamed(context, AppRouter.dashboard);
+
+    setState(() => _isLoading = true);
+
+    try {
+      final result = await AuthApiService.register(
+        _usernameController.text,
+        _passwordController.text,
+      );
+
+      if (!mounted) return;
+
+      if (result['success'] == true) {
+        // Show success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(result['message'] ?? 'Registration successful!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        // Navigate to login
+        Navigator.pushReplacementNamed(context, AppRouter.login);
+      } else {
+        // Show error message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(result['message'] ?? 'Registration failed'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
   }
 
   @override
@@ -111,21 +148,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   key: _formKey,
                   child: Column(
                     children: [
-                      isWide
-                          ? Row(
-                              children: [
-                                Expanded(child: _buildNameField()),
-                                const SizedBox(width: 16),
-                                Expanded(child: _buildEmailField()),
-                              ],
-                            )
-                          : Column(
-                              children: [
-                                _buildNameField(),
-                                const SizedBox(height: 16),
-                                _buildEmailField(),
-                              ],
-                            ),
+                      _buildUsernameField(),
                       const SizedBox(height: 16),
                       isWide
                           ? Row(
@@ -148,8 +171,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               children: [
                                 Expanded(
                                   child: AppButton(
-                                    label: 'Sign up',
-                                    onPressed: _submit,
+                                    label: _isLoading
+                                        ? 'Registering...'
+                                        : 'Sign up',
+                                    onPressed: _isLoading ? null : _submit,
                                   ),
                                 ),
                                 const SizedBox(width: 12),
@@ -157,19 +182,28 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   child: AppButton(
                                     label: 'Back to login',
                                     variant: AppButtonVariant.outlined,
-                                    onPressed: () => Navigator.pop(context),
+                                    onPressed: _isLoading
+                                        ? null
+                                        : () => Navigator.pop(context),
                                   ),
                                 ),
                               ],
                             )
                           : Column(
                               children: [
-                                AppButton(label: 'Sign up', onPressed: _submit),
+                                AppButton(
+                                  label: _isLoading
+                                      ? 'Registering...'
+                                      : 'Sign up',
+                                  onPressed: _isLoading ? null : _submit,
+                                ),
                                 const SizedBox(height: 12),
                                 AppButton(
                                   label: 'Back to login',
                                   variant: AppButtonVariant.outlined,
-                                  onPressed: () => Navigator.pop(context),
+                                  onPressed: _isLoading
+                                      ? null
+                                      : () => Navigator.pop(context),
                                 ),
                               ],
                             ),

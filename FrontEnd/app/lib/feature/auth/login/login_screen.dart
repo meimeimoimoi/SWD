@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../routes/app_router.dart';
+import '../../../share/services/auth_api_service.dart';
 import '../../../share/theme/app_colors.dart';
 import '../../../share/widgets/app_button.dart';
 import '../../../share/widgets/app_card.dart';
@@ -15,24 +16,62 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _usernameOrEmailController =
+      TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _rememberMe = true;
   bool _obscurePassword = true;
+  bool _isLoading = false;
 
   @override
   void dispose() {
-    _emailController.dispose();
+    _usernameOrEmailController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
 
-  void _submit() {
+  void _submit() async {
     if (!_formKey.currentState!.validate()) return;
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Signed in (demo only).')));
-    Navigator.pushReplacementNamed(context, AppRouter.dashboard);
+
+    setState(() => _isLoading = true);
+
+    try {
+      final result = await AuthApiService.login(
+        _usernameOrEmailController.text,
+        _passwordController.text,
+      );
+
+      if (!mounted) return;
+
+      if (result['success'] == true) {
+        // Show success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(result['message'] ?? 'Login successful!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        // Navigate to dashboard
+        Navigator.pushReplacementNamed(context, AppRouter.dashboard);
+      } else {
+        // Show error message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(result['message'] ?? 'Login failed'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
   }
 
   @override
@@ -53,10 +92,11 @@ class _LoginScreenState extends State<LoginScreen> {
                 Expanded(
                   child: _AuthCard(
                     formKey: _formKey,
-                    emailController: _emailController,
+                    usernameOrEmailController: _usernameOrEmailController,
                     passwordController: _passwordController,
                     rememberMe: _rememberMe,
                     obscurePassword: _obscurePassword,
+                    isLoading: _isLoading,
                     onRememberChanged: (value) =>
                         setState(() => _rememberMe = value),
                     onTogglePassword: () =>
@@ -76,10 +116,11 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 24),
                 _AuthCard(
                   formKey: _formKey,
-                  emailController: _emailController,
+                  usernameOrEmailController: _usernameOrEmailController,
                   passwordController: _passwordController,
                   rememberMe: _rememberMe,
                   obscurePassword: _obscurePassword,
+                  isLoading: _isLoading,
                   onRememberChanged: (value) =>
                       setState(() => _rememberMe = value),
                   onTogglePassword: () =>
@@ -98,20 +139,22 @@ class _LoginScreenState extends State<LoginScreen> {
 class _AuthCard extends StatelessWidget {
   const _AuthCard({
     required GlobalKey<FormState> formKey,
-    required this.emailController,
+    required this.usernameOrEmailController,
     required this.passwordController,
     required this.rememberMe,
     required this.obscurePassword,
+    required this.isLoading,
     required this.onRememberChanged,
     required this.onTogglePassword,
     required this.onSubmit,
   }) : _formKey = formKey;
 
   final GlobalKey<FormState> _formKey;
-  final TextEditingController emailController;
+  final TextEditingController usernameOrEmailController;
   final TextEditingController passwordController;
   final bool rememberMe;
   final bool obscurePassword;
+  final bool isLoading;
   final ValueChanged<bool> onRememberChanged;
   final VoidCallback onTogglePassword;
   final VoidCallback onSubmit;
@@ -134,13 +177,17 @@ class _AuthCard extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             AppInput(
-              label: 'Email',
-              hint: 'you@example.com',
-              controller: emailController,
+              label: 'Username or Email',
+              hint: 'john_doe or john@example.com',
+              controller: usernameOrEmailController,
               keyboardType: TextInputType.emailAddress,
               validator: (value) {
-                if (value == null || value.isEmpty) return 'Email is required';
-                if (!value.contains('@')) return 'Enter a valid email';
+                if (value == null || value.isEmpty) {
+                  return 'Username or Email is required';
+                }
+                if (value.trim().length < 2) {
+                  return 'At least 2 characters';
+                }
                 return null;
               },
             ),
@@ -154,7 +201,9 @@ class _AuthCard extends StatelessWidget {
                 if (value == null || value.isEmpty) {
                   return 'Password is required';
                 }
-                if (value.length < 6) return 'At least 6 characters';
+                if (value.length < 6) {
+                  return 'At least 6 characters';
+                }
                 return null;
               },
               suffix: IconButton(
@@ -186,12 +235,17 @@ class _AuthCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 16),
-            AppButton(label: 'Sign in', onPressed: onSubmit),
+            AppButton(
+              label: isLoading ? 'Signing in...' : 'Sign in',
+              onPressed: isLoading ? null : onSubmit,
+            ),
             const SizedBox(height: 12),
             AppButton(
               label: 'Create account',
               variant: AppButtonVariant.outlined,
-              onPressed: () => Navigator.pushNamed(context, AppRouter.register),
+              onPressed: isLoading
+                  ? null
+                  : () => Navigator.pushNamed(context, AppRouter.register),
             ),
             const SizedBox(height: 12),
             Row(
