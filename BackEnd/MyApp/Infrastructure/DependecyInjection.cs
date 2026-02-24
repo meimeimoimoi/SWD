@@ -17,6 +17,10 @@ namespace MyApp.Infrastructure
             services.AddScoped<IImageUploadService, ImageUploadService>();
             services.AddScoped<IPredictionService, PredictionService>();
             services.AddScoped<IModelVersionService, ModelVersionService>();
+            services.AddScoped<ISolutionService, SolutionService>();
+            services.AddScoped<ITreeService, TreeService>();
+            services.AddScoped<IIllnessService, IllnessService>();
+            services.AddScoped<ITreeIllnessRelationService, TreeIllnessRelationService>();
             services.AddScoped<JwtTokenGeneratior>();
             
             // Add HttpClient for AI service
