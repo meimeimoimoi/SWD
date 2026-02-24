@@ -15,25 +15,22 @@ namespace MyApp.Api.Controllers
     public class ImageUploadController : ControllerBase
     {
         private readonly IImageUploadService _imageUploadService;
+        private readonly IPredictionService _predictionService;
         private readonly ILogger<ImageUploadController> _logger;
 
-        public ImageUploadController(IImageUploadService imageUploadService, ILogger<ImageUploadController> logger)
+        public ImageUploadController(
+            IImageUploadService imageUploadService,
+            IPredictionService predictionService,
+            ILogger<ImageUploadController> logger)
         {
             _imageUploadService = imageUploadService;
+            _predictionService = predictionService;
             _logger = logger;
         }
 
-        /// <summary>
-        /// Upload an image of a tree disease
-        /// </summary>
-        /// <param name="request">Image upload request with file</param>
-        /// <returns>Uploaded image details</returns>
+        
         [HttpPost("upload")]
         [Consumes("multipart/form-data")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> UploadImage([FromForm] ImageUploadRequestDto request)
         {
             try
@@ -94,9 +91,6 @@ namespace MyApp.Api.Controllers
             }
         }
         [HttpGet("{uploadId}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> GetImageStatus(int uploadId)
         {
             try
@@ -133,8 +127,6 @@ namespace MyApp.Api.Controllers
 
        
         [HttpGet("my-images")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> GetMyImages()
         {
             try
@@ -172,5 +164,39 @@ namespace MyApp.Api.Controllers
             }
         }
 
+        [HttpGet("{uploadId}/prediction")]
+        public async Task<IActionResult> GetPredictionByUploadId(int uploadId)
+        {
+            try
+            {
+                var prediction = await _predictionService.GetPredictionByUploadIdAsync(uploadId);
+                
+                if (prediction == null)
+                {
+                    return NotFound(new
+                    {
+                        success = false,
+                        message = $"No prediction found for upload ID {uploadId}"
+                    });
+                }
+                
+                return Ok(new
+                {
+                    success = true,
+                    message = "Prediction retrieved successfully",
+                    data = prediction
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving prediction for upload {UploadId}", uploadId);
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "An error occurred while retrieving prediction",
+                    error = ex.Message
+                });
+            }
+        }
     }
 }

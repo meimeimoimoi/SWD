@@ -13,6 +13,7 @@ namespace MyApp.Infrastructure
             services.AddScoped<IMessageService, MessageService>();
             services.AddScoped<IAdminService, AdminService>();
             services.AddScoped<IImageUploadService, ImageUploadService>();
+            services.AddScoped<IPredictionService, PredictionService>();
             // Register infrastructure services here
         }
     }
