@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../routes/app_router.dart';
+import '../../../share/services/auth_api_service.dart';
+import '../../../share/services/storage_service.dart';
 import '../../../share/theme/app_colors.dart';
 import '../../../share/widgets/app_button.dart';
 import '../../../share/widgets/app_card.dart';
@@ -19,6 +21,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _passwordController = TextEditingController();
   bool _rememberMe = true;
   bool _obscurePassword = true;
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -27,12 +30,83 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  void _submit() {
+  void _submit() async {
     if (!_formKey.currentState!.validate()) return;
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Signed in (demo only).')));
-    Navigator.pushReplacementNamed(context, AppRouter.dashboard);
+
+    setState(() => _isLoading = true);
+
+    try {
+      final result = await AuthApiService.login(
+        _emailController.text,
+        _passwordController.text,
+      );
+
+      if (!mounted) return;
+
+      if (result['success'] == true) {
+        // Extract token data from response
+        final tokenData = result['data']?['token'];
+        final username = tokenData?['username'] as String?;
+        final role = tokenData?['role'] as String?;
+        final accessToken = tokenData?['accessToken'] as String?;
+        final refreshToken = tokenData?['refreshToken'] as String?;
+        final expiresIn = tokenData?['expiresIn'] as String?;
+
+        if (accessToken != null) {
+          // Save token and user info
+          await StorageService.saveAuthToken(
+            accessToken: accessToken,
+            refreshToken: refreshToken,
+            username: username,
+            role: role,
+            expiresIn: expiresIn,
+          );
+
+          // Show success message
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Welcome back, ${username ?? "User"}!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+
+          // Navigate to dashboard
+          Navigator.pushReplacementNamed(context, AppRouter.dashboard);
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Login failed: No token received'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      } else {
+        // Show error message
+        String errorMessage = result['message'] ?? 'Login failed';
+
+        // Handle specific validation errors
+        if (result['data'] != null && result['data']['errors'] != null) {
+          final errors = result['data']['errors'] as Map<String, dynamic>;
+          final firstError = errors.entries.firstOrNull;
+          if (firstError != null && firstError.value is List) {
+            errorMessage = (firstError.value as List).first ?? errorMessage;
+          }
+        }
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(errorMessage), backgroundColor: Colors.red),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
   }
 
   @override
@@ -57,6 +131,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     passwordController: _passwordController,
                     rememberMe: _rememberMe,
                     obscurePassword: _obscurePassword,
+                    isLoading: _isLoading,
                     onRememberChanged: (value) =>
                         setState(() => _rememberMe = value),
                     onTogglePassword: () =>
@@ -80,6 +155,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   passwordController: _passwordController,
                   rememberMe: _rememberMe,
                   obscurePassword: _obscurePassword,
+                  isLoading: _isLoading,
                   onRememberChanged: (value) =>
                       setState(() => _rememberMe = value),
                   onTogglePassword: () =>
@@ -102,6 +178,7 @@ class _AuthCard extends StatelessWidget {
     required this.passwordController,
     required this.rememberMe,
     required this.obscurePassword,
+    required this.isLoading,
     required this.onRememberChanged,
     required this.onTogglePassword,
     required this.onSubmit,
@@ -112,6 +189,7 @@ class _AuthCard extends StatelessWidget {
   final TextEditingController passwordController;
   final bool rememberMe;
   final bool obscurePassword;
+  final bool isLoading;
   final ValueChanged<bool> onRememberChanged;
   final VoidCallback onTogglePassword;
   final VoidCallback onSubmit;
@@ -186,12 +264,17 @@ class _AuthCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 16),
-            AppButton(label: 'Sign in', onPressed: onSubmit),
+            AppButton(
+              label: isLoading ? 'Signing in...' : 'Sign in',
+              onPressed: isLoading ? null : onSubmit,
+            ),
             const SizedBox(height: 12),
             AppButton(
               label: 'Create account',
               variant: AppButtonVariant.outlined,
-              onPressed: () => Navigator.pushNamed(context, AppRouter.register),
+              onPressed: isLoading
+                  ? null
+                  : () => Navigator.pushNamed(context, AppRouter.register),
             ),
             const SizedBox(height: 12),
             Row(
@@ -212,7 +295,7 @@ class _AuthCard extends StatelessWidget {
               label: 'Continue with Google',
               variant: AppButtonVariant.ghost,
               icon: Icons.g_translate,
-              onPressed: () {},
+              onPressed: isLoading ? null : () {},
             ),
           ],
         ),
