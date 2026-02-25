@@ -14,6 +14,7 @@ namespace MyApp.Infrastructure
             services.AddScoped<IAdminService, AdminService>();
             services.AddScoped<IImageUploadService, ImageUploadService>();
             services.AddScoped<IPredictionService, PredictionService>();
+            services.AddScoped<ITreatmentSolutionService, TreatmentSolutionService>();
             // Register infrastructure services here
         }
     }

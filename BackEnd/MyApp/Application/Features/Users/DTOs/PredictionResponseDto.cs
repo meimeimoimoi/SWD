@@ -5,7 +5,7 @@
         public int PredictionId { get; set; }
         public int UploadId { get; set; }
 
-        // Illness Information
+        // Thông tin bệnh
         public int? IllnessId { get; set; }
         public string? IllnessName { get; set; }
         public string? IllnessScientificName { get; set; }
@@ -14,17 +14,17 @@
         public string? Symptoms { get; set; }
         public string? Causes { get; set; }
 
-        // Tree Information
+        // Thông tin cây
         public int? TreeId { get; set; }
         public string? TreeName { get; set; }
 
-        // Prediction Details
+        // Kết quả dự đoán
         public string? PredictedClass { get; set; }
         public decimal? ConfidenceScore { get; set; }  // Độ tin cậy
         public string? ConfidencePercentage { get; set; }  // "95.5%"
         public string? TopNPredictions { get; set; }  // JSON với top dự đoán
 
-        // Model Information
+        // Thông tin model
         public int? ModelVersionId { get; set; }
         public string? ModelName { get; set; }
         public string? ModelVersion { get; set; }
