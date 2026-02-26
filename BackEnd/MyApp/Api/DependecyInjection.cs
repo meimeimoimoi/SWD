@@ -28,6 +28,7 @@ namespace MyApp.Api
             service.AddScoped<DataSeeder>();
 
             service.AddTransient<ApiResponse>();
+            service.AddScoped<IPredictionService, PredictionService>();
             return service;
         }
     }

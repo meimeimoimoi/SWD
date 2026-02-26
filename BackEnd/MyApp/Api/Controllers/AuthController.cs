@@ -121,6 +121,52 @@ namespace MyApp.Api.Controllers
             }
         }
 
+        [HttpPost("refresh")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public async Task<IActionResult> Refresh([FromBody] RefreshTokenRequestDTO request)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(new
+                    {
+                        success = false,
+                        message = "Invalid input data",
+                        errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage)
+                    });
+                }
+
+                var token = await _authService.RefreshAsync(request);
+                return Ok(new
+                {
+                    success = true,
+                    message = "Refresh token successful",
+                    token = token
+                });
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new
+                {
+                    success = false,
+                    message = ex.Message
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error during refresh token");
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "An error occurred during refresh token",
+                    error = ex.Message
+                });
+            }
+        }
+
         /// <summary>
         /// Logout the current user
         /// </summary>

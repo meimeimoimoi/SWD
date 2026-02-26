@@ -7,5 +7,7 @@ namespace MyApp.Application.Interfaces
         Task<LoginResponseDTO> LoginAsync(LoginRequestDTO request);
         Task<ApiResponse> RegisterAsync(ResgisterRequestDTO request);
         Task LogoutAsync(string token);
+
+        Task<LoginResponseDTO> RefreshAsync(RefreshTokenRequestDTO request);
     }
 }

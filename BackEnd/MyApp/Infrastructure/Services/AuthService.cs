@@ -5,6 +5,8 @@ using MyApp.Domain.Entities;
 using MyApp.Infrastructure.Helpers;
 using MyApp.Persistence.Context;
 using MyApp.Persistence.Repositories;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 namespace MyApp.Infrastructure.Services
 {
@@ -74,6 +76,79 @@ namespace MyApp.Infrastructure.Services
         public Task LogoutAsync(string token)
         {
             return Task.CompletedTask;
+        }
+
+        public async Task<LoginResponseDTO> RefreshAsync(RefreshTokenRequestDTO request)
+        {
+            try
+            {
+                var principal = _jwtTokenGeneratior.GetPrincipalFromExpiredToken(request.AccessToken);
+                var jti = principal.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Jti)?.Value;
+
+                if (string.IsNullOrWhiteSpace(jti) || jti != request.RefreshToken)
+                {
+                    throw new UnauthorizedAccessException("Refresh token is invalid.");
+                }
+
+                var refreshToken = await _context.RefreshTokens
+                    .FirstOrDefaultAsync(rt => rt.JtiHash == jti);
+
+                if (refreshToken == null || refreshToken.IsRevoked == true)
+                {
+                    throw new UnauthorizedAccessException("Refresh token is invalid or revoked.");
+                }
+
+                if (refreshToken.CreatedAt.HasValue &&
+                    refreshToken.CreatedAt.Value.Add(_refreshTokenExpiration) < DateTime.UtcNow)
+                {
+                    refreshToken.IsRevoked = true;
+                    refreshToken.UpdatedAt = DateTime.UtcNow;
+                    await _context.SaveChangesAsync();
+
+                    throw new UnauthorizedAccessException("Refresh token has expired.");
+                }
+
+                var userIdValue = principal.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value
+                             ?? principal.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Sub)?.Value;
+                if (!int.TryParse(userIdValue, out var userId))
+                {
+                    throw new UnauthorizedAccessException("Invalid user.");
+                }
+
+                var user = await _userRepository.FindByIdAsync(userId);
+                if (user == null || user.AccountStatus != "Active")
+                {
+                    throw new UnauthorizedAccessException("Account is not active.");
+                }
+
+                string newAccessToken = _jwtTokenGeneratior.GenerateToken(user, _tokenExpiration, out string newJti);
+                var newRefreshToken = _jwtTokenGeneratior.GenerateRefreshToken(newJti);
+
+                refreshToken.IsRevoked = true;
+                refreshToken.UpdatedAt = DateTime.UtcNow;
+
+                _context.RefreshTokens.Add(newRefreshToken);
+                await _context.SaveChangesAsync();
+
+                return new LoginResponseDTO
+                {
+                    AccessToken = newAccessToken,
+                    RefreshToken = newJti,
+                    ExpiresIn = _tokenExpiration,
+                    Username = user.Username,
+                    Role = user.Role
+                };
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                _logger.LogWarning(ex.Message);
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Refresh token error");
+                throw;
+            }
         }
 
         public async Task<ApiResponse> RegisterAsync(ResgisterRequestDTO request)

@@ -16,6 +16,8 @@ namespace MyApp.Infrastructure
             services.AddScoped<IAdminService, AdminService>();
             services.AddScoped<IImageUploadService, ImageUploadService>();
             services.AddScoped<JwtTokenGeneratior>();
+            services.AddScoped<IPredictionService, PredictionService>();
+
         }
     }
 }
