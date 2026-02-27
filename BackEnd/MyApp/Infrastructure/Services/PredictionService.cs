@@ -53,7 +53,7 @@ namespace MyApp.Infrastructure.Services
         {
             var stopwatch = Stopwatch.StartNew();
 
-            // 1. Đọc và Resize ảnh giống hệt PIL.Image.resize((224, 224))
+            // Đọc và Resize ảnh giống PIL.Image.resize((224, 224))
             using var image = await  SixLabors.ImageSharp.Image.LoadAsync<Rgb24>(imageStream);
             image.Mutate(x => x.Resize(new ResizeOptions
             {
@@ -61,7 +61,7 @@ namespace MyApp.Infrastructure.Services
                 Mode = ResizeMode.Stretch // Bóp méo ảnh cho vừa 224x224 giống hệt Python
             }));
 
-            // 2. Chuyển thành Tensor chuẩn NHWC [Batch, Height, Width, Channels] của TensorFlow
+            // Chuyển thành Tensor chuẩn NHWC [Batch, Height, Width, Channels] của TensorFlow
             var inputTensor = new DenseTensor<float>(new[] { 1, ImageSize, ImageSize, 3 });
 
             for (int y = 0; y < image.Height; y++)
@@ -69,28 +69,26 @@ namespace MyApp.Infrastructure.Services
                 for (int x = 0; x < image.Width; x++)
                 {
                     var pixel = image[x, y];
-
-                    // Ở MobileNetV3 của TensorFlow/Keras, input chỉ cần là float từ 0 -> 255.
-                    // Model đã tự có lớp Rescaling(1./255) ở bên trong rồi.
+                    
                     inputTensor[0, y, x, 0] = pixel.R;
                     inputTensor[0, y, x, 1] = pixel.G;
                     inputTensor[0, y, x, 2] = pixel.B;
                 }
             }
 
-            // 3. Tự động lấy tên input/output của Model ONNX
+            // Tự động lấy tên input/output của Model ONNX
             var inputName = _session.InputMetadata.Keys.First();
             var outputName = _session.OutputMetadata.Keys.First();
 
             var inputs = new List<NamedOnnxValue> { NamedOnnxValue.CreateFromTensor(inputName, inputTensor) };
 
-            // 4. Chạy Model dự đoán
+            // Chạy Model dự đoán
             using var results = _session.Run(inputs);
             var outputArray = results.First(v => v.Name == outputName).AsEnumerable<float>().ToArray();
 
-            // Output lúc này đã là Softmax (tổng = 1) vì bạn đã add lớp Softmax lúc train
+            // Output lúc này đã là Softmax (tổng = 1)
 
-            // 5. Tìm class có tỷ lệ cao nhất
+            // Tìm class có tỷ lệ cao nhất
             int predictedIndex = 0;
             float maxConfidence = outputArray[0];
 
@@ -105,7 +103,7 @@ namespace MyApp.Infrastructure.Services
 
             string predictedClass = _labels[predictedIndex];
 
-            // 6. Map dữ liệu trả về giống hệt FastAPI
+            // Map dữ liệu trả về
             var allProbs = new Dictionary<string, double>();
             for (int i = 0; i < outputArray.Length; i++)
             {
