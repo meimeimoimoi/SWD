@@ -106,7 +106,6 @@ namespace MyApp.Api.Controllers
             return Ok(new { success = true, total = classes.Length, data = classes });
         }
 
-        // ✅ Đổi thành async vì IsModelLoaded() giờ là Task<bool>
         [HttpGet("health")]
         [AllowAnonymous]
         public async Task<IActionResult> Health()
