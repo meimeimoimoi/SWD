@@ -7,17 +7,18 @@ namespace MyApp.Infrastructure
 {
     public static class DependecyInjection
     {
-        public static void RegisterServices(IServiceCollection services)
+        public static IServiceCollection AddInfrastructureService(this IServiceCollection services)
         {
-            services.AddTransient<ApiResponse>();
+            services.AddScoped<IAdminService, AdminService>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IPasswordHasher, BCryptPasswordHasher>();
-            services.AddScoped<IMessageService, MessageService>();
-            services.AddScoped<IAdminService, AdminService>();
             services.AddScoped<IImageUploadService, ImageUploadService>();
             services.AddScoped<JwtTokenGeneratior>();
+            services.AddScoped<IMessageService, MessageService>();
             services.AddScoped<IPredictionService, PredictionService>();
+            services.AddScoped<ApiResponse>();
 
+            return services;
         }
     }
 }

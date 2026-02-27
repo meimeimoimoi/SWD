@@ -2,10 +2,13 @@
 using Microsoft.ML.OnnxRuntime.Tensors;
 using MyApp.Application.Features.Prediction;
 using MyApp.Application.Interfaces;
+using MyApp.Domain.Entities;
+using MyApp.Persistence.Repositories;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using System.Diagnostics;
+using System.Text.Json;
 using static System.Net.Mime.MediaTypeNames;
 
 namespace MyApp.Infrastructure.Services
@@ -14,6 +17,9 @@ namespace MyApp.Infrastructure.Services
     {
         private readonly InferenceSession _session;
         private readonly ILogger<PredictionService> _logger;
+        private readonly PredictionRepository _predictionRepository;
+        private readonly IImageUploadService _imageUploadService;
+        private readonly IllnessRepository _illnessRepository;
         private const int ImageSize = 224;
 
         private readonly Dictionary<int, string> _labels = new()
@@ -40,39 +46,50 @@ namespace MyApp.Infrastructure.Services
             { "Leaf Blast", "high" }
         };
 
-        public PredictionService(ILogger<PredictionService> logger)
+        public PredictionService(
+            ILogger<PredictionService> logger, 
+            PredictionRepository predictionRepository,
+            IImageUploadService imageUploadService,
+            IllnessRepository illnessRepository)
         {
             _logger = logger;
             // Load model lúc app vừa chạy
+            _predictionRepository = predictionRepository;
+            _imageUploadService = imageUploadService;
+            _illnessRepository = illnessRepository;
+
             var modelPath = Path.Combine(Directory.GetCurrentDirectory(), "Models", "rice_disease_v3.onnx");
-            _session = new InferenceSession(modelPath);
             _logger.LogInformation("ONNX Model loaded successfully from {Path}", modelPath);
+            _session = new InferenceSession(modelPath);
         }
 
-        public async Task<PredictionResponseDto> PredictAsync(Stream imageStream)
+        public async Task<PredictionResponseDto> PredictAsync(int userId, IFormFile imageFile)
         {
             var stopwatch = Stopwatch.StartNew();
 
             // Đọc và Resize ảnh giống PIL.Image.resize((224, 224))
-            using var image = await  SixLabors.ImageSharp.Image.LoadAsync<Rgb24>(imageStream);
+            var uploadResult = await _imageUploadService.UploadImageAsync(userId, imageFile);
+
+            // Xử lý ảnh 
+            using var stream = File.OpenRead(uploadResult.FilePath);
+            using var image = SixLabors.ImageSharp.Image.Load<Rgb24>(stream);
+
             image.Mutate(x => x.Resize(new ResizeOptions
             {
                 Size = new Size(ImageSize, ImageSize),
-                Mode = ResizeMode.Stretch // Bóp méo ảnh cho vừa 224x224 giống hệt Python
+                Mode = ResizeMode.Stretch 
             }));
 
-            // Chuyển thành Tensor chuẩn NHWC [Batch, Height, Width, Channels] của TensorFlow
             var inputTensor = new DenseTensor<float>(new[] { 1, ImageSize, ImageSize, 3 });
-
             for (int y = 0; y < image.Height; y++)
             {
                 for (int x = 0; x < image.Width; x++)
                 {
                     var pixel = image[x, y];
                     
-                    inputTensor[0, y, x, 0] = pixel.R;
-                    inputTensor[0, y, x, 1] = pixel.G;
-                    inputTensor[0, y, x, 2] = pixel.B;
+                    inputTensor[0, y, x, 0] = pixel.R; // R
+                    inputTensor[0, y, x, 1] = pixel.G; // G 
+                    inputTensor[0, y, x, 2] = pixel.B; // B
                 }
             }
 
@@ -85,8 +102,6 @@ namespace MyApp.Infrastructure.Services
             // Chạy Model dự đoán
             using var results = _session.Run(inputs);
             var outputArray = results.First(v => v.Name == outputName).AsEnumerable<float>().ToArray();
-
-            // Output lúc này đã là Softmax (tổng = 1)
 
             // Tìm class có tỷ lệ cao nhất
             int predictedIndex = 0;
@@ -101,7 +116,7 @@ namespace MyApp.Infrastructure.Services
                 }
             }
 
-            string predictedClass = _labels[predictedIndex];
+            string predictedLabel = _labels[predictedIndex];
 
             // Map dữ liệu trả về
             var allProbs = new Dictionary<string, double>();
@@ -110,16 +125,40 @@ namespace MyApp.Infrastructure.Services
                 allProbs[_labels[i]] = Math.Round(outputArray[i], 6);
             }
 
+            var illnessInfo = await _illnessRepository.GetByNameAysnc(predictedLabel);
+
             stopwatch.Stop();
+
+            var prediction = new Prediction
+            {
+               UploadId = uploadResult.UploadId,
+               Illness = illnessInfo,
+               PredictedClass = predictedLabel,
+               ConfidenceScore = (decimal) maxConfidence,
+               TopNPredictions = JsonSerializer.Serialize(allProbs),
+               ProcessingTimeMs = (int) stopwatch.ElapsedMilliseconds,
+               CreatedAt = DateTime.UtcNow
+            };
+
+            await _predictionRepository.AddPredictionAsync(prediction);
 
             return new PredictionResponseDto
             {
-                PredictedClass = predictedClass,
-                Confidence = Math.Round(maxConfidence, 6),
-                AllProbabilities = allProbs,
-                Recommendation = _recommendations.GetValueOrDefault(predictedClass, "Consult expert."),
-                Severity = _severity.GetValueOrDefault(predictedClass, "unknown"),
-                ProcessingTimeMs = stopwatch.ElapsedMilliseconds
+                PredictionId = prediction.PredictionId,
+                ImageUrl = uploadResult.StoredFilename,
+                PredictedClass = predictedLabel,
+                Confidence = Math.Round(maxConfidence, 4),
+                ProcessingTimeMs = stopwatch.ElapsedMilliseconds,
+
+                DiseaseName = illnessInfo?.IllnessName ?? predictedLabel,
+                Symptoms = illnessInfo?.Symptoms ?? "Chưa có dữ liệu mô tả.",
+                Causes = illnessInfo?.Causes,
+                Treatments = illnessInfo?.TreatmentSolutions.Select(t => new TreatmentDto
+                {
+                    Name = t.SolutionName ?? "Thuốc",
+                    Type = t.SolutionType ?? "Chưa rõ",
+                    Description = t.Description ?? ""
+                }).ToList() ?? new List<TreatmentDto>()
             };
         }
 
