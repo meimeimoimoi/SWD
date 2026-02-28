@@ -18,6 +18,11 @@ namespace MyApp.Infrastructure
             services.AddScoped<IPredictionService, PredictionService>();
             services.AddScoped<ApiResponse>();
 
+            // New services
+            services.AddScoped<ITreatmentService, TreatmentService>();
+            services.AddScoped<IModelService, ModelService>();
+            services.AddScoped<IPredictionHistoryService, PredictionHistoryService>();
+
             return services;
         }
     }
