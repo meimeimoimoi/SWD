@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using MyApp.Application.Interfaces;
+using MyApp.Infrastructure.Data;
 using MyApp.Infrastructure.Helpers;
 using MyApp.Infrastructure.Services;
 
@@ -22,7 +23,7 @@ namespace MyApp.Infrastructure
             services.AddScoped<ITreatmentService, TreatmentService>();
             services.AddScoped<IModelService, ModelService>();
             services.AddScoped<IPredictionHistoryService, PredictionHistoryService>();
-
+            services.AddScoped<DataSeeder>();
             return services;
         }
     }
