@@ -35,7 +35,7 @@ namespace MyApp.Api.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error getting model list");
+                _logger.LogError(ex, "Error getting model list.");
                 return StatusCode(500, new { success = false, message = "Internal server error." });
             }
         }
@@ -58,22 +58,17 @@ namespace MyApp.Api.Controllers
                     });
                 }
 
-                var result = await _modelService.UploadModelAsync(dto);
+                var (success, message, data) = await _modelService.UploadModelAsync(dto);
+
+                if (!success)
+                    return Conflict(new { success = false, message });
+
                 return CreatedAtAction(nameof(GetAllModels), new { },
-                    new
-                    {
-                        success = true,
-                        message = "Model registered successfully.",
-                        data = result
-                    });
-            }
-            catch (InvalidOperationException ex)
-            {
-                return Conflict(new { success = false, message = ex.Message });
+                    new { success = true, message, data });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error uploading model");
+                _logger.LogError(ex, "Error uploading model.");
                 return StatusCode(500, new { success = false, message = "Internal server error." });
             }
         }
@@ -90,13 +85,13 @@ namespace MyApp.Api.Controllers
                 return Ok(new
                 {
                     success = true,
-                    message = $"Model '{result.ModelName}' v{result.Version} has been set as the default model.",
+                    message = $"Model '{result.ModelName}' v{result.Version} is now active and set as default.",
                     data = result
                 });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error activating model id={Id}", id);
+                _logger.LogError(ex, "Error activating model Id={Id}.", id);
                 return StatusCode(500, new { success = false, message = "Internal server error." });
             }
         }

@@ -18,6 +18,8 @@ namespace MyApp.Infrastructure.Services
 
         public async Task<List<PredictionHistoryDto>> GetUserHistoryAsync(int userId)
         {
+            _logger.LogInformation("Fetching prediction history for UserId={UserId}", userId);
+
             var predictions = await _context.Predictions
                 .Include(p => p.Upload)
                 .Include(p => p.Illness)
@@ -25,6 +27,9 @@ namespace MyApp.Infrastructure.Services
                 .Where(p => p.Upload.UserId == userId)
                 .OrderByDescending(p => p.CreatedAt)
                 .ToListAsync();
+
+            _logger.LogInformation(
+                "Found {Count} prediction records for UserId={UserId}", predictions.Count, userId);
 
             return predictions.Select(p => new PredictionHistoryDto
             {

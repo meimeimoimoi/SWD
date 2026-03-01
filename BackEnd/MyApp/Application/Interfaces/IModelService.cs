@@ -5,7 +5,7 @@ namespace MyApp.Application.Interfaces
     public interface IModelService
     {
         Task<List<ModelVersionDto>> GetAllModelsAsync();
-        Task<ModelVersionDto> UploadModelAsync(UploadModelDto dto);
+        Task<(bool success, string message, ModelVersionDto? data)> UploadModelAsync(UploadModelDto dto);
         Task<ModelVersionDto?> ActivateModelAsync(int modelVersionId);
     }
 }
