@@ -29,6 +29,7 @@
 		<Folder Include="Infrastructure\Cache\" />
 		<Folder Include="Infrastructure\Messaging\" />
 		<Folder Include="Infrastructure\Storage\" />
+		<Folder Include="Models\" />
 		<Folder Include="Persistence\Migrations\" />
 		<Folder Include="Shared\Constants\" />
 		<Folder Include="Shared\Exceptions\" />
