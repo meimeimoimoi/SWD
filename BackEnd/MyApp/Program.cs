@@ -3,7 +3,9 @@ using Microsoft.OpenApi.Models;
 using MyApp.Api;
 using MyApp.Application.Interfaces;
 using MyApp.Configuration;
+using MyApp.Infrastructure;
 using MyApp.Infrastructure.Data;
+using MyApp.Persistence;
 using MyApp.Persistence.Context;
 
 namespace MyApp
@@ -17,7 +19,9 @@ namespace MyApp
             builder.Services.AddControllers();
             builder.Services.AddSwaggerDocumentation();
             builder.Services.AddApplicationSerivce();
-            
+            builder.Services.AddInfrastructureService();
+            builder.Services.AddPersitenceService();
+
             // Add DbContext
             builder.Services.AddDbContext<AppDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));

@@ -1,71 +1,102 @@
-# SWD - Rice Disease Detection (3-Layer .NET)
+# SWD - Rice Disease Detection System
 
 ## Mô tả
-Web API kiến trúc 3 lớp, nhận diện bệnh trên cây lúa bằng ResNet18. .NET 9.0, Entity Framework Core.
+Dự án nhận diện bệnh trên cây lúa gồm:
+- **BackEnd:** Web API kiến trúc nhiều lớp, nhận diện bệnh bằng MobileNetv3, phát triển với .NET 9.0, Entity Framework Core.
+- **FrontEnd:** Ứng dụng Flutter.
 
 ## Cấu trúc dự án
 
-| Layer | Chức năng chính |
-|-------|-----------------|
-| **SWD.Presentation** | Controllers, Swagger UI, API endpoints |
-| **SWD.Business** | Services, DTOs, validation |
-| **SWD.Data** | Repositories, Entities, DbContext |
-| **SWD.Shared** | Constants, Enums, Helpers |
-
-- **SWD.Data:** `ApplicationDbContext`, `BaseEntity`, `IRepository`/`Repository`, Migrations.
-- **SWD.Business:** `BaseDTO`, `IService`/`BaseService`, DTOs, ML (ResNet18).
-- **SWD.Presentation:** `BaseController`, `Program.cs`, `appsettings.json`, Swagger tại `/`.
-- **SWD.Shared:** `AppConstants`, `Status`, `DateTimeHelper`.
-
-## Yêu cầu và chạy
-
-- .NET SDK 9.0+, SQL Server (hoặc DB hỗ trợ EF).
-- Clone, vào thư mục, rồi:
-
-```bash
-dotnet restore
-dotnet build
+```
+SWD/
+├── BackEnd/           # .NET Web API
+│   ├── MyApp/         # Source code chính
+│   │   ├── Api/       # Controllers
+│   │   ├── Application/   # Business logic, Features, Interfaces
+│   │   ├── Configuration/ # Cấu hình JWT, Swagger
+│   │   ├── Domain/    # Entities (Models)
+│   │   ├── Infrastructure/ # Services, Helpers
+│   │   ├── Persistence/    # DbContext, Repositories
+│   │   ├── uploads/    # Thư mục lưu ảnh
+│   │   ├── appsettings.json # Cấu hình
+│   │   └── Program.cs  # Entry point
+│   └── SWDSystem.slnx  # Solution file
+├── FrontEnd/           # Flutter app
+│   ├── app/            # Source code Flutter
+│   │   ├── lib/        # Code chính (main.dart, feature, providers...)
+│   │   ├── android/    # Android
+│   │   ├── ios/        # iOS
+│   │   ├── web/        # Web
+│   │   ├── windows/    # Windows
+│   │   ├── macos/      # macOS
+│   │   └── test/       # Unit test
 ```
 
-- Sửa connection string trong `BackEnd/SWD.Presentation/appsettings.json`.
-- Tạo DB:
+## Hướng dẫn chạy dự án
 
-```bash
-dotnet ef migrations add InitialCreate --project BackEnd/SWD.Data --startup-project BackEnd/SWD.Presentation
-dotnet ef database update --project BackEnd/SWD.Data --startup-project BackEnd/SWD.Presentation
-```
+### BackEnd (.NET API)
+- Yêu cầu: .NET SDK 9.0+, SQL Server.
+- Cài đặt:
+  1. Vào thư mục `BackEnd/MyApp`.
+  2. Sửa connection string trong `appsettings.json`.
+  3. Restore và build:
+	  ```bash
+	  dotnet restore
+	  dotnet build
+	  ```
+  4. Tạo database:
+	  ```bash
+	  dotnet ef migrations add InitialCreate
+	  dotnet ef database update
+	  ```
+  5. Chạy API:
+	  ```bash
+	  dotnet run
+	  ```
+- API: `https://localhost:7244;http://localhost:5299`, Swagger tại `/swagger`.
 
-- Chạy API:
+### FrontEnd (Flutter App)
+- Yêu cầu: Flutter SDK 3.x+
+- Cài đặt:
+  1. Vào thư mục `FrontEnd/app`.
+  2. Cài dependencies:
+	  ```bash
+	  flutter pub get
+	  ```
+  3. Chạy app:
+	  ```bash
+	  flutter run
+	  ```
 
-```bash
-dotnet run --project BackEnd/SWD.Presentation
-```
-
-- API: `http://localhost:5191`, Swagger tại `/`.
-
-## Lệnh thường dùng
+## Lệnh BackEnd thường dùng
 
 | Lệnh | Mô tả |
 |------|--------|
-| `dotnet build` | Build |
-| `dotnet run --project BackEnd/SWD.Presentation` | Chạy API |
-| `dotnet ef migrations add <Name> --project BackEnd/SWD.Data --startup-project BackEnd/SWD.Presentation` | Thêm migration |
-| `dotnet ef database update --project BackEnd/SWD.Data --startup-project BackEnd/SWD.Presentation` | Cập nhật DB |
-| `dotnet ef migrations remove --project BackEnd/SWD.Data --startup-project BackEnd/SWD.Presentation` | Xóa migration cuối |
+| `dotnet build` | Build API |
+| `dotnet run` | Chạy API |
+| `dotnet ef migrations add <Name>` | Thêm migration |
+| `dotnet ef database update` | Cập nhật DB |
+| `dotnet ef migrations remove` | Xóa migration cuối |
 
-## Luồng dữ liệu
+## Luồng dữ liệu BackEnd
 
-Client -> Controller (Presentation) -> Service (Business) -> Repository (Data) -> DB; kết quả trả ngược lên client.
+Client (Flutter/Web) → Controller (Api) → Service (Application) → Repository (Persistence) → DB
+Kết quả trả ngược lên client.
 
 ## Dependencies chính
 
-- .NET 9.0, Entity Framework Core 9.x, EF SQL Server, Swashbuckle (Swagger).
+- **BackEnd:** .NET 9.0, Entity Framework Core 9.x, EF SQL Server, Swashbuckle (Swagger).
+- **FrontEnd:** Flutter 3.x, provider, http, cupertino_icons, ...
 
 ## Phát triển nhanh
 
-- **Entity mới:** Class trong `SWD.Data/Entities` kế thừa `BaseEntity`, thêm `DbSet` trong DbContext, tạo migration rồi update DB.
-- **Service mới:** DTO trong `SWD.Business/DTOs`, interface + class trong `Interface/` và `Services/`, đăng ký trong `Program.cs`.
-- **Controller mới:** Kế thừa `BaseController`, inject service, thêm actions; Swagger tự cập nhật.
+- **BackEnd:**
+	- **Entity mới:** Class trong `Domain/Entities`, thêm `DbSet` vào `AppDbContext`, migration và update DB.
+	- **Service mới:** Interface + class trong `Infrastructure/Services`, đăng ký DI.
+	- **Controller mới:** Tạo controller trong `Api/Controllers`, inject service, thêm actions.
+- **FrontEnd:**
+	- Thêm màn hình mới: tạo file trong `lib/feature/`.
+	- Thêm provider: tạo file trong `lib/providers/`.
 
 ## Đóng góp
 
@@ -73,5 +104,6 @@ Client -> Controller (Presentation) -> Service (Business) -> Repository (Data) -
 
 ## Lưu ý sau khi clone
 
-- Đã ignore `bin/`, `obj/`. Không commit chúng hay `*.user`, `*.suo`. Chỉ commit source (`.cs`, `.csproj`, `.json`).
-- Nếu lỗi build: `dotnet clean`, `git pull origin main`, `dotnet restore`, `dotnet build`.
+- Đã ignore `bin/`, `obj/`, build outputs. Chỉ commit source (`.cs`, `.csproj`, `.json`, `.dart`).
+- Nếu lỗi build .NET: `dotnet clean`, `git pull origin main`, `dotnet restore`, `dotnet build`.
+- Nếu lỗi Flutter: `flutter clean`, `flutter pub get`, kiểm tra SDK.

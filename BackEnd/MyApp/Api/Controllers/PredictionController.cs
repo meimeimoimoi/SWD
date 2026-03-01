@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using MyApp.Application.Interfaces;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 namespace MyApp.Api.Controllers
 {
@@ -31,7 +33,7 @@ namespace MyApp.Api.Controllers
             {
                 if (image == null || image.Length == 0)
                 {
-                    return BadRequest(new { success = false, message = "No image provided" });
+                    return BadRequest(new { success = false, message = "Không tìm thấy hình ảnh" });
                 }
 
                 var allowedExtensions = new[] { ".jpg", ".jpeg", ".png" };
@@ -39,31 +41,47 @@ namespace MyApp.Api.Controllers
 
                 if (!allowedExtensions.Contains(extension))
                 {
-                    return BadRequest(new { success = false, message = "Invalid file type. Only jpg, jpeg, png allowed" });
+                    return BadRequest(new { success = false, message = "Không đúng định dạng" });
                 }
 
                 const long maxFileSize = 10 * 1024 * 1024;
                 if (image.Length > maxFileSize)
                 {
-                    return BadRequest(new { success = false, message = "File too large. Max 10MB" });
+                    return BadRequest(new { success = false, message = "File không vượt quá 10MB" });
                 }
 
                 _logger.LogInformation("Predicting: {FileName} ({Size} bytes)",
                     image.FileName, image.Length);
 
-                using var stream = image.OpenReadStream();
-                var result = await _predictionService.PredictAsync(stream);
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                                    ?? User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
 
-                return Ok(new
+                if(!int.TryParse(userIdClaim, out var userId))
                 {
-                    success = true,
-                    message = "Prediction completed",
-                    data = result
-                });
+                    return Unauthorized();
+                }
+
+                try
+                {
+                    var result = await _predictionService.PredictAsync(userId, image);
+                    return Ok(new
+                    {
+                        success = true,
+                        message = "Dự đoán thành công.",
+                        data = result
+                    });
+                }
+                catch(Exception ex)
+                {
+                    _logger.LogError(ex, "Lỗi dự đoán");
+                    return StatusCode(500, new { success = false, message = "Lỗi hệ thống" });
+                }
+
+                
             }
             catch (InvalidOperationException ex)
             {
-                _logger.LogError(ex, "Prediction service error");
+                _logger.LogError(ex, "Lỗi server.");
                 return StatusCode(503, new
                 {
                     success = false,
@@ -72,7 +90,7 @@ namespace MyApp.Api.Controllers
             }
             catch (UnauthorizedAccessException ex)
             {
-                _logger.LogWarning(ex, "Unauthorized access to prediction endpoint");
+                _logger.LogWarning(ex, "Bạn không có quyền truy cập tính năng này.");
                 return Unauthorized(new
                 {
                     success = false,
@@ -81,11 +99,11 @@ namespace MyApp.Api.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Prediction error");
+                _logger.LogError(ex, "Lỗi dự đoán");
                 return StatusCode(500, new
                 {
                     success = false,
-                    message = "Prediction failed"
+                    message = "Lỗi dự đoán"
                 });
             }
            
@@ -97,16 +115,15 @@ namespace MyApp.Api.Controllers
         {
             var classes = new[]
             {
-                new { id = 0, name = "Bacterial Leaf Blight", severity = "high" },
-                new { id = 1, name = "Brown Spot", severity = "medium" },
-                new { id = 2, name = "Healthy Rice Leaf", severity = "none" },
-                new { id = 3, name = "Leaf Blast", severity = "high" }
+                new { id = 0, name = "Bạc lá do vi khuẩn", severity = "Cao" },
+                new { id = 1, name = "Đốm nâu", severity = "Vừa" },
+                new { id = 2, name = "Lá lúa khỏe", severity = "Không" },
+                new { id = 3, name = "Cháy lá", severity = "Cao" }
             };
 
             return Ok(new { success = true, total = classes.Length, data = classes });
         }
 
-        // ✅ Đổi thành async vì IsModelLoaded() giờ là Task<bool>
         [HttpGet("health")]
         [AllowAnonymous]
         public async Task<IActionResult> Health()

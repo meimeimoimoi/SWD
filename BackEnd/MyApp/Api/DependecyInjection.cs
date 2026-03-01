@@ -10,7 +10,8 @@ namespace MyApp.Api
     {
         public static IServiceCollection AddApplicationSerivce(this IServiceCollection service)
         {
-            // Services
+
+          // Services
             service.AddScoped<IAuthService, AuthService>();
             service.AddScoped<IAdminService, AdminService>();
             service.AddScoped<IMessageService, MessageService>();

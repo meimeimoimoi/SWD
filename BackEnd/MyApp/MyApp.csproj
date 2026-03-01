@@ -29,6 +29,7 @@
 		<Folder Include="Infrastructure\Cache\" />
 		<Folder Include="Infrastructure\Messaging\" />
 		<Folder Include="Infrastructure\Storage\" />
+		<Folder Include="Models\" />
 		<Folder Include="Persistence\Migrations\" />
 		<Folder Include="Shared\Constants\" />
 		<Folder Include="Shared\Exceptions\" />
@@ -66,6 +67,13 @@
 		<PackageReference Include="Swashbuckle.AspNetCore.Swagger" Version="9.0.6" />
 		<PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="9.0.6" />
 		<PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="9.0.6" />
+	</ItemGroup>
+
+
+	<ItemGroup>
+	  <None Update="Models\rice_disease_v3.onnx">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
 	</ItemGroup>
 
 </Project>
