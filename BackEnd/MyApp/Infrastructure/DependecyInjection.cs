@@ -15,6 +15,7 @@ namespace MyApp.Infrastructure
             services.AddScoped<IMessageService, MessageService>();
             services.AddScoped<IAdminService, AdminService>();
             services.AddScoped<IImageUploadService, ImageUploadService>();
+            services.AddScoped<IUserService, UserService>();
             services.AddScoped<JwtTokenGeneratior>();
             services.AddScoped<IPredictionService, PredictionService>();
 

@@ -15,6 +15,7 @@ namespace MyApp.Api
             service.AddScoped<IAdminService, AdminService>();
             service.AddScoped<IMessageService, MessageService>();
             service.AddScoped<IImageUploadService, ImageUploadService>();
+            service.AddScoped<IUserService, UserService>();
             
             // Repositories
             service.AddScoped<UserRepository>();

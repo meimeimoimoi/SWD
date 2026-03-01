@@ -44,11 +44,20 @@ namespace MyApp.Infrastructure.Services
                 var user = await _userRepository.FindByUsernameOrEmailAsync(request.UsernameOrEmail);
                 await CheckUserError(user, request);
 
+                if (user == null)
+                {
+                    throw new UnauthorizedAccessException("Invalid username/email or password.");
+                }
+
                 string accessToken = _jwtTokenGeneratior.GenerateToken(user, _tokenExpiration, out string jti);
                 var refreshToken = _jwtTokenGeneratior.GenerateRefreshToken(jti);
 
                 _context.RefreshTokens.Add(refreshToken);
                 await _context.SaveChangesAsync();
+
+                user.LastLoginAt = DateTime.UtcNow;
+                user.UpdatedAt = DateTime.UtcNow;
+                await _userRepository.UpdateUserAsync(user);
 
                 return new LoginResponseDTO 
                 {
@@ -56,7 +65,7 @@ namespace MyApp.Infrastructure.Services
                     RefreshToken = jti,
                     ExpiresIn = _tokenExpiration,
                     Username = user.Username,
-                    Role = user.Role
+                    Role = user.Role ?? string.Empty
                 };
                 
             }
@@ -136,7 +145,7 @@ namespace MyApp.Infrastructure.Services
                     RefreshToken = newJti,
                     ExpiresIn = _tokenExpiration,
                     Username = user.Username,
-                    Role = user.Role
+                    Role = user.Role ?? string.Empty
                 };
             }
             catch (UnauthorizedAccessException ex)
@@ -196,10 +205,8 @@ namespace MyApp.Infrastructure.Services
             }
         }
 
-        private async Task<Boolean> CheckUserError(User user, LoginRequestDTO request)
+        private Task<bool> CheckUserError(User? user, LoginRequestDTO request)
         {
-            user = await _userRepository.FindByUsernameOrEmailAsync(request.UsernameOrEmail);
-
             if (user == null)
             {
                 _logger.LogWarning("Login failed - User not found: {UsernameOrEmail}", request.UsernameOrEmail);
@@ -219,7 +226,7 @@ namespace MyApp.Infrastructure.Services
                 throw new UnauthorizedAccessException($"Account is {user.AccountStatus}. Please contact administrator.");
             }
 
-            return true;
+            return Task.FromResult(true);
         }
     }
 }
