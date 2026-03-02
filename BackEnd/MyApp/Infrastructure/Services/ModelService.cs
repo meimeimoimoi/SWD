@@ -72,16 +72,17 @@ namespace MyApp.Infrastructure.Services
             // 5. Convert to relative path for DB storage
             var relativeFilePath = Path.Combine("Models", fileName);
 
-            // 6. New model is inactive and not default by default — admin must explicitly activate
+            // 6. New model is inactive and not default — admin must explicitly activate
             var entity = new ModelVersion
             {
-                ModelName = dto.ModelName,
-                Version = dto.Version,
-                ModelType = string.IsNullOrWhiteSpace(dto.ModelType) ? "mobilenetv3" : dto.ModelType,
+                ModelName   = dto.ModelName,
+                Version     = dto.Version,
+                ModelType   = string.IsNullOrWhiteSpace(dto.ModelType) ? "mobilenetv3" : dto.ModelType,
                 Description = dto.Description,
-                IsActive = false,
-                IsDefault = false,
-                CreatedAt = DateTime.UtcNow
+                FilePath    = relativeFilePath,
+                IsActive    = false,
+                IsDefault   = false,
+                CreatedAt   = DateTime.UtcNow
             };
 
             await _modelRepository.AddAsync(entity);

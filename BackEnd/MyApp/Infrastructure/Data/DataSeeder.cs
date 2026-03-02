@@ -87,7 +87,7 @@ namespace MyApp.Infrastructure.Data
             const string modelName = "Rice Disease MobileNetV3";
             const string version   = "v1.0";
             const string fileName  = "rice_disease_v3.onnx";
-            const string filePath  = "Models/rice_disease_v3.onnx";
+            var          filePath  = Path.Combine("Models", fileName);
 
             // Skip if already registered
             var alreadyExists = await _context.ModelVersions
@@ -101,13 +101,12 @@ namespace MyApp.Infrastructure.Data
                 return;
             }
 
-            // Verify physical file exists in the Models/ folder
+            // Verify physical file exists
             var physicalPath = Path.Combine(AppContext.BaseDirectory, "Models", fileName);
             if (!File.Exists(physicalPath))
             {
                 _logger.LogWarning(
-                    "Model file not found at {Path}. Skipping model seed. " +
-                    "Place '{File}' inside the Models/ folder and restart.",
+                    "Model file not found at '{Path}'. Place '{File}' inside the Models/ folder and restart.",
                     physicalPath, fileName);
                 return;
             }
@@ -116,20 +115,20 @@ namespace MyApp.Infrastructure.Data
             var currentActives = await _context.ModelVersions
                 .Where(m => m.IsActive == true || m.IsDefault == true)
                 .ToListAsync();
-
             foreach (var m in currentActives)
             {
                 m.IsActive  = false;
                 m.IsDefault = false;
             }
 
-            // Register and activate the default model
+            // Register with FilePath stored in DB
             var model = new ModelVersion
             {
                 ModelName   = modelName,
                 Version     = version,
                 ModelType   = "mobilenetv3",
                 Description = "Base model — detects 3 rice diseases and healthy leaf.",
+                FilePath    = filePath,
                 IsActive    = true,
                 IsDefault   = true,
                 CreatedAt   = DateTime.UtcNow
@@ -139,7 +138,7 @@ namespace MyApp.Infrastructure.Data
             await _context.SaveChangesAsync();
 
             _logger.LogInformation(
-                "Default model seeded — Id={Id}, Name='{Name}', v{Version}, FilePath={Path}",
+                "Default model seeded — Id={Id}, Name='{Name}', v{Version}, FilePath='{Path}'",
                 model.ModelVersionId, model.ModelName, model.Version, filePath);
         }
     }

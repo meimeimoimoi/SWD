@@ -59,31 +59,29 @@ namespace MyApp.Infrastructure.Services
                 throw new InvalidOperationException(
                     "No active default model found in the database. Please activate a model first.");
 
-            // Already loaded — skip reload
+            // Already loaded the same model — skip
             if (_session != null && _loadedModelVersionId == defaultModel.ModelVersionId)
                 return;
 
             _session?.Dispose();
             _session = null;
 
-            // Primary path: {ModelName}_{Version}.onnx
-            var modelPath = Path.Combine(
-                _env.ContentRootPath, "Models",
-                $"{defaultModel.ModelName}_{defaultModel.Version}.onnx");
+            // Read FilePath from DB (relative path stored at upload/seed time)
+            if (string.IsNullOrWhiteSpace(defaultModel.FilePath))
+                throw new InvalidOperationException(
+                    $"Model Id={defaultModel.ModelVersionId} has no FilePath stored in the database.");
 
-            // Fallback: original file
-            if (!File.Exists(modelPath))
-                modelPath = Path.Combine(_env.ContentRootPath, "Models", "rice_disease_v3.onnx");
+            var modelPath = Path.Combine(_env.ContentRootPath, defaultModel.FilePath);
 
             if (!File.Exists(modelPath))
                 throw new InvalidOperationException(
-                    $"Model file not found at '{modelPath}'. Please upload the model file.");
+                    $"Model file not found at '{modelPath}'. Please re-upload the model file.");
 
             _session = new InferenceSession(modelPath);
             _loadedModelVersionId = defaultModel.ModelVersionId;
 
             _logger.LogInformation(
-                "ONNX model loaded — Id={Id}, Name='{Name}', v{Version}, Path={Path}",
+                "ONNX model loaded — Id={Id}, Name='{Name}', v{Version}, Path='{Path}'",
                 defaultModel.ModelVersionId, defaultModel.ModelName, defaultModel.Version, modelPath);
         }
 
