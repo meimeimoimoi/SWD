@@ -148,7 +148,7 @@ namespace MyApp.Api.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Technician")]
         public async Task<IActionResult> GetAllTreatments()
         {
             try

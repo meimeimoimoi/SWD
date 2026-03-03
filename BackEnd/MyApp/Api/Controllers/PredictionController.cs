@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using MyApp.Application.Features.Users.DTOs;
 using MyApp.Application.Interfaces;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -59,10 +60,23 @@ namespace MyApp.Api.Controllers
         }
 
         [HttpGet("my-predictions")]
-        public async Task<IActionResult> GetMyPredictions()
+        public async Task<IActionResult> GetMyPredictions([FromQuery] PredictionFilterRequestDto filter)
         {
             try
             {
+                // Validate model
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(new
+                    {
+                        success = false,
+                        message = "Invalid request parameters",
+                        errors = ModelState.Values
+                            .SelectMany(v => v.Errors)
+                            .Select(e => e.ErrorMessage)
+                    });
+                }
+
                 var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
                     ?? User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
 
@@ -75,13 +89,35 @@ namespace MyApp.Api.Controllers
                     });
                 }
 
-                var predictions = await _predictionService.GetUserPredictionsAsync(userId);
+                var (predictions, pagination) = await _predictionService
+                    .GetFilteredUserPredictionsAsync(userId, filter);
 
                 return Ok(new
                 {
                     success = true,
-                    message = $"Retrieved {predictions.Count} predictions",
-                    data = predictions
+                    message = $"Retrieved {predictions.Count} prediction(s)",
+                    data = predictions,
+                    pagination = new
+                    {
+                        pagination.CurrentPage,
+                        pagination.PageSize,
+                        pagination.TotalItems,
+                        pagination.TotalPages,
+                        pagination.HasPrevious,
+                        pagination.HasNext
+                    },
+                    filters = new
+                    {
+                        filter.IllnessName,
+                        filter.IllnessId,
+                        filter.Severity,
+                        filter.MinConfidence,
+                        filter.MaxConfidence,
+                        filter.DateFrom,
+                        filter.DateTo,
+                        filter.SortBy,
+                        filter.SortOrder
+                    }
                 });
             }
             catch (Exception ex)

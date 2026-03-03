@@ -18,15 +18,8 @@ namespace MyApp.Api.Controllers
             _logger = logger;
         }
 
-        /// <summary>
-        /// Login with username/email and password
-        /// </summary>
-        /// <param name="request">Login credentials</param>
-        /// <returns>JWT token</returns>
+
         [HttpPost("login")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> Login([FromBody] LoginRequestDTO request)
         {
             try
@@ -69,14 +62,8 @@ namespace MyApp.Api.Controllers
             }
         }
 
-        /// <summary>
-        /// Register a new user account
-        /// </summary>
-        /// <param name="request">Registration data</param>
-        /// <returns>Success message</returns>
+
         [HttpPost("register")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Register([FromBody] ResgisterRequestDTO request)
         {
             try
@@ -126,15 +113,8 @@ namespace MyApp.Api.Controllers
             }
         }
 
-        /// <summary>
-        /// Logout the current user
-        /// </summary>
-        /// <param name="token">JWT token</param>
-        /// <returns>Success message</returns>
         [HttpPost("logout")]
         [Authorize]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> Logout([FromHeader] string token)
         {
             try

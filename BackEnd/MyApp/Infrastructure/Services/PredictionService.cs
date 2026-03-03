@@ -1,4 +1,5 @@
-﻿using MyApp.Application.Features.Users.DTOs;
+﻿using MyApp.Application.Features.TreeIllnesses.DTOs;
+using MyApp.Application.Features.Users.DTOs;
 using MyApp.Application.Interfaces;
 using MyApp.Domain.Entities;
 using MyApp.Persistence.Repositories;
@@ -84,6 +85,36 @@ namespace MyApp.Infrastructure.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error getting predictions for user {UserId}", userId);
+                throw;
+            }
+        }
+
+        public async Task<(List<PredictionResponseDto> predictions, PaginationMetadata pagination)> GetFilteredUserPredictionsAsync(
+            int userId,
+            PredictionFilterRequestDto filter)
+        {
+            try
+            {
+                var (predictions, totalCount) = await _predictionRepository
+                    .GetFilteredPredictionsByUserIdAsync(userId, filter);
+
+                var dtos = predictions.Select(MapToDto).ToList();
+
+                var totalPages = (int)Math.Ceiling(totalCount / (double)filter.PageSize);
+
+                var pagination = new PaginationMetadata
+                {
+                    CurrentPage = filter.Page,
+                    PageSize = filter.PageSize,
+                    TotalItems = totalCount,
+                    TotalPages = totalPages
+                };
+
+                return (dtos, pagination);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting filtered predictions for user {UserId}", userId);
                 throw;
             }
         }

@@ -1,4 +1,5 @@
-﻿using MyApp.Application.Features.Users.DTOs;
+﻿using MyApp.Application.Features.TreeIllnesses.DTOs;
+using MyApp.Application.Features.Users.DTOs;
 
 namespace MyApp.Application.Interfaces
 {
@@ -7,6 +8,9 @@ namespace MyApp.Application.Interfaces
         Task<PredictionResponseDto?> GetPredictionByUploadIdAsync(int uploadId);
         Task<PredictionResponseDto?> GetPredictionByIdAsync(int predictionId);
         Task<List<PredictionResponseDto>> GetUserPredictionsAsync(int userId);
+        Task<(List<PredictionResponseDto> predictions, PaginationMetadata pagination)> GetFilteredUserPredictionsAsync(
+            int userId,
+            PredictionFilterRequestDto filter);
         Task<PredictionResponseDto> CreatePredictionAsync(int uploadId, int illnessId, decimal confidenceScore, string? topNPredictions = null);
     }
 }

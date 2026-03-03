@@ -16,12 +16,17 @@ namespace MyApp.Api
             service.AddScoped<IImageUploadService, ImageUploadService>();
             service.AddScoped<IPredictionService, PredictionService>();
             service.AddScoped<ITreatmentSolutionService, TreatmentSolutionService>();
+            service.AddScoped<ITreeIllnessService, TreeIllnessService>();
+            service.AddScoped<ITreeStageService, TreeStageService>();
 
             // Repositories
             service.AddScoped<UserRepository>();
             service.AddScoped<ImageUploadRepository>();
             service.AddScoped<PredictionRepository>();
             service.AddScoped<TreatmentSolutionRepository>();
+            service.AddScoped<TreeIllnessRepository>();
+            service.AddScoped<TreeStageRepository>();
+            
             // Utilities
             service.AddScoped<JwtTokenGeneratior>();
             service.AddScoped<IPasswordHasher, BCryptPasswordHasher>();
