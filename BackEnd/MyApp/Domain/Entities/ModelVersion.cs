@@ -15,6 +15,8 @@ public partial class ModelVersion
 
     public string? Description { get; set; }
 
+    public string? FilePath { get; set; }
+
     public bool? IsActive { get; set; }
 
     public bool? IsDefault { get; set; }

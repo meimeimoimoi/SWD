@@ -14,6 +14,7 @@ namespace MyApp.Persistence
             service.AddScoped<ImageUploadRepository>();
             service.AddScoped<IllnessRepository>();
             service.AddScoped<PredictionRepository>();
+            service.AddScoped<ModelRepository>();
 
             return service;
         }
