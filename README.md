@@ -18,6 +18,7 @@ SWD/
 │   │   ├── Infrastructure/ # Services, Helpers
 │   │   ├── Persistence/    # DbContext, Repositories
 │   │   ├── uploads/    # Thư mục lưu ảnh
+|	|	├── Models/     # Thư mục lưu model
 │   │   ├── appsettings.json # Cấu hình
 │   │   └── Program.cs  # Entry point
 │   └── SWDSystem.slnx  # Solution file
