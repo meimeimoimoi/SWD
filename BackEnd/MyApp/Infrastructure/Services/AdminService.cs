@@ -79,6 +79,7 @@ namespace MyApp.Infrastructure.Services
                     LastName = u.LastName,
                     Phone = u.Phone,
                     ProfileImagePath = u.ProfileImagePath,
+                    LastLoginAt = u.LastLoginAt,
                     Role = u.Role
                 }).ToList();
 
@@ -111,6 +112,7 @@ namespace MyApp.Infrastructure.Services
                     LastName = user.LastName,
                     Phone = user.Phone,
                     ProfileImagePath = user.ProfileImagePath,
+                    LastLoginAt = user.LastLoginAt,
                     Role = user.Role
                 };
             }
@@ -258,6 +260,7 @@ namespace MyApp.Infrastructure.Services
                     LastName = user.LastName,
                     Phone = user.Phone,
                     ProfileImagePath = user.ProfileImagePath,
+                    LastLoginAt = user.LastLoginAt,
                     Role = user.Role
                 };
             }

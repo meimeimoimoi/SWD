@@ -7,6 +7,7 @@ class StorageService {
   static const String _usernameKey = 'username';
   static const String _roleKey = 'role';
   static const String _expiresInKey = 'expires_in';
+  static const String _expiresAtKey = 'expires_at';
 
   /// Save authentication token and user info
   static Future<bool> saveAuthToken({
@@ -30,6 +31,13 @@ class StorageService {
       }
       if (expiresIn != null) {
         await prefs.setString(_expiresInKey, expiresIn);
+        final expiresInSeconds = int.tryParse(expiresIn);
+        if (expiresInSeconds != null && expiresInSeconds > 0) {
+          final expiresAt = DateTime.now().add(
+            Duration(seconds: expiresInSeconds),
+          );
+          await prefs.setString(_expiresAtKey, expiresAt.toIso8601String());
+        }
       }
       return true;
     } catch (e) {
@@ -77,6 +85,36 @@ class StorageService {
     }
   }
 
+  /// Get stored token expiration timestamp in ISO 8601.
+  static Future<String?> getExpiresAt() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      return prefs.getString(_expiresAtKey);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /// Returns true when token is missing, malformed, or already expired.
+  static Future<bool> isTokenExpired() async {
+    final token = await getAccessToken();
+    if (token == null || token.isEmpty) {
+      return true;
+    }
+
+    final expiresAtRaw = await getExpiresAt();
+    if (expiresAtRaw == null || expiresAtRaw.isEmpty) {
+      return false;
+    }
+
+    final expiresAt = DateTime.tryParse(expiresAtRaw);
+    if (expiresAt == null) {
+      return false;
+    }
+
+    return DateTime.now().isAfter(expiresAt);
+  }
+
   /// Clear all authentication data
   static Future<bool> clearAuthData() async {
     try {
@@ -86,10 +124,16 @@ class StorageService {
       await prefs.remove(_usernameKey);
       await prefs.remove(_roleKey);
       await prefs.remove(_expiresInKey);
+      await prefs.remove(_expiresAtKey);
       return true;
     } catch (e) {
       return false;
     }
+  }
+
+  /// Clear all authentication data.
+  static Future<bool> clearAuth() async {
+    return clearAuthData();
   }
 
   /// Check if user is authenticated

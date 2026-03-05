@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 import 'package:image_picker/image_picker.dart';
 
+import 'auth_api_service.dart';
 import 'storage_service.dart';
 
 class ImageUploadResult {
@@ -29,6 +30,16 @@ class ImageUploadService {
   static const List<String> allowedExtensions = ['png', 'jpg', 'jpeg'];
 
   Future<ImageUploadResult> uploadImage({required XFile imageFile}) async {
+    return _uploadImageInternal(
+      imageFile: imageFile,
+      retryOnUnauthorized: true,
+    );
+  }
+
+  Future<ImageUploadResult> _uploadImageInternal({
+    required XFile imageFile,
+    required bool retryOnUnauthorized,
+  }) async {
     final extension = _fileExtension(imageFile.path);
     if (extension == null || !allowedExtensions.contains(extension)) {
       return const ImageUploadResult(
@@ -99,6 +110,22 @@ class ImageUploadService {
       }
 
       if (response.statusCode == 401) {
+        if (retryOnUnauthorized) {
+          final refreshToken = await StorageService.getRefreshToken();
+          if (refreshToken != null && refreshToken.isNotEmpty) {
+            final refresh = await AuthApiService.refreshToken(refreshToken);
+            if (refresh['success'] == true) {
+              return _uploadImageInternal(
+                imageFile: imageFile,
+                retryOnUnauthorized: false,
+              );
+            }
+          }
+
+          await StorageService.clearAuth();
+          AuthApiService.onSessionExpired?.call();
+        }
+
         return ImageUploadResult(
           success: false,
           message:

@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import '../../routes/app_router.dart';
+import '../../share/services/auth_api_service.dart';
+import '../../share/services/storage_service.dart';
 import '../../share/widgets/app_button.dart';
 import '../../share/widgets/app_card.dart';
 import '../../share/widgets/app_scaffold.dart';
@@ -11,222 +14,271 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  bool notifyEmail = true;
-  bool notifyPush = true;
-  bool weeklyDigest = false;
+  bool _isLoading = true;
+  String? _errorMessage;
+  Map<String, dynamic>? _profile;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfile();
+  }
+
+  Future<void> _loadProfile() async {
+    if (mounted) {
+      setState(() {
+        _isLoading = true;
+        _errorMessage = null;
+      });
+    }
+
+    final response = await AuthApiService.getProfile();
+    if (!mounted) return;
+
+    if (response['success'] == true) {
+      final data = response['data'];
+      setState(() {
+        _isLoading = false;
+        _profile = data is Map<String, dynamic> ? data : null;
+        _errorMessage = null;
+      });
+      return;
+    }
+
+    final message = response['message']?.toString() ?? 'Failed to load profile';
+    setState(() {
+      _isLoading = false;
+      _errorMessage = message;
+      _profile = null;
+    });
+  }
+
+  Future<void> _goToEditProfile() async {
+    final profileData = _profile;
+    if (profileData == null) return;
+
+    final result = await Navigator.pushNamed(
+      context,
+      AppRouter.updateProfile,
+      arguments: profileData,
+    );
+
+    if (!mounted) return;
+
+    if (result == true) {
+      await _loadProfile();
+    }
+  }
+
+  Future<void> _logout() async {
+    await StorageService.clearAuth();
+    if (!mounted) return;
+
+    Navigator.pushNamedAndRemoveUntil(
+      context,
+      AppRouter.login,
+      (route) => false,
+    );
+  }
+
+  String? _firstText(Map<String, dynamic> source, List<String> keys) {
+    for (final key in keys) {
+      final value = source[key]?.toString();
+      if (value != null && value.trim().isNotEmpty) {
+        return value.trim();
+      }
+    }
+    return null;
+  }
+
+  Map<String, dynamic>? _extractUserMap(Map<String, dynamic>? root) {
+    if (root == null) return null;
+
+    final nestedData = root['data'];
+    if (nestedData is Map<String, dynamic>) {
+      return nestedData;
+    }
+
+    final nestedUser = root['user'];
+    if (nestedUser is Map<String, dynamic>) {
+      return nestedUser;
+    }
+
+    return root;
+  }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final profileMap = _extractUserMap(_profile);
+
+    final name = _firstText(profileMap ?? const {}, [
+      'fullName',
+      'name',
+      'username',
+    ]);
+    final email = _firstText(profileMap ?? const {}, ['email']);
+    final phone = _firstText(profileMap ?? const {}, ['phone', 'phoneNumber']);
+    final role = _firstText(profileMap ?? const {}, ['role']);
+    final avatar = _firstText(profileMap ?? const {}, ['avatarUrl', 'avatar']);
+
     return AppScaffold(
       centerContent: false,
       title: 'Profile',
-      child: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Account', style: theme.textTheme.displayMedium),
-            const SizedBox(height: 6),
-            Text(
-              'Manage your account, preferences, and alerts.',
-              style: theme.textTheme.bodyLarge,
-            ),
-            const SizedBox(height: 20),
-            LayoutBuilder(
-              builder: (context, constraints) {
-                final isWide = constraints.maxWidth > 900;
-                if (isWide) {
-                  return Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(child: _ProfileCard(theme: theme)),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: _PreferencesCard(
-                          notifyEmail: notifyEmail,
-                          notifyPush: notifyPush,
-                          weeklyDigest: weeklyDigest,
-                          onChangedEmail: (v) =>
-                              setState(() => notifyEmail = v),
-                          onChangedPush: (v) => setState(() => notifyPush = v),
-                          onChangedDigest: (v) =>
-                              setState(() => weeklyDigest = v),
-                        ),
-                      ),
-                    ],
-                  );
-                }
-
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _ProfileCard(theme: theme),
-                    const SizedBox(height: 16),
-                    _PreferencesCard(
-                      notifyEmail: notifyEmail,
-                      notifyPush: notifyPush,
-                      weeklyDigest: weeklyDigest,
-                      onChangedEmail: (v) => setState(() => notifyEmail = v),
-                      onChangedPush: (v) => setState(() => notifyPush = v),
-                      onChangedDigest: (v) => setState(() => weeklyDigest = v),
-                    ),
-                  ],
-                );
-              },
-            ),
-            const SizedBox(height: 16),
-            AppCard(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+      child: Column(
+        children: [
+          Expanded(
+            child: RefreshIndicator(
+              onRefresh: _loadProfile,
+              child: ListView(
                 children: [
-                  Text('Security', style: theme.textTheme.titleLarge),
-                  const SizedBox(height: 10),
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: const Text('Change password'),
-                    subtitle: const Text(
-                      'Update your password for account safety',
-                    ),
-                    trailing: IconButton(
-                      icon: const Icon(Icons.chevron_right),
-                      onPressed: () {},
-                    ),
-                  ),
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: const Text('Active sessions'),
-                    subtitle: const Text('Review where you are signed in'),
-                    trailing: IconButton(
-                      icon: const Icon(Icons.chevron_right),
-                      onPressed: () {},
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: AppButton(
-                          label: 'Save changes',
-                          onPressed: () {},
-                        ),
+                  if (_isLoading)
+                    const _CenteredState(child: CircularProgressIndicator())
+                  else if (_errorMessage != null)
+                    _CenteredState(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(_errorMessage!, textAlign: TextAlign.center),
+                          const SizedBox(height: 12),
+                          AppButton(
+                            label: 'Retry',
+                            expand: false,
+                            onPressed: _loadProfile,
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: AppButton(
-                          label: 'Log out',
-                          variant: AppButtonVariant.outlined,
-                          onPressed: () {},
-                        ),
+                    )
+                  else if (profileMap == null || profileMap.isEmpty)
+                    const _CenteredState(
+                      child: Text('No profile data available.'),
+                    )
+                  else
+                    AppCard(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _Avatar(avatarUrl: avatar, name: name),
+                              const SizedBox(width: 14),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      name ?? 'Unknown user',
+                                      style: Theme.of(
+                                        context,
+                                      ).textTheme.titleLarge,
+                                    ),
+                                    const SizedBox(height: 6),
+                                    if (role != null) Chip(label: Text(role)),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 20),
+                          _InfoRow(label: 'Email', value: email),
+                          _InfoRow(label: 'Phone', value: phone),
+                          _InfoRow(
+                            label: 'Address',
+                            value: _firstText(profileMap, ['address']),
+                          ),
+                          const SizedBox(height: 16),
+                          AppButton(
+                            label: 'Edit Profile',
+                            onPressed: _goToEditProfile,
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
                 ],
               ),
             ),
-          ],
-        ),
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton(
+              onPressed: _logout,
+              style: OutlinedButton.styleFrom(
+                minimumSize: const Size.fromHeight(52),
+                foregroundColor: Theme.of(context).colorScheme.error,
+                backgroundColor: Colors.white,
+                side: BorderSide(color: Theme.of(context).colorScheme.error),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: const Text('Logout'),
+            ),
+          ),
+        ],
       ),
     );
   }
 }
 
-class _ProfileCard extends StatelessWidget {
-  const _ProfileCard({required this.theme});
-  final ThemeData theme;
+class _CenteredState extends StatelessWidget {
+  const _CenteredState({required this.child});
+  final Widget child;
 
   @override
   Widget build(BuildContext context) {
-    return AppCard(
+    return SizedBox(height: 280, child: Center(child: child));
+  }
+}
+
+class _Avatar extends StatelessWidget {
+  const _Avatar({required this.avatarUrl, required this.name});
+
+  final String? avatarUrl;
+  final String? name;
+
+  @override
+  Widget build(BuildContext context) {
+    final initials = (name == null || name!.trim().isEmpty)
+        ? 'U'
+        : name!
+              .trim()
+              .split(' ')
+              .where((e) => e.isNotEmpty)
+              .take(2)
+              .map((e) => e[0].toUpperCase())
+              .join();
+
+    final hasAvatar = avatarUrl != null && avatarUrl!.trim().isNotEmpty;
+    return CircleAvatar(
+      radius: 32,
+      backgroundImage: hasAvatar ? NetworkImage(avatarUrl!.trim()) : null,
+      child: hasAvatar ? null : Text(initials),
+    );
+  }
+}
+
+class _InfoRow extends StatelessWidget {
+  const _InfoRow({required this.label, required this.value});
+
+  final String label;
+  final String? value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          CircleAvatar(
-            radius: 34,
-            child: Text(
-              'TA',
-              style: theme.textTheme.titleLarge?.copyWith(color: Colors.white),
-            ),
+          SizedBox(
+            width: 90,
+            child: Text(label, style: Theme.of(context).textTheme.titleMedium),
           ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Tran Anh', style: theme.textTheme.titleLarge),
-                Text('Forestry Analyst', style: theme.textTheme.bodyMedium),
-                const SizedBox(height: 8),
-                Text('anh.tran@example.com', style: theme.textTheme.bodyLarge),
-                Text('+84 912 345 678', style: theme.textTheme.bodyLarge),
-                const SizedBox(height: 12),
-                Wrap(
-                  spacing: 10,
-                  children: [
-                    Chip(
-                      label: Text('Admin', style: theme.textTheme.bodyMedium),
-                    ),
-                    Chip(
-                      label: Text(
-                        'AI Access',
-                        style: theme.textTheme.bodyMedium,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
+          Expanded(child: Text(value ?? '-')),
         ],
       ),
     );
   }
 }
 
-class _PreferencesCard extends StatelessWidget {
-  const _PreferencesCard({
-    required this.notifyEmail,
-    required this.notifyPush,
-    required this.weeklyDigest,
-    required this.onChangedEmail,
-    required this.onChangedPush,
-    required this.onChangedDigest,
-  });
-
-  final bool notifyEmail;
-  final bool notifyPush;
-  final bool weeklyDigest;
-  final ValueChanged<bool> onChangedEmail;
-  final ValueChanged<bool> onChangedPush;
-  final ValueChanged<bool> onChangedDigest;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return AppCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Preferences', style: theme.textTheme.titleLarge),
-          const SizedBox(height: 12),
-          SwitchListTile(
-            value: notifyEmail,
-            title: const Text('Email notifications'),
-            subtitle: const Text('Critical alerts and weekly updates'),
-            onChanged: onChangedEmail,
-          ),
-          SwitchListTile(
-            value: notifyPush,
-            title: const Text('Push notifications'),
-            subtitle: const Text('Mobile and desktop push for new alerts'),
-            onChanged: onChangedPush,
-          ),
-          SwitchListTile(
-            value: weeklyDigest,
-            title: const Text('Weekly digest'),
-            subtitle: const Text('Summary of scans and model changes'),
-            onChanged: onChangedDigest,
-          ),
-        ],
-      ),
-    );
-  }
-}

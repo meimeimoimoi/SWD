@@ -14,6 +14,7 @@ namespace MyApp.Infrastructure
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IPasswordHasher, BCryptPasswordHasher>();
             services.AddScoped<IImageUploadService, ImageUploadService>();
+            services.AddScoped<IUserService, UserService>();
             services.AddScoped<JwtTokenGeneratior>();
             services.AddScoped<IMessageService, MessageService>();
             services.AddScoped<IPredictionService, PredictionService>();
