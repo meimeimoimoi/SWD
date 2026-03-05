@@ -64,6 +64,7 @@ namespace MyApp.Api.Controllers
                 try
                 {
                     var result = await _predictionService.PredictAsync(userId, image);
+                    result.ImageUrl = BuildImageUrl(result.ImageUrl);
                     return Ok(new
                     {
                         success = true,
@@ -138,6 +139,16 @@ namespace MyApp.Api.Controllers
                     : "Prediction service unavailable",
                 modelLoaded = isLoaded
             });
+        }
+
+        private string BuildImageUrl(string? storedFilename)
+        {
+            if (string.IsNullOrWhiteSpace(storedFilename))
+            {
+                return string.Empty;
+            }
+
+            return $"{Request.Scheme}://{Request.Host}/uploads/images/{storedFilename}";
         }
     }
 }
