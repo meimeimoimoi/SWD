@@ -3,11 +3,14 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../routes/app_router.dart';
 import '../../share/services/image_upload_service.dart';
+import '../../share/services/prediction_service.dart';
 import '../../share/theme/app_colors.dart';
 import '../../share/widgets/app_button.dart';
 import '../../share/widgets/app_card.dart';
 import '../../share/widgets/app_scaffold.dart';
+import '../prediction/prediction_screen.dart';
 
 class ScanScreen extends StatefulWidget {
   const ScanScreen({super.key});
@@ -19,6 +22,7 @@ class ScanScreen extends StatefulWidget {
 class _ScanScreenState extends State<ScanScreen> {
   final ImagePicker _picker = ImagePicker();
   final ImageUploadService _uploadService = ImageUploadService();
+  final PredictionService _predictionService = PredictionService();
 
   final List<_ScanItem> _uploads = [
     _ScanItem(name: 'Oak_leaf.png', status: 'Completed', time: '2m ago'),
@@ -218,6 +222,59 @@ class _ScanScreenState extends State<ScanScreen> {
     });
   }
 
+  /// Predict disease from selected image and navigate to prediction screen
+  Future<void> _predictImage() async {
+    if (_selectedImage == null || _isUploading) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select an image first.')),
+      );
+      return;
+    }
+
+    setState(() {
+      _uploadStatus = _UploadStatus.uploading;
+      _statusMessage = 'Analyzing image...';
+    });
+
+    try {
+      final response = await _predictionService.predict(_selectedImage!.path);
+
+      if (!mounted) return;
+
+      if (response.success && response.data != null) {
+        // Convert API response to PredictionResult
+        final predictionResult = PredictionResult.fromApiResponse(
+          response.data!,
+        );
+
+        // Navigate to prediction screen with the result
+        Navigator.pushNamed(
+          context,
+          AppRouter.prediction,
+          arguments: predictionResult,
+        );
+      } else {
+        setState(() {
+          _uploadStatus = _UploadStatus.error;
+          _statusMessage = response.message;
+        });
+
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(response.message)));
+      }
+    } catch (e) {
+      setState(() {
+        _uploadStatus = _UploadStatus.error;
+        _statusMessage = 'Error: $e';
+      });
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error: $e')));
+    }
+  }
+
   void _clearImage() {
     if (_isUploading) return;
     setState(() {
@@ -264,6 +321,7 @@ class _ScanScreenState extends State<ScanScreen> {
                   onPickFromCamera: _pickFromCameraFlow,
                   onClearImage: _clearImage,
                   onUpload: _uploadSelectedImage,
+                  onPredict: _predictImage,
                 );
 
                 if (isWide) {
@@ -309,6 +367,7 @@ class _UploadCard extends StatelessWidget {
     required this.onPickFromCamera,
     required this.onClearImage,
     required this.onUpload,
+    this.onPredict,
   });
 
   final XFile? selectedImage;
@@ -320,6 +379,7 @@ class _UploadCard extends StatelessWidget {
   final VoidCallback onPickFromCamera;
   final VoidCallback onClearImage;
   final VoidCallback onUpload;
+  final VoidCallback? onPredict;
 
   Color _statusColor(BuildContext context) {
     switch (uploadStatus) {
@@ -425,7 +485,9 @@ class _UploadCard extends StatelessWidget {
                 bottom: 12,
                 right: 12,
                 child: GestureDetector(
-                  onTap: hasImage && !isUploading ? onUpload : null,
+                  onTap: hasImage && !isUploading
+                      ? (onPredict ?? onUpload)
+                      : null,
                   child: Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(

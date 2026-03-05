@@ -70,7 +70,7 @@ namespace MyApp.Api.Controllers
                 {
                     success = true,
                     message = "Image uploaded successfully",
-                    data = result
+                    data = MapImageUploadResponse(result)
                 });
             }
             catch (ArgumentException ex)
@@ -116,7 +116,7 @@ namespace MyApp.Api.Controllers
                 {
                     success = true,
                     message = "Image retrieved successfully",
-                    data = image
+                    data = MapImageUploadResponse(image)
                 });
             }
             catch (Exception ex)
@@ -157,7 +157,7 @@ namespace MyApp.Api.Controllers
                 {
                     success = true,
                     message = $"Retrieved {images.Count} images",
-                    data = images
+                    data = images.Select(MapImageUploadResponse)
                 });
             }
             catch (Exception ex)
@@ -170,6 +170,35 @@ namespace MyApp.Api.Controllers
                     error = ex.Message
                 });
             }
+        }
+
+        private object MapImageUploadResponse(ImageUploadResponseDto image)
+        {
+            return new
+            {
+                image.UploadId,
+                image.UserId,
+                image.OriginalFilename,
+                image.StoredFilename,
+                image.FilePath,
+                image.FileSize,
+                image.MimeType,
+                image.ImageWidth,
+                image.ImageHeight,
+                image.UploadStatus,
+                image.UploadedAt,
+                ImageUrl = BuildImageUrl(image.StoredFilename)
+            };
+        }
+
+        private string? BuildImageUrl(string? storedFilename)
+        {
+            if (string.IsNullOrWhiteSpace(storedFilename))
+            {
+                return null;
+            }
+
+            return $"{Request.Scheme}://{Request.Host}/uploads/images/{storedFilename}";
         }
 
     }

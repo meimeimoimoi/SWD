@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.OpenApi.Models;
 using MyApp.Api;
 using MyApp.Application.Interfaces;
@@ -49,6 +50,14 @@ namespace MyApp
             }
 
             app.UseSwaggerDocumentation();
+
+            var uploadsImagesPath = Path.Combine(app.Environment.ContentRootPath, "uploads", "images");
+            Directory.CreateDirectory(uploadsImagesPath);
+            app.UseStaticFiles(new StaticFileOptions
+            {
+                FileProvider = new PhysicalFileProvider(uploadsImagesPath),
+                RequestPath = "/uploads/images"
+            });
 
             // Important: Authentication must come before Authorization
             app.UseAuthentication();
