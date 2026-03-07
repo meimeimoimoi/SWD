@@ -111,5 +111,30 @@ namespace MyApp.Api.Controllers
                 return StatusCode(500, new { success = false, message = "Internal server error." });
             }
         }
+
+        [HttpGet("predictions/history/{id:int}")]
+        public async Task<IActionResult> GetPredictionDetail(int id)
+        {
+            try
+            {
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                                  ?? User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+
+                if (!int.TryParse(userIdClaim, out var userId))
+                    return Unauthorized(new { success = false, message = "Unable to identify the current user." });
+
+                var predictionDetail = await _historyService.GetPredictionByIdAsync(id, userId);
+
+                if (predictionDetail == null)
+                    return NotFound(new { success = false, message = $"Prediction record with ID {id} not found." });
+
+                return Ok(new { success = true, data = predictionDetail });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting prediction detail id={Id}", id);
+                return StatusCode(500, new { success = false, message = "Internal server error." });
+            }
+        }
     }
 }
