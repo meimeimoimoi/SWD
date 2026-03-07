@@ -23,11 +23,6 @@ namespace MyApp.Api.Controllers
             _logger = logger;
         }
 
-        /// <summary>
-        /// Upload an image of a tree disease
-        /// </summary>
-        /// <param name="request">Image upload request with file</param>
-        /// <returns>Uploaded image details</returns>
         [HttpPost("upload")]
         [Consumes("multipart/form-data")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -93,6 +88,7 @@ namespace MyApp.Api.Controllers
                 });
             }
         }
+
         [HttpGet("{uploadId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -131,7 +127,6 @@ namespace MyApp.Api.Controllers
             }
         }
 
-       
         [HttpGet("my-images")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
