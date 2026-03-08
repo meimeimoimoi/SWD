@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using MyApp.Application.Features.Prediction;
 using MyApp.Application.Interfaces;
 using MyApp.Persistence.Context;
@@ -31,20 +31,55 @@ namespace MyApp.Infrastructure.Services
             _logger.LogInformation(
                 "Found {Count} prediction records for UserId={UserId}", predictions.Count, userId);
 
-            return predictions.Select(p => new PredictionHistoryDto
-            {
-                PredictionId = p.PredictionId,
-                UploadId = p.UploadId,
-                ImageUrl = p.Upload.StoredFilename,
-                OriginalFilename = p.Upload.OriginalFilename,
-                PredictedClass = p.PredictedClass,
-                ConfidenceScore = p.ConfidenceScore,
-                ProcessingTimeMs = p.ProcessingTimeMs,
-                CreatedAt = p.CreatedAt,
-                IllnessName = p.Illness?.IllnessName,
-                IllnessSeverity = p.Illness?.Severity,
-                TreeName = p.Tree?.TreeName
-            }).ToList();
+            return predictions.Select(MapToDto).ToList();
         }
+
+        public async Task<PredictionHistoryDto?> GetPredictionByIdAsync(int predictionId, int userId)
+        {
+            _logger.LogInformation(
+                "Fetching prediction PredictionId={PredictionId} for UserId={UserId}",
+                predictionId, userId);
+
+            var prediction = await _context.Predictions
+                .Include(p => p.Upload)
+                .Include(p => p.Illness)
+                .Include(p => p.Tree)
+                .FirstOrDefaultAsync(p => p.PredictionId == predictionId && p.Upload.UserId == userId);
+
+            return prediction == null ? null : MapToDto(prediction);
+        }
+
+        public async Task<List<PredictionHistoryDto>> GetAllHistoryAsync()
+        {
+            _logger.LogInformation("Fetching all prediction history (admin)");
+
+            var predictions = await _context.Predictions
+                .Include(p => p.Upload)
+                .Include(p => p.Illness)
+                .Include(p => p.Tree)
+                .OrderByDescending(p => p.CreatedAt)
+                .ToListAsync();
+
+            _logger.LogInformation("Found {Count} total prediction records", predictions.Count);
+
+            return predictions.Select(MapToDto).ToList();
+        }
+
+        // ── Private helper ──────────────────
+
+        private static PredictionHistoryDto MapToDto(Domain.Entities.Prediction p) => new()
+        {
+            PredictionId     = p.PredictionId,
+            UploadId         = p.UploadId,
+            ImageUrl         = p.Upload?.StoredFilename,
+            OriginalFilename = p.Upload?.OriginalFilename,
+            PredictedClass   = p.PredictedClass,
+            ConfidenceScore  = p.ConfidenceScore,
+            ProcessingTimeMs = p.ProcessingTimeMs,
+            CreatedAt        = p.CreatedAt,
+            IllnessName      = p.Illness?.IllnessName,
+            IllnessSeverity  = p.Illness?.Severity,
+            TreeName         = p.Tree?.TreeName
+        };
     }
 }

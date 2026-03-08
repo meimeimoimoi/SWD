@@ -1,4 +1,4 @@
-using MyApp.Application.Features.ModelManagement.DTOs;
+﻿using MyApp.Application.Features.ModelManagement.DTOs;
 using MyApp.Application.Interfaces;
 using MyApp.Domain.Entities;
 using MyApp.Persistence.Repositories;
@@ -17,8 +17,8 @@ namespace MyApp.Infrastructure.Services
             IWebHostEnvironment env)
         {
             _modelRepository = modelRepository;
-            _logger = logger;
-            _env = env;
+            _logger          = logger;
+            _env             = env;
         }
 
         public async Task<List<ModelVersionDto>> GetAllModelsAsync()
@@ -33,11 +33,11 @@ namespace MyApp.Infrastructure.Services
         {
             _logger.LogInformation("Uploading new model: {Name} v{Version}", dto.ModelName, dto.Version);
 
-            // 1. Validate file extension � only .onnx allowed
+            // 1. Validate file extension - only .onnx allowed
             var ext = Path.GetExtension(dto.ModelFile.FileName).ToLowerInvariant();
             if (ext != ".onnx")
             {
-                _logger.LogWarning("Rejected upload � invalid file extension: {Ext}", ext);
+                _logger.LogWarning("Rejected upload - invalid file extension: {Ext}", ext);
                 return (false, "Only .onnx files are accepted.", null);
             }
 
@@ -53,7 +53,7 @@ namespace MyApp.Infrastructure.Services
             var modelsDir = Path.Combine(_env.ContentRootPath, "Models");
             Directory.CreateDirectory(modelsDir);
 
-            var fileName = $"{dto.ModelName}_{dto.Version}.onnx";
+            var fileName     = $"{dto.ModelName}_{dto.Version}.onnx";
             var savedFilePath = Path.Combine(modelsDir, fileName);
 
             if (File.Exists(savedFilePath))
@@ -72,7 +72,7 @@ namespace MyApp.Infrastructure.Services
             // 5. Convert to relative path for DB storage
             var relativeFilePath = Path.Combine("Models", fileName);
 
-            // 6. New model is inactive and not default � admin must explicitly activate
+            // 6. New model is inactive and not default - admin must explicitly activate
             var entity = new ModelVersion
             {
                 ModelName   = dto.ModelName,
@@ -87,7 +87,7 @@ namespace MyApp.Infrastructure.Services
 
             await _modelRepository.AddAsync(entity);
             _logger.LogInformation(
-                "Model registered in DB � Id={Id}, Name={Name}, v{Version}, IsActive=false, IsDefault=false",
+                "Model registered in DB - Id={Id}, Name={Name}, v{Version}, IsActive=false, IsDefault=false",
                 entity.ModelVersionId, entity.ModelName, entity.Version);
 
             return (true, "Model uploaded and registered successfully.", MapToDto(entity, relativeFilePath));
@@ -104,22 +104,19 @@ namespace MyApp.Infrastructure.Services
                 return null;
             }
 
-            // Deactivate (IsActive=false, IsDefault=false) all other models first
             var otherDefaults = await _modelRepository.GetAllDefaultsExceptAsync(modelVersionId);
             if (otherDefaults.Count > 0)
             {
                 foreach (var m in otherDefaults)
                 {
                     m.IsDefault = false;
-                    m.IsActive = false;
+                    m.IsActive  = false;
                 }
                 await _modelRepository.UpdateRangeAsync(otherDefaults);
-                _logger.LogInformation(
-                    "Deactivated {Count} previously active model(s).", otherDefaults.Count);
+                _logger.LogInformation("Deactivated {Count} previously active model(s).", otherDefaults.Count);
             }
 
-            // Activate the selected model
-            model.IsActive = true;
+            model.IsActive  = true;
             model.IsDefault = true;
             await _modelRepository.UpdateAsync(model);
 
@@ -130,19 +127,19 @@ namespace MyApp.Infrastructure.Services
             return MapToDto(model);
         }
 
-        // ?? Helpers ??????????????????????????????????????????????????????????????
+        // ── Helpers ──────────────────
 
         private static ModelVersionDto MapToDto(ModelVersion m, string? filePath = null) => new()
         {
             ModelVersionId = m.ModelVersionId,
-            ModelName = m.ModelName,
-            Version = m.Version,
-            ModelType = m.ModelType,
-            Description = m.Description,
-            IsActive = m.IsActive,
-            IsDefault = m.IsDefault,
-            CreatedAt = m.CreatedAt,
-            FilePath = filePath
+            ModelName      = m.ModelName,
+            Version        = m.Version,
+            ModelType      = m.ModelType,
+            Description    = m.Description,
+            IsActive       = m.IsActive,
+            IsDefault      = m.IsDefault,
+            CreatedAt      = m.CreatedAt,
+            FilePath       = filePath ?? m.FilePath
         };
     }
 }

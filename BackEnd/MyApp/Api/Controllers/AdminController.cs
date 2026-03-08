@@ -12,17 +12,20 @@ namespace MyApp.Api.Controllers
     public class AdminController : ControllerBase
     {
         private readonly IAdminService _adminService;
+        private readonly IPredictionHistoryService _predictionHistoryService;
         private readonly ILogger<AdminController> _logger;
 
-        public AdminController(IAdminService adminService, ILogger<AdminController> logger)
+        public AdminController(
+            IAdminService adminService,
+            IPredictionHistoryService predictionHistoryService,
+            ILogger<AdminController> logger)
         {
             _adminService = adminService;
+            _predictionHistoryService = predictionHistoryService;
             _logger = logger;
         }
 
-       
         [HttpGet("users")]
-       
         public async Task<IActionResult> GetAllUsers(
             [FromQuery] string? search = null,
             [FromQuery] string? role = null,
@@ -51,9 +54,7 @@ namespace MyApp.Api.Controllers
             }
         }
 
-        
         [HttpGet("users/{userId}")]
-        
         public async Task<IActionResult> GetUserById(int userId)
         {
             try
@@ -88,9 +89,7 @@ namespace MyApp.Api.Controllers
             }
         }
 
-      
         [HttpPut("users/{userId}")]
-       
         public async Task<IActionResult> UpdateUser(int userId, [FromBody] UpdateUserDto updateDto)
         {
             try
@@ -142,9 +141,7 @@ namespace MyApp.Api.Controllers
             }
         }
 
-       
         [HttpPatch("users/{userId}/status")]
-        
         public async Task<IActionResult> UpdateUserStatus(int userId, [FromBody] UpdateStatusRequest request)
         {
             try
@@ -187,9 +184,7 @@ namespace MyApp.Api.Controllers
             }
         }
 
-       
         [HttpPost("users/staff")]
-       
         public async Task<IActionResult> CreateStaffUser([FromBody] CreateTechnicianStaffDto createDto)
         {
             try
@@ -245,7 +240,6 @@ namespace MyApp.Api.Controllers
         }
 
         [HttpDelete("users/{userId}")]
-      
         public async Task<IActionResult> DeleteUser(int userId)
         {
             try
@@ -284,6 +278,27 @@ namespace MyApp.Api.Controllers
                     message = "An error occurred while deleting user",
                     error = ex.Message
                 });
+            }
+        }
+
+        [HttpGet("predictions")]
+        public async Task<IActionResult> GetAllPredictions()
+        {
+            try
+            {
+                var predictions = await _predictionHistoryService.GetAllHistoryAsync();
+                return Ok(new
+                {
+                    success = true,
+                    message = "All predictions retrieved successfully.",
+                    total = predictions.Count,
+                    data = predictions
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving all predictions");
+                return StatusCode(500, new { success = false, message = "Internal server error." });
             }
         }
     }
