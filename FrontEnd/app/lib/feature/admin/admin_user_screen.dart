@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../share/theme/app_colors.dart';
 import '../../share/widgets/app_card.dart';
+import '../../share/widgets/admin_bottom_nav.dart';
 import '../../share/widgets/theme_toggle.dart';
 
 class AdminUserScreen extends StatelessWidget {
@@ -11,6 +12,16 @@ class AdminUserScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final textPrimary = isDark
+        ? AppColors.textPrimaryDark
+        : AppColors.textPrimaryLight;
+    final textSecondary = isDark
+        ? AppColors.textSecondaryDark
+        : AppColors.textSecondaryLight;
+    final appBarBackground = isDark
+        ? Colors.transparent
+        : AppColors.surfaceLight;
+    final appBarShadow = isDark ? Colors.transparent : Colors.black12;
 
     final users = <_UserItem>[
       _UserItem(
@@ -58,16 +69,15 @@ class AdminUserScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('User Management', style: theme.textTheme.titleLarge),
-        actions: [
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.person_add_alt_1_outlined),
-            tooltip: 'Add user',
-          ),
-          const ThemeToggle(),
-          const SizedBox(width: 8),
-        ],
+        backgroundColor: appBarBackground,
+        surfaceTintColor: Colors.transparent,
+        elevation: isDark ? 0 : 1,
+        shadowColor: appBarShadow,
+        title: Text(
+          'User Management',
+          style: theme.textTheme.titleLarge?.copyWith(color: textPrimary),
+        ),
+
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(120),
           child: Padding(
@@ -77,6 +87,9 @@ class AdminUserScreen extends StatelessWidget {
                 TextField(
                   decoration: InputDecoration(
                     hintText: 'Search by name or email...',
+                    hintStyle: theme.textTheme.bodySmall?.copyWith(
+                      color: textSecondary.withOpacity(0.8),
+                    ),
                     prefixIcon: const Icon(Icons.search),
                     filled: true,
                     fillColor: isDark
@@ -120,6 +133,7 @@ class AdminUserScreen extends StatelessWidget {
           ),
         ),
       ),
+      bottomNavigationBar: const AdminBottomNav(currentIndex: 1),
     );
   }
 }
@@ -209,6 +223,12 @@ class _UserCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final textPrimary = isDark
+        ? AppColors.textPrimaryDark
+        : AppColors.textPrimaryLight;
+    final textSecondary = isDark
+        ? AppColors.textSecondaryDark
+        : AppColors.textSecondaryLight;
     final statusColor = _statusColor(context);
     final statusBackground = statusColor.withOpacity(isDark ? 0.2 : 0.12);
     final isPrimaryAction = user.primaryAction == _UserAction.unlock;
@@ -235,6 +255,7 @@ class _UserCard extends StatelessWidget {
                   child: Text(
                     user.initials,
                     style: theme.textTheme.titleSmall?.copyWith(
+                      color: textPrimary,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -247,11 +268,17 @@ class _UserCard extends StatelessWidget {
                       Text(
                         user.name,
                         style: theme.textTheme.titleSmall?.copyWith(
+                          color: textPrimary,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
                       const SizedBox(height: 2),
-                      Text(user.email, style: theme.textTheme.bodySmall),
+                      Text(
+                        user.email,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: textSecondary,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -320,7 +347,7 @@ class _UserCard extends StatelessWidget {
                           icon: Icon(_actionIcon(user.primaryAction), size: 16),
                           label: Text(_actionLabel(user.primaryAction)),
                           style: OutlinedButton.styleFrom(
-                            foregroundColor: theme.textTheme.bodyMedium?.color,
+                            foregroundColor: textPrimary,
                             side: BorderSide(
                               color: theme.dividerColor.withOpacity(0.4),
                             ),
@@ -337,6 +364,9 @@ class _UserCard extends StatelessWidget {
                   child: user.showRoleDropdown
                       ? DropdownButtonFormField<String>(
                           value: 'Change Role',
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: textPrimary,
+                          ),
                           items: const [
                             DropdownMenuItem(
                               value: 'Change Role',
@@ -383,7 +413,7 @@ class _UserCard extends StatelessWidget {
                             ),
                           ),
                           style: OutlinedButton.styleFrom(
-                            foregroundColor: theme.textTheme.bodyMedium?.color,
+                            foregroundColor: textPrimary,
                             side: BorderSide(
                               color: theme.dividerColor.withOpacity(0.4),
                             ),
@@ -418,7 +448,11 @@ class _MetaInfo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final baseStyle = theme.textTheme.bodySmall;
+    final isDark = theme.brightness == Brightness.dark;
+    final textSecondary = isDark
+        ? AppColors.textSecondaryDark
+        : AppColors.textSecondaryLight;
+    final baseStyle = theme.textTheme.bodySmall?.copyWith(color: textSecondary);
 
     return Row(
       children: [
@@ -445,12 +479,15 @@ class _FilterChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final textSecondary = isDark
+        ? AppColors.textSecondaryDark
+        : AppColors.textSecondaryLight;
     final background = isActive
         ? (isDark ? AppColors.surfaceLight : AppColors.primary)
         : (isDark ? AppColors.surfaceDark : AppColors.surfaceLight);
     final foreground = isActive
         ? (isDark ? AppColors.darkBackground : Colors.white)
-        : theme.textTheme.bodySmall?.color;
+        : textSecondary;
 
     return Container(
       margin: const EdgeInsets.only(right: 8),

@@ -564,7 +564,11 @@ class _HistoryCard extends StatelessWidget {
           AppButton(
             label: 'View full history',
             variant: AppButtonVariant.ghost,
-            onPressed: () {},
+            onPressed: () => Navigator.pushNamed(
+              context,
+              AppRouter.treatmentHub,
+              arguments: 2,
+            ),
           ),
         ],
       ),

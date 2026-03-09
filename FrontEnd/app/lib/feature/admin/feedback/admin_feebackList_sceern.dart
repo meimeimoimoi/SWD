@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../share/theme/app_colors.dart';
 import '../../../share/widgets/app_card.dart';
+import '../../../share/widgets/admin_bottom_nav.dart';
 import '../../../share/widgets/theme_toggle.dart';
 
 class AdminFeedbackListScreen extends StatelessWidget {
@@ -11,6 +12,16 @@ class AdminFeedbackListScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final textPrimary = isDark
+        ? AppColors.textPrimaryDark
+        : AppColors.textPrimaryLight;
+    final textSecondary = isDark
+        ? AppColors.textSecondaryDark
+        : AppColors.textSecondaryLight;
+    final appBarBackground = isDark
+        ? Colors.transparent
+        : AppColors.surfaceLight;
+    final appBarShadow = isDark ? Colors.transparent : Colors.black12;
 
     final stats = <_FeedbackStatItem>[
       const _FeedbackStatItem(
@@ -84,12 +95,18 @@ class AdminFeedbackListScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: appBarBackground,
+        surfaceTintColor: Colors.transparent,
+        elevation: isDark ? 0 : 1,
+        shadowColor: appBarShadow,
         titleSpacing: 16,
         title: Row(
           children: [
-            const Icon(Icons.feedback, color: AppColors.primary),
             const SizedBox(width: 8),
-            Text('PlantGuard Feedback', style: theme.textTheme.titleLarge),
+            Text(
+              'Feedback',
+              style: theme.textTheme.titleLarge?.copyWith(color: textPrimary),
+            ),
           ],
         ),
         actions: [const ThemeToggle(), const SizedBox(width: 8)],
@@ -128,7 +145,7 @@ class AdminFeedbackListScreen extends StatelessWidget {
                   'Recent Feedback',
                   style: theme.textTheme.labelLarge?.copyWith(
                     letterSpacing: 1.4,
-                    color: theme.textTheme.bodySmall?.color?.withOpacity(0.7),
+                    color: textSecondary.withOpacity(0.7),
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -143,6 +160,7 @@ class AdminFeedbackListScreen extends StatelessWidget {
           ),
         ),
       ),
+      bottomNavigationBar: const AdminBottomNav(currentIndex: 2),
     );
   }
 }
@@ -169,6 +187,13 @@ class _StatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final textPrimary = isDark
+        ? AppColors.textPrimaryDark
+        : AppColors.textPrimaryLight;
+    final textSecondary = isDark
+        ? AppColors.textSecondaryDark
+        : AppColors.textSecondaryLight;
     return AppCard(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -177,6 +202,7 @@ class _StatCard extends StatelessWidget {
           Text(
             item.title,
             style: theme.textTheme.bodySmall?.copyWith(
+              color: textSecondary,
               letterSpacing: 0.6,
               fontWeight: FontWeight.w600,
             ),
@@ -184,7 +210,13 @@ class _StatCard extends StatelessWidget {
           const SizedBox(height: 8),
           Row(
             children: [
-              Text(item.value, style: theme.textTheme.displaySmall),
+              Text(
+                item.value,
+                style: theme.textTheme.displaySmall?.copyWith(
+                  color: textPrimary,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
               const SizedBox(width: 8),
               Text(
                 item.delta,
@@ -211,12 +243,15 @@ class _FilterPill extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final textSecondary = isDark
+        ? AppColors.textSecondaryDark
+        : AppColors.textSecondaryLight;
     final background = isActive
         ? AppColors.primary
         : (isDark ? AppColors.surfaceDark : AppColors.surfaceLight);
     final foreground = isActive
         ? (isDark ? AppColors.darkBackground : Colors.white)
-        : theme.textTheme.bodySmall?.color;
+        : textSecondary;
 
     return Container(
       margin: const EdgeInsets.only(right: 8),
@@ -289,6 +324,12 @@ class _FeedbackCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final textPrimary = isDark
+        ? AppColors.textPrimaryDark
+        : AppColors.textPrimaryLight;
+    final textSecondary = isDark
+        ? AppColors.textSecondaryDark
+        : AppColors.textSecondaryLight;
     final toneColor = _toneColor(context);
     final background = toneColor.withOpacity(isDark ? 0.12 : 0.08);
     final borderColor = toneColor.withOpacity(isDark ? 0.35 : 0.25);
@@ -351,11 +392,17 @@ class _FeedbackCard extends StatelessWidget {
                         toneColor: toneColor,
                       ),
                       const SizedBox(height: 6),
-                      Text(item.userMeta, style: theme.textTheme.bodySmall),
+                      Text(
+                        item.userMeta,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: textSecondary,
+                        ),
+                      ),
                       const SizedBox(height: 6),
                       Text(
                         item.message,
                         style: theme.textTheme.bodyMedium?.copyWith(
+                          color: textPrimary,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -395,7 +442,7 @@ class _FeedbackCard extends StatelessWidget {
                         child: OutlinedButton(
                           onPressed: () {},
                           style: OutlinedButton.styleFrom(
-                            foregroundColor: theme.textTheme.bodyMedium?.color,
+                            foregroundColor: textPrimary,
                             side: BorderSide(
                               color: theme.dividerColor.withOpacity(0.4),
                             ),
@@ -432,6 +479,10 @@ class _StarRating extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final textSecondary = isDark
+        ? AppColors.textSecondaryDark
+        : AppColors.textSecondaryLight;
     final stars = List.generate(5, (index) => index < rating);
 
     return Row(
@@ -448,7 +499,7 @@ class _StarRating extends StatelessWidget {
           score,
           style: theme.textTheme.labelSmall?.copyWith(
             fontWeight: FontWeight.w700,
-            color: theme.textTheme.bodySmall?.color?.withOpacity(0.8),
+            color: textSecondary.withOpacity(0.8),
           ),
         ),
       ],

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../share/theme/app_colors.dart';
 import '../../../share/widgets/app_card.dart';
+import '../../../share/widgets/admin_bottom_nav.dart';
 
 class AdminFeedbackDetailScreen extends StatelessWidget {
   const AdminFeedbackDetailScreen({super.key});
@@ -10,14 +11,28 @@ class AdminFeedbackDetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final textPrimary = isDark
+        ? AppColors.textPrimaryDark
+        : AppColors.textPrimaryLight;
+    final appBarBackground = isDark
+        ? Colors.transparent
+        : AppColors.surfaceLight;
+    final appBarShadow = isDark ? Colors.transparent : Colors.black12;
 
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: appBarBackground,
+        surfaceTintColor: Colors.transparent,
+        elevation: isDark ? 0 : 1,
+        shadowColor: appBarShadow,
         leading: IconButton(
           onPressed: () => Navigator.pop(context),
           icon: const Icon(Icons.arrow_back),
         ),
-        title: Text('Feedback Detail', style: theme.textTheme.titleLarge),
+        title: Text(
+          'Feedback Detail',
+          style: theme.textTheme.titleLarge?.copyWith(color: textPrimary),
+        ),
         actions: [
           IconButton(onPressed: () {}, icon: const Icon(Icons.more_vert)),
           const SizedBox(width: 8),
@@ -40,6 +55,7 @@ class AdminFeedbackDetailScreen extends StatelessWidget {
           ),
         ),
       ),
+      bottomNavigationBar: const AdminBottomNav(currentIndex: 2),
     );
   }
 }
@@ -52,6 +68,13 @@ class _HeroSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final textPrimary = isDark
+        ? AppColors.textPrimaryDark
+        : AppColors.textPrimaryLight;
+    final textSecondary = isDark
+        ? AppColors.textSecondaryDark
+        : AppColors.textSecondaryLight;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -95,7 +118,13 @@ class _HeroSection extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text('Blight Detected', style: theme.textTheme.displaySmall),
+            Text(
+              'Blight Detected',
+              style: theme.textTheme.displaySmall?.copyWith(
+                color: textPrimary,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
@@ -115,7 +144,7 @@ class _HeroSection extends StatelessWidget {
         const SizedBox(height: 4),
         Text(
           'Automated classification triggered user report.',
-          style: theme.textTheme.bodySmall,
+          style: theme.textTheme.bodySmall?.copyWith(color: textSecondary),
         ),
       ],
     );
@@ -130,6 +159,13 @@ class _ScanMetadataCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final textPrimary = isDark
+        ? AppColors.textPrimaryDark
+        : AppColors.textPrimaryLight;
+    final textSecondary = isDark
+        ? AppColors.textSecondaryDark
+        : AppColors.textSecondaryLight;
 
     return AppCard(
       padding: const EdgeInsets.all(16),
@@ -156,6 +192,7 @@ class _ScanMetadataCard extends StatelessWidget {
               child: Text(
                 '#PG-88291',
                 style: theme.textTheme.labelSmall?.copyWith(
+                  color: textPrimary,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -191,17 +228,27 @@ class _MetaRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final textSecondary = isDark
+        ? AppColors.textSecondaryDark
+        : AppColors.textSecondaryLight;
+    final textPrimary = isDark
+        ? AppColors.textPrimaryDark
+        : AppColors.textPrimaryLight;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: theme.textTheme.bodySmall),
+          Text(
+            label,
+            style: theme.textTheme.bodySmall?.copyWith(color: textSecondary),
+          ),
           trailing ??
               Text(
                 value,
                 style: theme.textTheme.bodyMedium?.copyWith(
-                  color: valueColor,
+                  color: valueColor ?? textPrimary,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -215,12 +262,22 @@ class _AccuracyRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final textPrimary = isDark
+        ? AppColors.textPrimaryDark
+        : AppColors.textPrimaryLight;
+    final textSecondary = isDark
+        ? AppColors.textSecondaryDark
+        : AppColors.textSecondaryLight;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text('Model Accuracy', style: theme.textTheme.bodySmall),
+          Text(
+            'Model Accuracy',
+            style: theme.textTheme.bodySmall?.copyWith(color: textSecondary),
+          ),
           Row(
             children: [
               Container(
@@ -244,7 +301,13 @@ class _AccuracyRow extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              Text('94.2%', style: theme.textTheme.bodyMedium),
+              Text(
+                '94.2%',
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: textPrimary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ],
           ),
         ],
@@ -257,12 +320,19 @@ class _SentimentRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final textSecondary = isDark
+        ? AppColors.textSecondaryDark
+        : AppColors.textSecondaryLight;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text('User Sentiment', style: theme.textTheme.bodySmall),
+          Text(
+            'User Sentiment',
+            style: theme.textTheme.bodySmall?.copyWith(color: textSecondary),
+          ),
           Row(
             children: [
               const Icon(
@@ -294,6 +364,10 @@ class _UserCommentCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final textPrimary = isDark
+        ? AppColors.textPrimaryDark
+        : AppColors.textPrimaryLight;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -310,6 +384,7 @@ class _UserCommentCard extends StatelessWidget {
           child: Text(
             '"The app identified this as Early Blight, but I\'m fairly certain it\'s Late Blight based on the stem lesions. The care instructions might be wrong for my specific climate zone."',
             style: theme.textTheme.bodyMedium?.copyWith(
+              color: textPrimary,
               fontStyle: FontStyle.italic,
             ),
           ),

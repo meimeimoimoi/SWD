@@ -56,6 +56,14 @@ class DashboardScreen extends StatelessWidget {
                   onPressed: () => Navigator.pushNamed(context, AppRouter.scan),
                 ),
                 AppButton(
+                  label: 'Treatment hub',
+                  icon: Icons.medical_services_outlined,
+                  variant: AppButtonVariant.outlined,
+                  expand: false,
+                  onPressed: () =>
+                      Navigator.pushNamed(context, AppRouter.treatmentHub),
+                ),
+                AppButton(
                   label: 'View profile',
                   variant: AppButtonVariant.ghost,
                   expand: false,

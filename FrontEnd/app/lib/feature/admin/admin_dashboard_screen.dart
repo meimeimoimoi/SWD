@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../routes/app_router.dart';
 import '../../share/theme/app_colors.dart';
 import '../../share/widgets/app_card.dart';
+import '../../share/widgets/admin_bottom_nav.dart';
 import '../../share/widgets/theme_toggle.dart';
 
 class AdminDashboardScreen extends StatelessWidget {
@@ -12,6 +13,16 @@ class AdminDashboardScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final textPrimary = isDark
+        ? AppColors.textPrimaryDark
+        : AppColors.textPrimaryLight;
+    final textSecondary = isDark
+        ? AppColors.textSecondaryDark
+        : AppColors.textSecondaryLight;
+    final appBarBackground = isDark
+        ? Colors.transparent
+        : AppColors.surfaceLight;
+    final appBarShadow = isDark ? Colors.transparent : Colors.black12;
 
     final stats = <_AdminStatItem>[
       _AdminStatItem(
@@ -71,6 +82,10 @@ class AdminDashboardScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: appBarBackground,
+        surfaceTintColor: Colors.transparent,
+        elevation: isDark ? 0 : 1,
+        shadowColor: appBarShadow,
         titleSpacing: 20,
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -82,28 +97,13 @@ class AdminDashboardScreen extends StatelessWidget {
                 fontWeight: FontWeight.w700,
               ),
             ),
-            Text('Admin Control Panel', style: theme.textTheme.bodySmall),
+            Text(
+              'Admin Control Panel',
+              style: theme.textTheme.bodySmall?.copyWith(color: textSecondary),
+            ),
           ],
         ),
-        actions: [
-          const ThemeToggle(),
-          const SizedBox(width: 8),
-          InkWell(
-            onTap: () => Navigator.pushNamed(context, AppRouter.adminUsers),
-            borderRadius: BorderRadius.circular(20),
-            child: Container(
-              width: 36,
-              height: 36,
-              margin: const EdgeInsets.only(right: 16),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: AppColors.primary.withOpacity(0.12),
-                border: Border.all(color: AppColors.primary),
-              ),
-              child: const Icon(Icons.person_outline, color: AppColors.primary),
-            ),
-          ),
-        ],
+        actions: [const ThemeToggle(), const SizedBox(width: 8)],
       ),
       body: SafeArea(
         child: Center(
@@ -164,20 +164,7 @@ class AdminDashboardScreen extends StatelessWidget {
           ),
         ),
       ),
-      bottomNavigationBar: _AdminBottomNavigation(
-        isDark: isDark,
-        onFeedbackTap: () =>
-            Navigator.pushNamed(context, AppRouter.adminFeedback),
-        onSettingsTap: () =>
-            Navigator.pushNamed(context, AppRouter.adminSettings),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => Navigator.pushNamed(context, AppRouter.scan),
-        backgroundColor: AppColors.primary,
-        foregroundColor: isDark ? AppColors.darkBackground : Colors.white,
-        child: const Icon(Icons.add),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      bottomNavigationBar: const AdminBottomNav(currentIndex: 0),
     );
   }
 }
@@ -208,6 +195,13 @@ class _StatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final textPrimary = isDark
+        ? AppColors.textPrimaryDark
+        : AppColors.textPrimaryLight;
+    final textSecondary = isDark
+        ? AppColors.textSecondaryDark
+        : AppColors.textSecondaryLight;
 
     final card = AppCard(
       padding: const EdgeInsets.all(14),
@@ -221,6 +215,7 @@ class _StatCard extends StatelessWidget {
                 child: Text(
                   item.title,
                   style: theme.textTheme.bodySmall?.copyWith(
+                    color: textSecondary,
                     letterSpacing: 0.4,
                     fontWeight: FontWeight.w600,
                   ),
@@ -237,7 +232,13 @@ class _StatCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 12),
-          Text(item.value, style: theme.textTheme.displaySmall),
+          Text(
+            item.value,
+            style: theme.textTheme.displaySmall?.copyWith(
+              color: textPrimary,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
           const SizedBox(height: 6),
           Text(
             item.note,
@@ -287,6 +288,12 @@ class _ActivityTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final textPrimary = isDark
+        ? AppColors.textPrimaryDark
+        : AppColors.textPrimaryLight;
+    final textSecondary = isDark
+        ? AppColors.textSecondaryDark
+        : AppColors.textSecondaryLight;
 
     return Container(
       padding: const EdgeInsets.all(10),
@@ -316,11 +323,17 @@ class _ActivityTile extends StatelessWidget {
                 Text(
                   item.title,
                   style: theme.textTheme.titleSmall?.copyWith(
+                    color: textPrimary,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
                 const SizedBox(height: 2),
-                Text(item.subtitle, style: theme.textTheme.bodySmall),
+                Text(
+                  item.subtitle,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: textSecondary,
+                  ),
+                ),
               ],
             ),
           ),
@@ -339,106 +352,6 @@ class _ActivityTile extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _AdminBottomNavigation extends StatelessWidget {
-  const _AdminBottomNavigation({
-    required this.isDark,
-    this.onFeedbackTap,
-    this.onSettingsTap,
-  });
-
-  final bool isDark;
-  final VoidCallback? onFeedbackTap;
-  final VoidCallback? onSettingsTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final items = <_BottomNavItem>[
-      const _BottomNavItem(label: 'Tổng quan', icon: Icons.dashboard),
-      _BottomNavItem(
-        label: 'Users',
-        icon: Icons.groups_outlined,
-        onTap: () => Navigator.pushNamed(context, AppRouter.adminUsers),
-      ),
-      _BottomNavItem(
-        label: 'Phản hồi',
-        icon: Icons.chat_bubble_outline,
-        onTap: onFeedbackTap,
-      ),
-      _BottomNavItem(
-        label: 'Cài đặt',
-        icon: Icons.settings_outlined,
-        onTap: onSettingsTap,
-      ),
-    ];
-
-    return BottomAppBar(
-      shape: const CircularNotchedRectangle(),
-      notchMargin: 8,
-      color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
-      elevation: 8,
-      child: SizedBox(
-        height: 72,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            _BottomNavAction(item: items[0], isActive: true),
-            _BottomNavAction(item: items[1]),
-            const SizedBox(width: 34),
-            _BottomNavAction(item: items[2]),
-            _BottomNavAction(item: items[3]),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _BottomNavItem {
-  const _BottomNavItem({required this.label, required this.icon, this.onTap});
-
-  final String label;
-  final IconData icon;
-  final VoidCallback? onTap;
-}
-
-class _BottomNavAction extends StatelessWidget {
-  const _BottomNavAction({required this.item, this.isActive = false});
-
-  final _BottomNavItem item;
-  final bool isActive;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final color = isActive
-        ? AppColors.primary
-        : theme.textTheme.bodySmall?.color;
-
-    return InkWell(
-      onTap: item.onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 2),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(item.icon, size: 22, color: color),
-            const SizedBox(height: 2),
-            Text(
-              item.label,
-              style: theme.textTheme.labelSmall?.copyWith(
-                color: color,
-                fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

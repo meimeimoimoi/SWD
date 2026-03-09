@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../share/theme/app_colors.dart';
 import '../../../share/widgets/app_card.dart';
+import '../../../share/widgets/admin_bottom_nav.dart';
 
 class AdminSettingScreen extends StatelessWidget {
   const AdminSettingScreen({super.key});
@@ -10,6 +11,16 @@ class AdminSettingScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final textPrimary = isDark
+        ? AppColors.textPrimaryDark
+        : AppColors.textPrimaryLight;
+    final textSecondary = isDark
+        ? AppColors.textSecondaryDark
+        : AppColors.textSecondaryLight;
+    final appBarBackground = isDark
+        ? Colors.transparent
+        : AppColors.surfaceLight;
+    final appBarShadow = isDark ? Colors.transparent : Colors.black12;
 
     final configItems = <_ConfigItem>[
       const _ConfigItem(
@@ -47,7 +58,14 @@ class AdminSettingScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Settings', style: theme.textTheme.titleLarge),
+        backgroundColor: appBarBackground,
+        surfaceTintColor: Colors.transparent,
+        elevation: isDark ? 0 : 1,
+        shadowColor: appBarShadow,
+        title: Text(
+          'Settings',
+          style: theme.textTheme.titleLarge?.copyWith(color: textPrimary),
+        ),
         leading: IconButton(
           onPressed: () => Navigator.pop(context),
           icon: const Icon(Icons.arrow_back),
@@ -64,27 +82,29 @@ class AdminSettingScreen extends StatelessWidget {
                 const SizedBox(height: 20),
                 Text(
                   'System Configuration',
-                  style: theme.textTheme.titleMedium,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    color: textPrimary,
+                  ),
                 ),
                 const SizedBox(height: 12),
                 LayoutBuilder(
                   builder: (context, constraints) {
-                    final isWide = constraints.maxWidth >= 900;
-                    final itemWidth = isWide
-                        ? (constraints.maxWidth - 24) / 3
-                        : (constraints.maxWidth - 12) / 2;
+                    final width = constraints.maxWidth;
+                    final crossAxisCount = width >= 900 ? 3 : 2;
 
-                    return Wrap(
-                      spacing: 12,
-                      runSpacing: 12,
-                      children: configItems
-                          .map(
-                            (item) => SizedBox(
-                              width: itemWidth,
-                              child: _ConfigCard(item: item),
-                            ),
-                          )
-                          .toList(),
+                    return GridView.builder(
+                      physics: const NeverScrollableScrollPhysics(),
+                      shrinkWrap: true,
+                      itemCount: configItems.length,
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: crossAxisCount,
+                        crossAxisSpacing: 12,
+                        mainAxisSpacing: 12,
+                        childAspectRatio: 1.6,
+                      ),
+                      itemBuilder: (context, index) {
+                        return _ConfigCard(item: configItems[index]);
+                      },
                     );
                   },
                 ),
@@ -113,6 +133,7 @@ class AdminSettingScreen extends StatelessWidget {
           ),
         ),
       ),
+      bottomNavigationBar: const AdminBottomNav(currentIndex: 3),
     );
   }
 }
@@ -125,6 +146,12 @@ class _ProfileOverviewCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final textPrimary = isDark
+        ? AppColors.textPrimaryDark
+        : AppColors.textPrimaryLight;
+    final textSecondary = isDark
+        ? AppColors.textSecondaryDark
+        : AppColors.textSecondaryLight;
     return AppCard(
       padding: const EdgeInsets.all(18),
       child: Row(
@@ -166,16 +193,21 @@ class _ProfileOverviewCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('System Administrator', style: theme.textTheme.titleLarge),
+                Text(
+                  'System Administrator',
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    color: textPrimary,
+                  ),
+                ),
                 const SizedBox(height: 4),
                 Row(
                   children: [
-                    Icon(Icons.history, size: 14, color: theme.hintColor),
+                    Icon(Icons.history, size: 14, color: textSecondary),
                     const SizedBox(width: 6),
                     Text(
                       'Last active: 2 minutes ago',
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.hintColor,
+                        color: textSecondary,
                       ),
                     ),
                   ],
@@ -199,7 +231,7 @@ class _ProfileOverviewCard extends StatelessWidget {
             label: const Text('Edit Profile'),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,
-              foregroundColor: Colors.black,
+              foregroundColor: isDark ? AppColors.darkBackground : Colors.white,
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
               textStyle: theme.textTheme.labelLarge?.copyWith(
                 fontWeight: FontWeight.w700,
@@ -225,12 +257,13 @@ class _TagChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final textSecondary = isDark
+        ? AppColors.textSecondaryDark
+        : AppColors.textSecondaryLight;
     final background = isHighlighted
         ? AppColors.primary.withOpacity(0.2)
         : (isDark ? Colors.white10 : Colors.black12);
-    final foreground = isHighlighted
-        ? AppColors.primary
-        : theme.textTheme.bodySmall?.color;
+    final foreground = isHighlighted ? AppColors.primary : textSecondary;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -273,6 +306,12 @@ class _ConfigCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final textPrimary = isDark
+        ? AppColors.textPrimaryDark
+        : AppColors.textPrimaryLight;
+    final textSecondary = isDark
+        ? AppColors.textSecondaryDark
+        : AppColors.textSecondaryLight;
 
     return AppCard(
       padding: const EdgeInsets.all(16),
@@ -286,15 +325,12 @@ class _ConfigCard extends StatelessWidget {
                 width: 44,
                 height: 44,
                 decoration: BoxDecoration(
-                  color: isDark ? Colors.white10 : Colors.black12,
+                  color: isDark ? Colors.white10 : AppColors.lightBackground,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(item.icon, color: AppColors.primary),
               ),
-              Icon(
-                Icons.chevron_right,
-                color: theme.textTheme.bodySmall?.color?.withOpacity(0.6),
-              ),
+              Icon(Icons.chevron_right, color: textSecondary.withOpacity(0.7)),
             ],
           ),
           const SizedBox(height: 12),
@@ -304,6 +340,7 @@ class _ConfigCard extends StatelessWidget {
                 child: Text(
                   item.title,
                   style: theme.textTheme.titleMedium?.copyWith(
+                    color: textPrimary,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -320,7 +357,10 @@ class _ConfigCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 6),
-          Text(item.subtitle, style: theme.textTheme.bodySmall),
+          Text(
+            item.subtitle,
+            style: theme.textTheme.bodySmall?.copyWith(color: textSecondary),
+          ),
         ],
       ),
     );
