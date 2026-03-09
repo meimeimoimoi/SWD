@@ -197,7 +197,7 @@ class _ScanScreenState extends State<ScanScreen> {
 
     setState(() {
       _uploadStatus = _UploadStatus.uploading;
-      _statusMessage = 'Uploading...';
+      _statusMessage = 'Đang tải ảnh...';
     });
 
     final result = await _uploadService.uploadImage(imageFile: _selectedImage!);
@@ -233,7 +233,7 @@ class _ScanScreenState extends State<ScanScreen> {
 
     setState(() {
       _uploadStatus = _UploadStatus.uploading;
-      _statusMessage = 'Analyzing image...';
+      _statusMessage = 'Đang phân tích ảnh...';
     });
 
     try {
@@ -296,6 +296,7 @@ class _ScanScreenState extends State<ScanScreen> {
   Widget build(BuildContext context) {
     return AppScaffold(
       centerContent: false,
+      showUserBottomNav: true,
       title: 'Scan',
       child: SingleChildScrollView(
         child: Column(
@@ -438,11 +439,11 @@ class _UploadCard extends StatelessWidget {
                               ),
                               const SizedBox(height: 10),
                               Text(
-                                'Drop image here or browse',
+                                'Tải ảnh lên để bắt đầu',
                                 style: Theme.of(context).textTheme.bodyLarge,
                               ),
                               Text(
-                                'PNG, JPG up to 10MB',
+                                'Định dạng: JPG, PNG|tối đa: 5MB',
                                 style: Theme.of(context).textTheme.bodyMedium,
                               ),
                             ],
@@ -510,7 +511,7 @@ class _UploadCard extends StatelessWidget {
             children: [
               Expanded(
                 child: AppButton(
-                  label: 'Upload files',
+                  label: 'Tải ảnh',
                   icon: Icons.folder_open,
                   onPressed: isUploading ? null : onPickFromGallery,
                 ),
@@ -518,7 +519,7 @@ class _UploadCard extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: AppButton(
-                  label: 'Use camera',
+                  label: 'Chụp ảnh',
                   variant: AppButtonVariant.outlined,
                   icon: Icons.photo_camera_outlined,
                   onPressed: isUploading ? null : onPickFromCamera,
@@ -537,7 +538,7 @@ class _UploadCard extends StatelessWidget {
           ] else ...[
             const SizedBox(height: 12),
             Text(
-              'Tip: ensure leaves are in focus and well-lit.',
+              'Chọn ảnh để bắt đầu',
               style: Theme.of(context).textTheme.bodyMedium,
             ),
           ],
@@ -564,7 +565,11 @@ class _HistoryCard extends StatelessWidget {
           AppButton(
             label: 'View full history',
             variant: AppButtonVariant.ghost,
-            onPressed: () {},
+            onPressed: () => Navigator.pushNamed(
+              context,
+              AppRouter.treatmentHub,
+              arguments: 2,
+            ),
           ),
         ],
       ),

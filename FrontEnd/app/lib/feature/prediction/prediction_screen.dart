@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../routes/app_router.dart';
 import '../../share/services/prediction_service.dart';
 import '../../share/utils/disease_mapper.dart';
 
@@ -374,11 +375,7 @@ class PredictionScreen extends StatelessWidget {
             children: [
               Text(
                 'Độ tin cậy của AI',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                 
-                ),
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
               ),
               Text(
                 '$confidencePercent%',
@@ -1178,69 +1175,7 @@ class PredictionScreen extends StatelessWidget {
   }
 
   void _onFeedback(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        final isDark = Theme.of(context).brightness == Brightness.dark;
-        return AlertDialog(
-          backgroundColor: isDark ? const Color(0xFF27272a) : Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          title: Text(
-            'Phản hồi kết quả',
-            style: TextStyle(
-              color: isDark ? Colors.white : const Color(0xFF111827),
-            ),
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'Kết quả chẩn đoán có chính xác không?',
-                style: TextStyle(
-                  color: isDark
-                      ? const Color(0xFFD1D5DB)
-                      : const Color(0xFF4B5563),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  _buildFeedbackOption(
-                    icon: Icons.thumb_up,
-                    label: 'Chính xác',
-                    color: const Color(0xFF22C55E),
-                    onTap: () {
-                      Navigator.pop(context);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Cảm ơn phản hồi của bạn!'),
-                        ),
-                      );
-                    },
-                  ),
-                  _buildFeedbackOption(
-                    icon: Icons.thumb_down,
-                    label: 'Không chính xác',
-                    color: const Color(0xFFEF4444),
-                    onTap: () {
-                      Navigator.pop(context);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Cảm ơn! Chúng tôi sẽ cải thiện AI.'),
-                        ),
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ],
-          ),
-        );
-      },
-    );
+    Navigator.of(context).pushNamed(AppRouter.feedback);
   }
 
   Widget _buildFeedbackOption({

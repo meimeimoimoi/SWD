@@ -70,8 +70,13 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           );
 
-          // Navigate to dashboard
-          Navigator.pushReplacementNamed(context, AppRouter.dashboard);
+          final normalizedRole = role?.toLowerCase();
+          final targetRoute = normalizedRole == 'admin'
+              ? AppRouter.adminDashboard
+              : AppRouter.dashboard;
+
+          // Navigate to dashboard based on role
+          Navigator.pushReplacementNamed(context, targetRoute);
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
