@@ -123,6 +123,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     return AppScaffold(
       centerContent: false,
+      showUserBottomNav: true,
       title: 'Profile',
       child: Column(
         children: [

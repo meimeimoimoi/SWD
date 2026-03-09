@@ -25,6 +25,7 @@ class DashboardScreen extends StatelessWidget {
 
     return AppScaffold(
       centerContent: false,
+      showUserBottomNav: true,
       title: 'Dashboard',
       actions: [
         AppButton(
@@ -55,14 +56,7 @@ class DashboardScreen extends StatelessWidget {
                   expand: false,
                   onPressed: () => Navigator.pushNamed(context, AppRouter.scan),
                 ),
-                AppButton(
-                  label: 'Treatment hub',
-                  icon: Icons.medical_services_outlined,
-                  variant: AppButtonVariant.outlined,
-                  expand: false,
-                  onPressed: () =>
-                      Navigator.pushNamed(context, AppRouter.treatmentHub),
-                ),
+
                 AppButton(
                   label: 'View profile',
                   variant: AppButtonVariant.ghost,

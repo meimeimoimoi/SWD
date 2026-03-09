@@ -11,7 +11,6 @@ import '../feature/scan/scan_screen.dart';
 import '../feature/profile/profile_screen.dart';
 import '../feature/profile/update_profile_screen.dart';
 import '../feature/prediction/prediction_screen.dart';
-import '../feature/treatment/treatment_hub_screen.dart';
 
 class AppRouter {
   static final GlobalKey<NavigatorState> navigatorKey =
@@ -59,11 +58,7 @@ class AppRouter {
         return MaterialPageRoute(
           builder: (_) => PredictionScreen(result: result),
         );
-      case treatmentHub:
-        final initialTab = settings.arguments as int? ?? 0;
-        return MaterialPageRoute(
-          builder: (_) => TreatmentHubScreen(initialTab: initialTab),
-        );
+ 
       case feedback:
         return MaterialPageRoute(builder: (_) => const FeedbackScreen());
       case login:
