@@ -21,6 +21,7 @@ namespace MyApp.Infrastructure
             services.AddScoped<ApiResponse>();
 
             // New services
+            services.AddScoped<ITechnicianService, TechnicianService>();
             services.AddScoped<ITreatmentService, TreatmentService>();
             services.AddScoped<IModelService, ModelService>();
             services.AddScoped<IPredictionHistoryService, PredictionHistoryService>();
