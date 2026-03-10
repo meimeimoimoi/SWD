@@ -46,7 +46,7 @@ namespace MyApp.Persistence.Repositories
                 .FirstOrDefaultAsync(ts => ts.SolutionId == solutionId);
         }
 
-        public async Task<List<TreatmentSolution?>> GetAllSolutionsAsync()
+        public async Task<List<TreatmentSolution>> GetAllSolutionsAsync()
         {
             return await _context.TreatmentSolutions
               .Include(ts => ts.Illness)

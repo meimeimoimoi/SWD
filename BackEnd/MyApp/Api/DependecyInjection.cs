@@ -18,6 +18,7 @@ namespace MyApp.Api
             service.AddScoped<ITreatmentSolutionService, TreatmentSolutionService>();
             service.AddScoped<ITreeIllnessService, TreeIllnessService>();
             service.AddScoped<ITreeStageService, TreeStageService>();
+            service.AddScoped<IRatingService, RatingService>();
 
             // Repositories
             service.AddScoped<UserRepository>();
@@ -26,7 +27,8 @@ namespace MyApp.Api
             service.AddScoped<TreatmentSolutionRepository>();
             service.AddScoped<TreeIllnessRepository>();
             service.AddScoped<TreeStageRepository>();
-            
+            service.AddScoped<RatingRepository>();
+
             // Utilities
             service.AddScoped<JwtTokenGeneratior>();
             service.AddScoped<IPasswordHasher, BCryptPasswordHasher>();
