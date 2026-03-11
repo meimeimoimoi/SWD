@@ -26,6 +26,7 @@ namespace MyApp.Application.Features.Treatment.DTOs
         public List<SolutionConditionDto> Conditions { get; set; } = new();
     }
 
+    
     public class SolutionConditionDto
     {
         public int ConditionId { get; set; }

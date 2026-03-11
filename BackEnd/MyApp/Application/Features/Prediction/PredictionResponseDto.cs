@@ -1,4 +1,6 @@
-﻿namespace MyApp.Application.Features.Prediction
+﻿using MyApp.Application.Features.Treatment.DTOs;
+
+namespace MyApp.Application.Features.Prediction
 {
     public class PredictionResponseDto
     {
@@ -15,11 +17,24 @@
 
         // Thông tin điều trị
         public List<TreatmentDto> Treatments { get; set; } = new List<TreatmentDto>();
+        public List<MedicineDto> Medicines { get; set; } = new List<MedicineDto>();
+
     }
     public class TreatmentDto
     {
         public string Name { get; set; } = string.Empty;
         public string Type { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
+    }
+    
+
+ public class MedicineDto
+    {  
+        public string Name { get; set; } = string.Empty;
+                public string Type { get; set; } = string.Empty;
+
+     public string Description { get; set; } = string.Empty;
+
+
     }
 }

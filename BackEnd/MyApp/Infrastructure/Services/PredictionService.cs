@@ -1,6 +1,7 @@
 ﻿using Microsoft.ML.OnnxRuntime;
 using Microsoft.ML.OnnxRuntime.Tensors;
 using MyApp.Application.Features.Prediction;
+using MyApp.Application.Features.Treatment.DTOs;
 using MyApp.Application.Interfaces;
 using MyApp.Domain.Entities;
 using MyApp.Persistence.Repositories;
@@ -96,7 +97,7 @@ namespace MyApp.Infrastructure.Services
             var uploadResult = await _imageUploadService.UploadImageAsync(userId, imageFile);
 
             using var stream = File.OpenRead(uploadResult.FilePath!);
-            using var image  = Image.Load<Rgb24>(stream);
+            using var image = Image.Load<Rgb24>(stream);
 
             image.Mutate(x => x.Resize(new ResizeOptions
             {
@@ -114,24 +115,24 @@ namespace MyApp.Infrastructure.Services
                     inputTensor[0, y, x, 2] = pixel.B;
                 }
 
-            var inputName  = _session!.InputMetadata.Keys.First();
+            var inputName = _session!.InputMetadata.Keys.First();
             var outputName = _session.OutputMetadata.Keys.First();
-            var inputs     = new List<NamedOnnxValue>
+            var inputs = new List<NamedOnnxValue>
             {
                 NamedOnnxValue.CreateFromTensor(inputName, inputTensor)
             };
 
-            using var results  = _session.Run(inputs);
-            var outputArray    = results.First(v => v.Name == outputName)
+            using var results = _session.Run(inputs);
+            var outputArray = results.First(v => v.Name == outputName)
                                         .AsEnumerable<float>().ToArray();
 
-            int   predictedIndex = 0;
-            float maxConfidence  = outputArray[0];
+            int predictedIndex = 0;
+            float maxConfidence = outputArray[0];
             for (int i = 1; i < outputArray.Length; i++)
             {
                 if (outputArray[i] > maxConfidence)
                 {
-                    maxConfidence  = outputArray[i];
+                    maxConfidence = outputArray[i];
                     predictedIndex = i;
                 }
             }
@@ -148,14 +149,14 @@ namespace MyApp.Infrastructure.Services
 
             var prediction = new Prediction
             {
-                UploadId         = uploadResult.UploadId,
-                ModelVersionId   = _loadedModelVersionId,
-                Illness          = illnessInfo,
-                PredictedClass   = predictedLabel,
-                ConfidenceScore  = (decimal)maxConfidence,
-                TopNPredictions  = JsonSerializer.Serialize(allProbs),
+                UploadId = uploadResult.UploadId,
+                ModelVersionId = _loadedModelVersionId,
+                Illness = illnessInfo,
+                PredictedClass = predictedLabel,
+                ConfidenceScore = (decimal)maxConfidence,
+                TopNPredictions = JsonSerializer.Serialize(allProbs),
                 ProcessingTimeMs = (int)stopwatch.ElapsedMilliseconds,
-                CreatedAt        = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow
             };
 
             await _predictionRepository.AddPredictionAsync(prediction);
@@ -166,20 +167,29 @@ namespace MyApp.Infrastructure.Services
 
             return new PredictionResponseDto
             {
-                PredictionId     = prediction.PredictionId,
-                ImageUrl         = uploadResult.StoredFilename ?? string.Empty,
-                PredictedClass   = predictedLabel,
-                Confidence       = Math.Round(maxConfidence, 4),
+                PredictionId = prediction.PredictionId,
+                ImageUrl = uploadResult.StoredFilename ?? string.Empty,
+                PredictedClass = predictedLabel,
+                Confidence = Math.Round(maxConfidence, 4),
                 ProcessingTimeMs = stopwatch.ElapsedMilliseconds,
-                DiseaseName      = illnessInfo?.IllnessName ?? predictedLabel,
-                Symptoms         = illnessInfo?.Symptoms    ?? "No description available.",
-                Causes           = illnessInfo?.Causes,
-                Treatments       = illnessInfo?.TreatmentSolutions.Select(t => new TreatmentDto
+                DiseaseName = illnessInfo?.IllnessName ?? predictedLabel,
+                Symptoms = illnessInfo?.Symptoms ?? "No description available.",
+                Causes = illnessInfo?.Causes,
+                Treatments = illnessInfo?.TreatmentSolutions.Where(t => t.SolutionType == "treatment")
+                .Select(t => new TreatmentDto
                 {
-                    Name        = t.SolutionName ?? "Treatment",
-                    Type        = t.SolutionType ?? "Unknown",
-                    Description = t.Description  ?? string.Empty
-                }).ToList() ?? new List<TreatmentDto>()
+                    Name = t.SolutionName ?? "Treatment",
+                    Type = t.SolutionType ?? "treatment",
+                    Description = t.Description ?? string.Empty
+                }).ToList() ?? new List<TreatmentDto>(),
+                Medicines = illnessInfo?.TreatmentSolutions.Where(m => m.SolutionType == "medicine")
+                .Select(m => new MedicineDto
+                {
+                    Name = m.SolutionName ?? "Medicine",
+                    Type = m.SolutionType ?? "medicine",
+                    Description = m.Description ?? string.Empty
+                }).ToList() ?? new List<MedicineDto>()
+                
             };
         }
 
