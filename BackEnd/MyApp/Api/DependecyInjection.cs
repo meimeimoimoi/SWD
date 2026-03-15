@@ -17,10 +17,12 @@ namespace MyApp.Api
             service.AddScoped<IMessageService, MessageService>();
             service.AddScoped<IImageUploadService, ImageUploadService>();
             service.AddScoped<IUserService, UserService>();
-            
+            service.AddScoped<IRatingService, RatingService>();
+
             // Repositories
             service.AddScoped<UserRepository>();
             service.AddScoped<ImageUploadRepository>();
+            service.AddScoped<RatingRepository>();
             
             // Utilities
             service.AddScoped<JwtTokenGeneratior>();

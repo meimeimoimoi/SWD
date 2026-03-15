@@ -28,6 +28,7 @@ namespace MyApp.Infrastructure
             services.AddScoped<IDataManagementService, DataManagementService>();
             services.AddScoped<IMonitoringService, MonitoringService>();
             services.AddScoped<IReviewService, ReviewService>();
+            services.AddScoped<IRatingService, RatingService>();
             services.AddScoped<DataSeeder>();
             return services;
         }
