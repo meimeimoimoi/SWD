@@ -14,6 +14,11 @@ namespace MyApp.Infrastructure
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IPasswordHasher, BCryptPasswordHasher>();
             services.AddScoped<IImageUploadService, ImageUploadService>();
+            services.AddScoped<IPredictionService, PredictionService>();
+            services.AddScoped<ITreatmentSolutionService, TreatmentSolutionService>();
+            services.AddScoped<ITreeIllnessService, TreeIllnessService>();
+            services.AddScoped<ITreeStageService, TreeStageService>();
+            // Register infrastructure services here
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<JwtTokenGeneratior>();
             services.AddScoped<IMessageService, MessageService>();
