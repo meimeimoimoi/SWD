@@ -1,9 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.OpenApi.Models;
 using MyApp.Api;
 using MyApp.Application.Interfaces;
 using MyApp.Configuration;
+using MyApp.Infrastructure;
 using MyApp.Infrastructure.Data;
+using MyApp.Persistence;
 using MyApp.Persistence.Context;
 
 namespace MyApp
@@ -17,7 +20,9 @@ namespace MyApp
             builder.Services.AddControllers();
             builder.Services.AddSwaggerDocumentation();
             builder.Services.AddApplicationSerivce();
-            
+            builder.Services.AddInfrastructureService();
+            builder.Services.AddPersitenceService();
+
             // Add DbContext
             builder.Services.AddDbContext<AppDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -45,6 +50,14 @@ namespace MyApp
             }
 
             app.UseSwaggerDocumentation();
+
+            var uploadsImagesPath = Path.Combine(app.Environment.ContentRootPath, "uploads", "images");
+            Directory.CreateDirectory(uploadsImagesPath);
+            app.UseStaticFiles(new StaticFileOptions
+            {
+                FileProvider = new PhysicalFileProvider(uploadsImagesPath),
+                RequestPath = "/uploads/images"
+            });
 
             // Important: Authentication must come before Authorization
             app.UseAuthentication();

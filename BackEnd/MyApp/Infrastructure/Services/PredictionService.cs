@@ -1,152 +1,203 @@
-﻿using MyApp.Application.Features.TreeIllnesses.DTOs;
-using MyApp.Application.Features.Users.DTOs;
+﻿using Microsoft.ML.OnnxRuntime;
+using Microsoft.ML.OnnxRuntime.Tensors;
+using MyApp.Application.Features.Prediction;
 using MyApp.Application.Interfaces;
 using MyApp.Domain.Entities;
 using MyApp.Persistence.Repositories;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
+using System.Diagnostics;
+using System.Text.Json;
 
 namespace MyApp.Infrastructure.Services
 {
-    public class PredictionService : IPredictionService
+    public class PredictionService : IPredictionService, IDisposable
     {
-        private readonly PredictionRepository _predictionRepository;
         private readonly ILogger<PredictionService> _logger;
+        private readonly PredictionRepository _predictionRepository;
+        private readonly IImageUploadService _imageUploadService;
+        private readonly IllnessRepository _illnessRepository;
+        private readonly ModelRepository _modelRepository;
+        private readonly IWebHostEnvironment _env;
 
-        public PredictionService(PredictionRepository predictionRepository, ILogger<PredictionService> logger)
+        private InferenceSession? _session;
+        private int? _loadedModelVersionId;
+        private const int ImageSize = 224;
+
+        private readonly Dictionary<int, string> _labels = new()
         {
-            _predictionRepository = predictionRepository;
+            { 0, "Bacterial Leaf Blight" },
+            { 1, "Brown Spot" },
+            { 2, "Healthy Rice Leaf" },
+            { 3, "Leaf Blast" }
+        };
+
+        public PredictionService(
+            ILogger<PredictionService> logger,
+            PredictionRepository predictionRepository,
+            IImageUploadService imageUploadService,
+            IllnessRepository illnessRepository,
+            ModelRepository modelRepository,
+            IWebHostEnvironment env)
+        {
             _logger = logger;
+            _predictionRepository = predictionRepository;
+            _imageUploadService = imageUploadService;
+            _illnessRepository = illnessRepository;
+            _modelRepository = modelRepository;
+            _env = env;
         }
 
-        public async Task<PredictionResponseDto> CreatePredictionAsync(
-            int uploadId, 
-            int illnessId,
-            decimal confidenceScore, 
-            string? topNPredictions = null)
+        // ── Load active default model from DB ────────────────────────────────
+
+        private async Task EnsureModelLoadedAsync()
         {
-            try
+            var defaultModel = await _modelRepository.GetDefaultModelAsync();
+
+            if (defaultModel == null)
+                throw new InvalidOperationException(
+                    "No active default model found in the database. Please activate a model first.");
+
+            // Already loaded the same model — skip
+            if (_session != null && _loadedModelVersionId == defaultModel.ModelVersionId)
+                return;
+
+            _session?.Dispose();
+            _session = null;
+
+            // Read FilePath from DB (relative path stored at upload/seed time)
+            if (string.IsNullOrWhiteSpace(defaultModel.FilePath))
+                throw new InvalidOperationException(
+                    $"Model Id={defaultModel.ModelVersionId} has no FilePath stored in the database.");
+
+            var modelPath = Path.Combine(_env.ContentRootPath, defaultModel.FilePath);
+
+            if (!File.Exists(modelPath))
+                throw new InvalidOperationException(
+                    $"Model file not found at '{modelPath}'. Please re-upload the model file.");
+
+            _session = new InferenceSession(modelPath);
+            _loadedModelVersionId = defaultModel.ModelVersionId;
+
+            _logger.LogInformation(
+                "ONNX model loaded — Id={Id}, Name='{Name}', v{Version}, Path='{Path}'",
+                defaultModel.ModelVersionId, defaultModel.ModelName, defaultModel.Version, modelPath);
+        }
+
+        // ── Predict ──────────────────────────────────────────────────────────
+
+        public async Task<PredictionResponseDto> PredictAsync(int userId, IFormFile imageFile)
+        {
+            await EnsureModelLoadedAsync();
+
+            var stopwatch = Stopwatch.StartNew();
+
+            var uploadResult = await _imageUploadService.UploadImageAsync(userId, imageFile);
+
+            using var stream = File.OpenRead(uploadResult.FilePath!);
+            using var image  = Image.Load<Rgb24>(stream);
+
+            image.Mutate(x => x.Resize(new ResizeOptions
             {
-                var prediction = new Prediction
+                Size = new Size(ImageSize, ImageSize),
+                Mode = ResizeMode.Stretch
+            }));
+
+            var inputTensor = new DenseTensor<float>(new[] { 1, ImageSize, ImageSize, 3 });
+            for (int y = 0; y < image.Height; y++)
+                for (int x = 0; x < image.Width; x++)
                 {
-                    UploadId = uploadId,
-                    IllnessId = illnessId,
-                    ConfidenceScore = confidenceScore,
-                    TopNPredictions = topNPredictions,
-                    CreatedAt = DateTime.Now
-                };
+                    var pixel = image[x, y];
+                    inputTensor[0, y, x, 0] = pixel.R;
+                    inputTensor[0, y, x, 1] = pixel.G;
+                    inputTensor[0, y, x, 2] = pixel.B;
+                }
 
-                var savePrediction = await _predictionRepository.AddPredictionAsync(prediction);
-
-                _logger.LogInformation("Prediction created: PredictionId={PredictionId}, UploadId={UploadId}",
-                    savePrediction.PredictionId, uploadId);
-
-                return MapToDto(savePrediction);
-            }catch(Exception ex)
+            var inputName  = _session!.InputMetadata.Keys.First();
+            var outputName = _session.OutputMetadata.Keys.First();
+            var inputs     = new List<NamedOnnxValue>
             {
-                _logger.LogError(ex, "Error creating prediction for upload {UploadId}", uploadId);
-                throw;
-            }
-        }
-
-        public async Task<PredictionResponseDto?> GetPredictionByIdAsync(int predictionId)
-        {
-            try
-            {
-                var prediction = await _predictionRepository.GetPredictionByIdAsync(predictionId);
-                return prediction != null ? MapToDto(prediction) : null;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error getting prediction {PredictionId}", predictionId);
-                throw;
-            }
-        }
-
-        public async Task<PredictionResponseDto?> GetPredictionByUploadIdAsync(int uploadId)
-        {
-            try
-            {
-                var prediction = await _predictionRepository.GetPredictionByUploadIdAsync(uploadId);
-                return prediction != null ? MapToDto(prediction) : null;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error getting prediction for upload {UploadId}", uploadId);
-                throw;
-            }
-        }
-
-        public async Task<List<PredictionResponseDto>> GetUserPredictionsAsync(int userId)
-        {
-            try
-            {
-                var predictions = await _predictionRepository.GetPredictionsByUserIdAsync(userId);
-                return predictions.Select(MapToDto).ToList();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error getting predictions for user {UserId}", userId);
-                throw;
-            }
-        }
-
-        public async Task<(List<PredictionResponseDto> predictions, PaginationMetadata pagination)> GetFilteredUserPredictionsAsync(
-            int userId,
-            PredictionFilterRequestDto filter)
-        {
-            try
-            {
-                var (predictions, totalCount) = await _predictionRepository
-                    .GetFilteredPredictionsByUserIdAsync(userId, filter);
-
-                var dtos = predictions.Select(MapToDto).ToList();
-
-                var totalPages = (int)Math.Ceiling(totalCount / (double)filter.PageSize);
-
-                var pagination = new PaginationMetadata
-                {
-                    CurrentPage = filter.Page,
-                    PageSize = filter.PageSize,
-                    TotalItems = totalCount,
-                    TotalPages = totalPages
-                };
-
-                return (dtos, pagination);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error getting filtered predictions for user {UserId}", userId);
-                throw;
-            }
-        }
-
-        private PredictionResponseDto MapToDto(Prediction prediction)
-        {
-            var dto = new PredictionResponseDto
-            {
-                PredictionId = prediction.PredictionId,
-                UploadId = prediction.UploadId,
-                IllnessId = prediction.IllnessId,
-                IllnessName = prediction.Illness?.IllnessName,
-                IllnessScientificName = prediction.Illness?.ScientificName,
-                IllnessSeverity = prediction.Illness?.Severity,
-                IllnessDescription = prediction.Illness?.Description,
-                Symptoms = prediction.Illness?.Symptoms,
-                Causes = prediction.Illness?.Causes,
-                TreeId = prediction.TreeId,
-                TreeName = prediction.Tree?.TreeName,
-                PredictedClass = prediction.PredictedClass,
-                ConfidenceScore = prediction.ConfidenceScore,
-                ConfidencePercentage = prediction.ConfidenceScore.HasValue
-                ? $"{(prediction.ConfidenceScore.Value * 100):F2}%"
-                : null,
-                TopNPredictions = prediction.TopNPredictions,
-                ModelVersionId = prediction.ModelVersionId,
-                ModelName = prediction.ModelVersion?.ModelName,
-                ModelVersion = prediction.ModelVersion?.Version,
-                ProcessingTimeMs = prediction.ProcessingTimeMs,
-                CreatedAt = prediction.CreatedAt
+                NamedOnnxValue.CreateFromTensor(inputName, inputTensor)
             };
-            return dto;
+
+            using var results  = _session.Run(inputs);
+            var outputArray    = results.First(v => v.Name == outputName)
+                                        .AsEnumerable<float>().ToArray();
+
+            int   predictedIndex = 0;
+            float maxConfidence  = outputArray[0];
+            for (int i = 1; i < outputArray.Length; i++)
+            {
+                if (outputArray[i] > maxConfidence)
+                {
+                    maxConfidence  = outputArray[i];
+                    predictedIndex = i;
+                }
+            }
+
+            string predictedLabel = _labels[predictedIndex];
+
+            var allProbs = new Dictionary<string, double>();
+            for (int i = 0; i < outputArray.Length; i++)
+                allProbs[_labels[i]] = Math.Round(outputArray[i], 6);
+
+            var illnessInfo = await _illnessRepository.GetByNameAysnc(predictedLabel);
+
+            stopwatch.Stop();
+
+            var prediction = new Prediction
+            {
+                UploadId         = uploadResult.UploadId,
+                ModelVersionId   = _loadedModelVersionId,
+                Illness          = illnessInfo,
+                PredictedClass   = predictedLabel,
+                ConfidenceScore  = (decimal)maxConfidence,
+                TopNPredictions  = JsonSerializer.Serialize(allProbs),
+                ProcessingTimeMs = (int)stopwatch.ElapsedMilliseconds,
+                CreatedAt        = DateTime.UtcNow
+            };
+
+            await _predictionRepository.AddPredictionAsync(prediction);
+
+            _logger.LogInformation(
+                "Prediction saved — Id={Id}, Class={Class}, Confidence={Conf:P2}, ModelId={ModelId}",
+                prediction.PredictionId, predictedLabel, maxConfidence, _loadedModelVersionId);
+
+            return new PredictionResponseDto
+            {
+                PredictionId     = prediction.PredictionId,
+                ImageUrl         = uploadResult.StoredFilename ?? string.Empty,
+                PredictedClass   = predictedLabel,
+                Confidence       = Math.Round(maxConfidence, 4),
+                ProcessingTimeMs = stopwatch.ElapsedMilliseconds,
+                DiseaseName      = illnessInfo?.IllnessName ?? predictedLabel,
+                Symptoms         = illnessInfo?.Symptoms    ?? "No description available.",
+                Causes           = illnessInfo?.Causes,
+                Treatments       = illnessInfo?.TreatmentSolutions.Select(t => new TreatmentDto
+                {
+                    Name        = t.SolutionName ?? "Treatment",
+                    Type        = t.SolutionType ?? "Unknown",
+                    Description = t.Description  ?? string.Empty
+                }).ToList() ?? new List<TreatmentDto>()
+            };
         }
+
+        // ── Health check ─────────────────────────────────────────────────────
+
+        public async Task<bool> IsModelLoaded()
+        {
+            try
+            {
+                await EnsureModelLoadedAsync();
+                return _session != null;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public void Dispose() => _session?.Dispose();
     }
 }

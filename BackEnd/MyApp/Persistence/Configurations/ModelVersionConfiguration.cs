@@ -38,6 +38,10 @@ namespace MyApp.Persistence.Configurations
                 .IsUnicode(false)
                 .HasDefaultValue("resnet18")
                 .HasColumnName("model_type");
+            entity.Property(e => e.FilePath)
+                .HasMaxLength(500)
+                .IsUnicode(false)
+                .HasColumnName("file_path");
             entity.Property(e => e.Version)
                 .HasMaxLength(50)
                 .IsUnicode(false)

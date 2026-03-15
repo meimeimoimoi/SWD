@@ -1,5 +1,6 @@
 ﻿using MyApp.Application.Interfaces;
 using MyApp.Infrastructure.Data;
+using MyApp.Infrastructure.Helpers;
 using MyApp.Infrastructure.Services;
 using MyApp.Persistence.Repositories;
 
@@ -9,7 +10,8 @@ namespace MyApp.Api
     {
         public static IServiceCollection AddApplicationSerivce(this IServiceCollection service)
         {
-            // Services
+
+          // Services
             service.AddScoped<IAuthService, AuthService>();
             service.AddScoped<IAdminService, AdminService>();
             service.AddScoped<IMessageService, MessageService>();
@@ -20,6 +22,8 @@ namespace MyApp.Api
             service.AddScoped<ITreeStageService, TreeStageService>();
             service.AddScoped<IRatingService, RatingService>();
 
+            service.AddScoped<IUserService, UserService>();
+            
             // Repositories
             service.AddScoped<UserRepository>();
             service.AddScoped<ImageUploadRepository>();
@@ -36,6 +40,8 @@ namespace MyApp.Api
             // Data Seeder
             service.AddScoped<DataSeeder>();
 
+            service.AddTransient<ApiResponse>();
+            service.AddScoped<IPredictionService, PredictionService>();
             return service;
         }
     }

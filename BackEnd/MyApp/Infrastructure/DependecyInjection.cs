@@ -1,23 +1,39 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using MyApp.Application.Interfaces;
+using MyApp.Infrastructure.Data;
+using MyApp.Infrastructure.Helpers;
 using MyApp.Infrastructure.Services;
 
 namespace MyApp.Infrastructure
 {
-    public class DependecyInjection
+    public static class DependecyInjection
     {
-        public static void RegisterServices(IServiceCollection services)
+        public static IServiceCollection AddInfrastructureService(this IServiceCollection services)
         {
+            services.AddScoped<IAdminService, AdminService>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IPasswordHasher, BCryptPasswordHasher>();
-            services.AddScoped<IMessageService, MessageService>();
-            services.AddScoped<IAdminService, AdminService>();
             services.AddScoped<IImageUploadService, ImageUploadService>();
             services.AddScoped<IPredictionService, PredictionService>();
             services.AddScoped<ITreatmentSolutionService, TreatmentSolutionService>();
             services.AddScoped<ITreeIllnessService, TreeIllnessService>();
             services.AddScoped<ITreeStageService, TreeStageService>();
             // Register infrastructure services here
+            services.AddScoped<IUserService, UserService>();
+            services.AddScoped<JwtTokenGeneratior>();
+            services.AddScoped<IMessageService, MessageService>();
+            services.AddScoped<IPredictionService, PredictionService>();
+            services.AddScoped<ApiResponse>();
+
+            // New services
+            services.AddScoped<ITreatmentService, TreatmentService>();
+            services.AddScoped<IModelService, ModelService>();
+            services.AddScoped<IPredictionHistoryService, PredictionHistoryService>();
+            services.AddScoped<IDataManagementService, DataManagementService>();
+            services.AddScoped<IMonitoringService, MonitoringService>();
+            services.AddScoped<IReviewService, ReviewService>();
+            services.AddScoped<DataSeeder>();
+            return services;
         }
     }
 }

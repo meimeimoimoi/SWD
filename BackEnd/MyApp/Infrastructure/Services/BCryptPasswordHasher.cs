@@ -17,7 +17,6 @@ namespace MyApp.Infrastructure.Services
 
         public string GenerateRandomPassword(int length = 12)
         {
-            // ✅ FIX: Use thread-safe RandomNumberGenerator instead of Random()
             const string validChars = "ABCDEFGHJKLMNOPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz0123456789!@#$%^&*?";
             var bytes = new byte[length];
             System.Security.Cryptography.RandomNumberGenerator.Fill(bytes);

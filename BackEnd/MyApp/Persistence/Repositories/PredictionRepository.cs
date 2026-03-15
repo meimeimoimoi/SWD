@@ -1,6 +1,10 @@
+<<<<<<< Tri
 ﻿using Microsoft.EntityFrameworkCore;
 using MyApp.Application.Features.Users.DTOs;
 using MyApp.Domain.Entities;
+=======
+﻿using MyApp.Domain.Entities;
+>>>>>>> main
 using MyApp.Persistence.Context;
 
 namespace MyApp.Persistence.Repositories
@@ -14,6 +18,7 @@ namespace MyApp.Persistence.Repositories
             _context = context;
         }
 
+<<<<<<< Tri
         public async Task<Prediction?> GetPredictionByUploadIdAsync(int uploadId)
         {
             return await _context.Predictions
@@ -37,12 +42,15 @@ namespace MyApp.Persistence.Repositories
                 .ToListAsync();
         }
 
+=======
+>>>>>>> main
         public async Task<Prediction> AddPredictionAsync(Prediction prediction)
         {
             _context.Predictions.Add(prediction);
             await _context.SaveChangesAsync();
             return prediction;
         }
+<<<<<<< Tri
 
         public async Task<Prediction?> GetPredictionByIdAsync(int predictionId)
         {
@@ -130,4 +138,8 @@ namespace MyApp.Persistence.Repositories
             return (predictions, totalCount);
         }
     }
+=======
+    }
+
+>>>>>>> main
 }

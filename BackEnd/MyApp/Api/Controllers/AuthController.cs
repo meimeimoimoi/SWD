@@ -66,6 +66,56 @@ namespace MyApp.Api.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] ResgisterRequestDTO request)
         {
+            // 1. Kiểm tra Model (Validation từ DTO)
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = "Dữ liệu đầu vào không hợp lệ",
+                    errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage)
+                });
+            }
+
+            try
+            {
+                // 2. Gọi Service và nhận kết quả ApiResponse
+                var result = await _authService.RegisterAsync(request);
+
+                // 3. Kiểm tra kết quả trả về từ Service
+                if (!result.Success)
+                {
+                    return BadRequest(new
+                    {
+                        success = false,
+                        message = result.Message
+                    });
+                }
+
+                return Ok(new
+                {
+                    success = true,
+                    message = result.Message
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi hệ thống khi đăng ký");
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "Lỗi máy chủ nội bộ",
+                    error = ex.Message
+                });
+            }
+        }
+
+        [HttpPost("refresh")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public async Task<IActionResult> Refresh([FromBody] RefreshTokenRequestDTO request)
+        {
             try
             {
                 if (!ModelState.IsValid)
@@ -78,24 +128,17 @@ namespace MyApp.Api.Controllers
                     });
                 }
 
-                await _authService.RegisterAsync(request);
+                var token = await _authService.RefreshAsync(request);
                 return Ok(new
                 {
                     success = true,
-                    message = "Registration successful."
+                    message = "Refresh token successful",
+                    token = token
                 });
             }
-            catch (InvalidOperationException ex)
+            catch (UnauthorizedAccessException ex)
             {
-                return BadRequest(new
-                {
-                    success = false,
-                    message = ex.Message
-                });
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(new
+                return Unauthorized(new
                 {
                     success = false,
                     message = ex.Message
@@ -103,11 +146,11 @@ namespace MyApp.Api.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error during registration");
+                _logger.LogError(ex, "Error during refresh token");
                 return StatusCode(500, new
                 {
                     success = false,
-                    message = "An error occurred during registration",
+                    message = "An error occurred during refresh token",
                     error = ex.Message
                 });
             }

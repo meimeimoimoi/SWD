@@ -1,5 +1,6 @@
 ﻿using MyApp.Application.Features.TreeIllnesses.DTOs;
 using MyApp.Application.Features.Users.DTOs;
+﻿using MyApp.Application.Features.Prediction;
 
 namespace MyApp.Application.Interfaces
 {
@@ -12,5 +13,7 @@ namespace MyApp.Application.Interfaces
             int userId,
             PredictionFilterRequestDto filter);
         Task<PredictionResponseDto> CreatePredictionAsync(int uploadId, int illnessId, decimal confidenceScore, string? topNPredictions = null);
+        Task<PredictionResponseDto> PredictAsync(int userId, IFormFile imageFile);
+        Task<bool> IsModelLoaded();
     }
 }

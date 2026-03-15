@@ -55,6 +55,7 @@
 		<PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.6" />
 		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.6" />
 		<PackageReference Include="Microsoft.Extensions.Identity.Core" Version="9.0.6" />
+		<PackageReference Include="Microsoft.ML.OnnxRuntime" Version="1.24.2" />
 		<PackageReference Include="MimeKit" Version="4.14.0" />
 		<PackageReference Include="SixLabors.ImageSharp" Version="3.1.12" />
 		<PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.6" />
@@ -66,6 +67,13 @@
 		<PackageReference Include="Swashbuckle.AspNetCore.Swagger" Version="9.0.6" />
 		<PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="9.0.6" />
 		<PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="9.0.6" />
+	</ItemGroup>
+
+
+	<ItemGroup>
+	  <None Update="Models\rice_disease_v3.onnx">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
 	</ItemGroup>
 
 </Project>
