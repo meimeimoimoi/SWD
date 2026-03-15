@@ -18,8 +18,10 @@ namespace MyApp.Api.Controllers
             _logger = logger;
         }
 
-
         [HttpPost("login")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> Login([FromBody] LoginRequestDTO request)
         {
             try
@@ -61,7 +63,6 @@ namespace MyApp.Api.Controllers
                 });
             }
         }
-
 
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] ResgisterRequestDTO request)
@@ -158,6 +159,8 @@ namespace MyApp.Api.Controllers
 
         [HttpPost("logout")]
         [Authorize]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> Logout([FromHeader] string token)
         {
             try
