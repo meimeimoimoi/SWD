@@ -21,9 +21,14 @@ namespace MyApp.Infrastructure
             services.AddScoped<ApiResponse>();
 
             // New services
+            services.AddScoped<ITechnicianService, TechnicianService>();
             services.AddScoped<ITreatmentService, TreatmentService>();
             services.AddScoped<IModelService, ModelService>();
             services.AddScoped<IPredictionHistoryService, PredictionHistoryService>();
+            services.AddScoped<IDataManagementService, DataManagementService>();
+            services.AddScoped<IMonitoringService, MonitoringService>();
+            services.AddScoped<IReviewService, ReviewService>();
+            services.AddScoped<IRatingService, RatingService>();
             services.AddScoped<DataSeeder>();
             return services;
         }

@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using MyApp.Application.Features.Treatment.DTOs;
 using MyApp.Application.Interfaces;
 using MyApp.Persistence.Context;
@@ -94,7 +94,7 @@ namespace MyApp.Infrastructure.Services
             return MapToSolutionDto(solution);
         }
 
-        // ?? Private helpers ?????????????????????????????????????????????????????
+        // ── Private helpers ──────────────────
 
         private static TreatmentSolutionDto MapToSolutionDto(Domain.Entities.TreatmentSolution s) => new()
         {

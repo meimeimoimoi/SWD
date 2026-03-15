@@ -28,7 +28,7 @@ namespace MyApp.Application.Features.ModelManagement.DTOs
         public string? Description { get; set; }
 
         /// <summary>
-        /// .onnx file — required, only .onnx extension is accepted.
+        /// .onnx file - required, only .onnx extension is accepted.
         /// </summary>
         [Required(ErrorMessage = "Model file (.onnx) is required.")]
         public IFormFile ModelFile { get; set; } = null!;
