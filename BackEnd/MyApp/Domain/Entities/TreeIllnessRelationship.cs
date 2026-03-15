@@ -8,7 +8,7 @@ public partial class TreeIllnessRelationship
     public int RelationshipId { get; set; }
 
     public int TreeId { get; set; }
-    
+
     public int IllnessId { get; set; }
 
     public virtual TreeIllness Illness { get; set; } = null!;
