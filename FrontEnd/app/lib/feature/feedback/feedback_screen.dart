@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import '../../share/services/rating_service.dart';
+import '../prediction/prediction_screen.dart';
 
 import '../../share/theme/app_colors.dart';
 import '../../share/widgets/app_card.dart';
 
 class FeedbackScreen extends StatefulWidget {
-  const FeedbackScreen({super.key});
+  final PredictionResult? predictionResult;
+  const FeedbackScreen({super.key, this.predictionResult});
 
   @override
   State<FeedbackScreen> createState() => _FeedbackScreenState();
@@ -14,6 +17,8 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
   final TextEditingController _commentController = TextEditingController();
   int _rating = 4;
   final Set<String> _selectedTags = {'Chẩn đoán đúng'};
+  bool _isSubmitting = false;
+  final RatingService _ratingService = RatingService();
 
   final List<String> _tags = const [
     'Chẩn đoán đúng',
@@ -27,6 +32,51 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
   void dispose() {
     _commentController.dispose();
     super.dispose();
+  }
+
+  Future<void> _handleSubmit() async {
+    if (widget.predictionResult == null) return;
+
+    setState(() {
+      _isSubmitting = true;
+    });
+
+    try {
+      final List<String> commentParts = [];
+      if (_selectedTags.isNotEmpty) {
+        commentParts.addAll(_selectedTags);
+      }
+      if (_commentController.text.trim().isNotEmpty) {
+        commentParts.add(_commentController.text.trim());
+      }
+      final String finalComment = commentParts.join(', ');
+
+      final result = await _ratingService.submitRating(
+        predictionId: widget.predictionResult!.predictionId,
+        score: _rating,
+        comment: finalComment,
+      );
+
+      if (!mounted) return;
+
+      if (result['success'] == true) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Cảm ơn phản hồi của bạn!')),
+        );
+        // Navigate back to prediction screen
+        Navigator.pop(context);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(result['message'] ?? 'Có lỗi xảy ra')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+        });
+      }
+    }
   }
 
   @override
@@ -50,7 +100,10 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
             child: ListView(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
               children: [
-                _SummaryCard(isDark: isDark),
+                _SummaryCard(
+                  isDark: isDark,
+                  predictionResult: widget.predictionResult,
+                ),
                 const SizedBox(height: 20),
                 _RatingSection(
                   rating: _rating,
@@ -73,7 +126,11 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                 const SizedBox(height: 20),
                 _CommentSection(controller: _commentController),
                 const SizedBox(height: 20),
-                _SubmitSection(isDark: isDark),
+                _SubmitSection(
+                  isDark: isDark,
+                  isSubmitting: _isSubmitting,
+                  onPressed: _handleSubmit,
+                ),
               ],
             ),
           ),
@@ -84,9 +141,10 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
 }
 
 class _SummaryCard extends StatelessWidget {
-  const _SummaryCard({required this.isDark});
+  const _SummaryCard({required this.isDark, this.predictionResult});
 
   final bool isDark;
+  final PredictionResult? predictionResult;
 
   @override
   Widget build(BuildContext context) {
@@ -98,7 +156,8 @@ class _SummaryCard extends StatelessWidget {
           ClipRRect(
             borderRadius: BorderRadius.circular(12),
             child: Image.network(
-              'https://lh3.googleusercontent.com/aida-public/AB6AXuAoYR4B8P_BnSy72hyfsDQUoGD23ngJW2_4aU4avE996bCr9nTQ3b-Ke4efwrGp3-7qWAcfnHzhhQppNunxYVCDHa4UeN2OVnnFhwZj1q-soEmPeaHb4G67vmF4aMvXNTcOttPOqe7rieb0OZA_ZxiWJ6s__WeCT8z-2tTn1LwJLXW2IolTboPLcSA7s9D6rwgs7wi6NIPloDgWbLbq_G2XtRMxbzuXQwG7gLT2uLZpnUT4NM0D0fCDABBLH4BlBEO1MJi1NSACvoc',
+              predictionResult?.imageUrl ??
+                  'https://lh3.googleusercontent.com/aida-public/AB6AXuAoYR4B8P_BnSy72hyfsDQUoGD23ngJW2_4aU4avE996bCr9nTQ3b-Ke4efwrGp3-7qWAcfnHzhhQppNunxYVCDHa4UeN2OVnnFhwZj1q-soEmPeaHb4G67vmF4aMvXNTcOttPOqe7rieb0OZA_ZxiWJ6s__WeCT8z-2tTn1LwJLXW2IolTboPLcSA7s9D6rwgs7wi6NIPloDgWbLbq_G2XtRMxbzuXQwG7gLT2uLZpnUT4NM0D0fCDABBLH4BlBEO1MJi1NSACvoc',
               width: 80,
               height: 80,
               fit: BoxFit.cover,
@@ -118,12 +177,12 @@ class _SummaryCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'Bệnh đốm lá (Leaf Spot)',
+                  predictionResult?.vietnameseName ?? 'Bệnh đốm lá (Leaf Spot)',
                   style: theme.textTheme.titleLarge,
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Quét lúc 14:30, 24 Tháng 5',
+                  'ID: #${predictionResult?.predictionId ?? "---"}',
                   style: theme.textTheme.bodySmall,
                 ),
               ],
@@ -266,9 +325,15 @@ class _CommentSection extends StatelessWidget {
 }
 
 class _SubmitSection extends StatelessWidget {
-  const _SubmitSection({required this.isDark});
+  const _SubmitSection({
+    required this.isDark,
+    required this.onPressed,
+    this.isSubmitting = false,
+  });
 
   final bool isDark;
+  final VoidCallback onPressed;
+  final bool isSubmitting;
 
   @override
   Widget build(BuildContext context) {
@@ -278,9 +343,18 @@ class _SubmitSection extends StatelessWidget {
         SizedBox(
           width: double.infinity,
           child: ElevatedButton.icon(
-            onPressed: () {},
-            icon: const Icon(Icons.send),
-            label: const Text('Gửi phản hồi'),
+            onPressed: isSubmitting ? null : onPressed,
+            icon: isSubmitting
+                ? const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
+                )
+                : const Icon(Icons.send),
+            label: Text(isSubmitting ? 'Đang gửi...' : 'Gửi phản hồi'),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,
               foregroundColor: isDark ? AppColors.darkBackground : Colors.white,

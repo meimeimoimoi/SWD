@@ -8,6 +8,7 @@ class PredictionResult {
   static const String _imageBaseUrl = 'http://10.0.2.2:5299';
   static const String _imagePathPrefix = '/uploads/images/';
 
+  final int predictionId;
   final String diseaseName;
   final String vietnameseName;
   final String scientificName;
@@ -22,6 +23,7 @@ class PredictionResult {
   final bool isHealthy;
 
   const PredictionResult({
+    required this.predictionId,
     required this.diseaseName,
     required this.vietnameseName,
     required this.scientificName,
@@ -45,6 +47,7 @@ class PredictionResult {
     final imageUrl = _buildImageUrl(data.imageUrl);
 
     return PredictionResult(
+      predictionId: data.predictionId,
       diseaseName: englishName,
       vietnameseName: vietnameseName,
       scientificName: scientificName,
@@ -125,6 +128,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
 
   // Sample data for demonstration
   static const _sampleResult = PredictionResult(
+    predictionId: 0,
     diseaseName: 'Leaf Blast',
     vietnameseName: 'Đạo ôn (cháy lá do nấm)',
     scientificName: 'Magnaporthe oryzae',
@@ -176,6 +180,35 @@ class _PredictionScreenState extends State<PredictionScreen> {
             ),
           ],
         ),
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: 1, // Defaulting to scan/result context
+        type: BottomNavigationBarType.fixed,
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+          BottomNavigationBarItem(icon: Icon(Icons.camera_alt), label: 'Scan'),
+          BottomNavigationBarItem(icon: Icon(Icons.history), label: 'History'),
+          BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Setting'),
+        ],
+        onTap: (index) {
+          switch (index) {
+            case 0:
+              Navigator.of(context).pushNamedAndRemoveUntil(
+                AppRouter.dashboard,
+                (route) => false,
+              );
+              break;
+            case 1:
+              Navigator.of(context).pushNamed(AppRouter.scan);
+              break;
+            case 2:
+              Navigator.of(context).pushNamed(AppRouter.history);
+              break;
+            case 3:
+              Navigator.of(context).pushNamed(AppRouter.profile);
+              break;
+          }
+        },
       ),
     );
   }
@@ -1179,7 +1212,10 @@ class _PredictionScreenState extends State<PredictionScreen> {
   }
 
   void _onFeedback(BuildContext context) {
-    Navigator.of(context).pushNamed(AppRouter.feedback);
+    Navigator.of(context).pushNamed(
+      AppRouter.feedback,
+      arguments: widget.result ?? _sampleResult,
+    );
   }
 
   Widget _buildFeedbackOption({

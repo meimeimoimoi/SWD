@@ -577,6 +577,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
       treatments: [],
       medicines: [],
       isHealthy: DiseaseMapper.isHealthy(item.diseaseName),
+      predictionId: item.predictionId,
     );
     Navigator.of(context).pushNamed(AppRouter.prediction, arguments: result);
   }
