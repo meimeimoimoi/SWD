@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity;
 using MyApp.Application.Interfaces;
 using MyApp.Infrastructure.Data;
 using MyApp.Infrastructure.Helpers;
@@ -29,6 +29,7 @@ namespace MyApp.Infrastructure
             services.AddScoped<IMonitoringService, MonitoringService>();
             services.AddScoped<IReviewService, ReviewService>();
             services.AddScoped<IRatingService, RatingService>();
+            services.AddScoped<ISystemSettingService, SystemSettingService>();
             services.AddScoped<DataSeeder>();
             return services;
         }

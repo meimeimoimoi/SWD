@@ -126,6 +126,42 @@ namespace MyApp.Api.Controllers
             }
         }
 
+        [HttpGet("notifications")]
+        public async Task<IActionResult> GetNotifications()
+        {
+            try
+            {
+                var userId = GetCurrentUserId();
+                if (userId == null) return Unauthorized();
+
+                var notifications = await _userService.GetUserNotificationsAsync(userId.Value);
+                return Ok(new { success = true, total = notifications.Count, data = notifications });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching notifications for user.");
+                return StatusCode(500, new { success = false, message = "Internal server error." });
+            }
+        }
+
+        [HttpGet("activities")]
+        public async Task<IActionResult> GetActivities()
+        {
+            try
+            {
+                var userId = GetCurrentUserId();
+                if (userId == null) return Unauthorized();
+
+                var activities = await _userService.GetUserActivitiesAsync(userId.Value);
+                return Ok(new { success = true, total = activities.Count, data = activities });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching activities for user.");
+                return StatusCode(500, new { success = false, message = "Internal server error." });
+            }
+        }
+
         private int? GetCurrentUserId()
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value

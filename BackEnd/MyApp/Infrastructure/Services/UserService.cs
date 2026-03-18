@@ -1,5 +1,8 @@
+using Microsoft.EntityFrameworkCore;
 using MyApp.Application.Features.Users.DTOs;
 using MyApp.Application.Interfaces;
+using MyApp.Domain.Entities;
+using MyApp.Persistence.Context;
 using MyApp.Persistence.Repositories;
 
 namespace MyApp.Infrastructure.Services
@@ -7,11 +10,13 @@ namespace MyApp.Infrastructure.Services
 	public class UserService : IUserService
 	{
 		private readonly UserRepository _userRepository;
+        private readonly AppDbContext _context;
 		private readonly ILogger<UserService> _logger;
 
-		public UserService(UserRepository userRepository, ILogger<UserService> logger)
+		public UserService(UserRepository userRepository, AppDbContext context, ILogger<UserService> logger)
 		{
 			_userRepository = userRepository;
+            _context = context;
 			_logger = logger;
 		}
 
@@ -90,6 +95,7 @@ namespace MyApp.Infrastructure.Services
 
 				await _userRepository.UpdateUserAsync(user);
 				_logger.LogInformation("Updated profile for user {UserId}", userId);
+                await LogActivityAsync(userId, "UpdateProfile", "User", userId.ToString(), "User updated their profile information.");
 
 				return true;
 			}
@@ -99,5 +105,46 @@ namespace MyApp.Infrastructure.Services
 				throw;
 			}
 		}
+
+        public async Task<List<Notification>> GetUserNotificationsAsync(int userId)
+        {
+            return await _context.Notifications
+                .Where(n => n.UserId == userId)
+                .OrderByDescending(n => n.CreatedAt)
+                .ToListAsync();
+        }
+
+        public async Task<List<ActivityLog>> GetUserActivitiesAsync(int userId)
+        {
+            return await _context.ActivityLogs
+                .Where(a => a.UserId == userId)
+                .OrderByDescending(a => a.CreatedAt)
+                .ToListAsync();
+        }
+
+        public async Task<bool> LogActivityAsync(int userId, string action, string entityName, string? entityId = null, string? description = null)
+        {
+            try
+            {
+                var log = new ActivityLog
+                {
+                    UserId = userId,
+                    Action = action,
+                    EntityName = entityName,
+                    EntityId = entityId,
+                    Description = description,
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                _context.ActivityLogs.Add(log);
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error logging activity for user {UserId}", userId);
+                return false;
+            }
+        }
 	}
 }

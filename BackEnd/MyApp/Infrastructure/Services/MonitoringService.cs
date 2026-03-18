@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using MyApp.Application.Features.Admin.DTOs;
 using MyApp.Application.Interfaces;
+using MyApp.Domain.Entities;
 using MyApp.Persistence.Context;
 
 namespace MyApp.Infrastructure.Services
@@ -150,6 +151,16 @@ namespace MyApp.Infrastructure.Services
                 Comment         = r.Comment,
                 CreatedAt       = r.CreatedAt
             }).ToList();
+        }
+
+        public async Task<List<ActivityLog>> GetActivityLogsAsync(int count = 50)
+        {
+            _logger.LogInformation("Fetching recent activity logs (count={Count}).", count);
+            return await _context.ActivityLogs
+                .Include(a => a.User)
+                .OrderByDescending(a => a.CreatedAt)
+                .Take(count)
+                .ToListAsync();
         }
     }
 }

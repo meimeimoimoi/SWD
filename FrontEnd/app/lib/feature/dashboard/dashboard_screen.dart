@@ -1,27 +1,56 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../providers/dashboard_provider.dart';
 import '../../share/theme/app_colors.dart';
 import '../../share/widgets/app_button.dart';
 import '../../share/widgets/app_card.dart';
 import '../../share/widgets/app_scaffold.dart';
 import '../../routes/app_router.dart';
 
-class DashboardScreen extends StatelessWidget {
+class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
 
   @override
+  State<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends State<DashboardScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<DashboardProvider>().fetchUserData();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final provider = context.watch<DashboardProvider>();
+    final notifications = provider.userNotifications;
+    final activitiesData = provider.userActivities;
+
     final stats = <_StatItem>[
-      _StatItem(title: 'Trees monitored', value: '128', chip: '+12 today'),
-      _StatItem(title: 'Active alerts', value: '5', chip: '2 critical'),
-      _StatItem(title: 'Model accuracy', value: '94%', chip: 'Updated'),
-      _StatItem(title: 'Recent scans', value: '18', chip: 'Last 24h'),
+      _StatItem(
+        title: 'Cảnh báo',
+        value: notifications.where((n) => !n.isRead).length.toString(),
+        chip: '${notifications.length} tổng cộng',
+      ),
+      _StatItem(
+        title: 'Hoạt động',
+        value: activitiesData.length.toString(),
+        chip: 'Gần đây',
+      ),
+      const _StatItem(title: 'Độ chính xác', value: '94%', chip: 'Ổn định'),
+      const _StatItem(title: 'Lịch sử', value: '-', chip: 'Xem lịch sử'),
     ];
 
-    final alerts = <_AlertItem>[
-      _AlertItem(tree: 'Oak #24', status: 'Leaf blight', severity: 'High'),
-      _AlertItem(tree: 'Pine #7', status: 'Drought stress', severity: 'Medium'),
-      _AlertItem(tree: 'Maple #15', status: 'Healthy', severity: 'Low'),
-    ];
+    final alerts = notifications.take(3).map((n) {
+      return _AlertItem(
+        tree: n.title,
+        status: n.message,
+        severity: n.type ?? 'Low',
+      );
+    }).toList();
 
     return AppScaffold(
       centerContent: false,
@@ -123,18 +152,18 @@ class DashboardScreen extends StatelessWidget {
                             children: [
                               _SectionHeader(title: 'Latest activity'),
                               const SizedBox(height: 12),
-                              _ActivityRow(
-                                title: 'Model retrained',
-                                time: '2h ago',
-                              ),
-                              _ActivityRow(
-                                title: 'Scan uploaded - Maple #12',
-                                time: '4h ago',
-                              ),
-                              _ActivityRow(
-                                title: 'Alert resolved - Oak #3',
-                                time: '5h ago',
-                              ),
+                              if (activitiesData.isEmpty && !provider.isLoading)
+                                const Padding(
+                                  padding: EdgeInsets.symmetric(vertical: 20),
+                                  child: Text('Chưa có hoạt động nào.'),
+                                )
+                              else
+                                ...activitiesData.take(5).map(
+                                      (a) => _ActivityRow(
+                                        title: '${a.action} - ${a.entityName}',
+                                        time: _formatTime(a.createdAt),
+                                      ),
+                                    ),
                               const SizedBox(height: 16),
                               AppButton(
                                 label: 'Go to profile',
@@ -178,18 +207,18 @@ class DashboardScreen extends StatelessWidget {
                         children: [
                           _SectionHeader(title: 'Latest activity'),
                           const SizedBox(height: 12),
-                          _ActivityRow(
-                            title: 'Model retrained',
-                            time: '2h ago',
-                          ),
-                          _ActivityRow(
-                            title: 'Scan uploaded - Maple #12',
-                            time: '4h ago',
-                          ),
-                          _ActivityRow(
-                            title: 'Alert resolved - Oak #3',
-                            time: '5h ago',
-                          ),
+                          if (activitiesData.isEmpty && !provider.isLoading)
+                            const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 20),
+                              child: Text('Chưa có hoạt động nào.'),
+                            )
+                          else
+                            ...activitiesData.take(5).map(
+                                  (a) => _ActivityRow(
+                                    title: '${a.action} - ${a.entityName}',
+                                    time: _formatTime(a.createdAt),
+                                  ),
+                                ),
                           const SizedBox(height: 16),
                           AppButton(
                             label: 'Go to profile',
@@ -208,6 +237,10 @@ class DashboardScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String _formatTime(DateTime time) {
+    return '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
   }
 }
 
