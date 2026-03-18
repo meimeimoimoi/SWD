@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using MyApp.Application.Features.Admin.DTOs;
 using MyApp.Application.Features.Users.DTOs;
 using MyApp.Application.Interfaces;
@@ -267,6 +267,46 @@ namespace MyApp.Infrastructure.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error creating staff user");
+                throw;
+            }
+        }
+
+        public async Task<bool> CreateUserAsync(CreateUserDto dto)
+        {
+            try
+            {
+                var existingUser = await _userRepository.FindByEmail(dto.Email);
+                if (existingUser != null)
+                {
+                    throw new InvalidOperationException("Email already exists");
+                }
+
+                // Generate a username from email if needed
+                string username = dto.Email.Split('@')[0];
+                int count = 1;
+                while (await _userRepository.ExistByUsernameAsync(username))
+                {
+                    username = $"{dto.Email.Split('@')[0]}{count++}";
+                }
+
+                var user = new User
+                {
+                    Username = username,
+                    Email = dto.Email,
+                    PasswordHash = _passwordHasher.Hash(dto.Password),
+                    Role = dto.Role,
+                    AccountStatus = "Active",
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                };
+
+                await _userRepository.CreateTechnicianStaff(user, dto.Role);
+                _logger.LogInformation("Admin created user {Email} with role {Role}", dto.Email, dto.Role);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error creating user by admin: {Email}", dto.Email);
                 throw;
             }
         }

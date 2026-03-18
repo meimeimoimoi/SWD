@@ -167,10 +167,90 @@ class DashboardService {
     }
   }
 
+  Future<List<dynamic>> getAdminUsers() async {
+    try {
+      final response = await _authorizedGet('/api/Admin/users');
+      if (response.data['success'] == true) {
+        return response.data['data'] ?? [];
+      }
+      return [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  Future<bool> createUser(String email, String password, String role) async {
+    try {
+      final response = await _authorizedPost('/api/Admin/users', {
+        'email': email,
+        'password': password,
+        'role': role,
+      });
+      return response.data['success'] == true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<bool> updateUserStatus(int userId, String status) async {
+    try {
+      final response = await _authorizedPatch('/api/Admin/users/$userId/status', {
+        'status': status,
+      });
+      return response.data['success'] == true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<bool> updateUserRole(int userId, String role) async {
+    try {
+      final response = await _authorizedPut('/api/Admin/users/$userId', {
+        'role': role,
+      });
+      return response.data['success'] == true;
+    } catch (e) {
+      return false;
+    }
+  }
+
   Future<Response> _authorizedGet(String path) async {
     final accessToken = await StorageService.getAccessToken();
     return await _dio.get(
       path,
+      options: Options(
+        headers: {'Authorization': 'Bearer $accessToken'},
+      ),
+    );
+  }
+
+  Future<Response> _authorizedPost(String path, dynamic data) async {
+    final accessToken = await StorageService.getAccessToken();
+    return await _dio.post(
+      path,
+      data: data,
+      options: Options(
+        headers: {'Authorization': 'Bearer $accessToken'},
+      ),
+    );
+  }
+
+  Future<Response> _authorizedPatch(String path, dynamic data) async {
+    final accessToken = await StorageService.getAccessToken();
+    return await _dio.patch(
+      path,
+      data: data,
+      options: Options(
+        headers: {'Authorization': 'Bearer $accessToken'},
+      ),
+    );
+  }
+
+  Future<Response> _authorizedPut(String path, dynamic data) async {
+    final accessToken = await StorageService.getAccessToken();
+    return await _dio.put(
+      path,
+      data: data,
       options: Options(
         headers: {'Authorization': 'Bearer $accessToken'},
       ),

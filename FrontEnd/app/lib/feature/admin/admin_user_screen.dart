@@ -1,12 +1,175 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+import '../../providers/dashboard_provider.dart';
 import '../../share/theme/app_colors.dart';
 import '../../share/widgets/app_card.dart';
 import '../../share/widgets/admin_bottom_nav.dart';
 import '../../share/widgets/theme_toggle.dart';
 
-class AdminUserScreen extends StatelessWidget {
+class AdminUserScreen extends StatefulWidget {
   const AdminUserScreen({super.key});
+
+  @override
+  State<AdminUserScreen> createState() => _AdminUserScreenState();
+}
+
+class _AdminUserScreenState extends State<AdminUserScreen> {
+  final _formKey = GlobalKey<FormState>();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
+  bool _obscurePassword = true;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<DashboardProvider>().fetchAdminData();
+    });
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
+    super.dispose();
+  }
+
+  void _showAddAccountDialog() {
+    _emailController.clear();
+    _passwordController.clear();
+    _confirmPasswordController.clear();
+    
+    showDialog(
+      context: context,
+      builder: (context) {
+        final theme = Theme.of(context);
+        final isDark = theme.brightness == Brightness.dark;
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: Text(
+                'Thêm tài khoản mới',
+                style: theme.textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.primary,
+                ),
+              ),
+              content: Form(
+                key: _formKey,
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      TextFormField(
+                        controller: _emailController,
+                        decoration: const InputDecoration(
+                          labelText: 'Email',
+                          prefixIcon: Icon(Icons.email_outlined),
+                        ),
+                        keyboardType: TextInputType.emailAddress,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Vui lòng nhập email';
+                          }
+                          if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
+                              .hasMatch(value)) {
+                            return 'Email không hợp lệ';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _passwordController,
+                        obscureText: _obscurePassword,
+                        decoration: InputDecoration(
+                          labelText: 'Mật khẩu',
+                          prefixIcon: const Icon(Icons.lock_outline),
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _obscurePassword
+                                  ? Icons.visibility_off
+                                  : Icons.visibility,
+                            ),
+                            onPressed: () {
+                              setState(() => _obscurePassword = !_obscurePassword);
+                            },
+                          ),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Vui lòng nhập mật khẩu';
+                          }
+                          if (value.length < 6) {
+                            return 'Mật khẩu phải ít nhất 6 ký tự';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _confirmPasswordController,
+                        obscureText: _obscurePassword,
+                        decoration: const InputDecoration(
+                          labelText: 'Xác nhận mật khẩu',
+                          prefixIcon: Icon(Icons.lock_clock_outlined),
+                        ),
+                        validator: (value) {
+                          if (value != _passwordController.text) {
+                            return 'Mật khẩu xác nhận không khớp';
+                          }
+                          return null;
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text(
+                    'Hủy',
+                    style: TextStyle(color: theme.colorScheme.secondary),
+                  ),
+                ),
+                ElevatedButton(
+                  onPressed: () async {
+                    if (_formKey.currentState!.validate()) {
+                      final provider = context.read<DashboardProvider>();
+                      final success = await provider.createUser(
+                        _emailController.text,
+                        _passwordController.text,
+                        'User', // Default role for new accounts
+                      );
+                      
+                      if (mounted) {
+                        Navigator.pop(context);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(success ? 'Tạo tài khoản thành công' : 'Lỗi khi tạo tài khoản'),
+                            backgroundColor: success ? Colors.green : Colors.red,
+                          ),
+                        );
+                      }
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: isDark ? Colors.black : Colors.white,
+                  ),
+                  child: const Text('Thêm'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -23,49 +186,41 @@ class AdminUserScreen extends StatelessWidget {
         : AppColors.surfaceLight;
     final appBarShadow = isDark ? Colors.transparent : Colors.black12;
 
-    final users = <_UserItem>[
-      _UserItem(
-        initials: 'JD',
-        name: 'John Doe',
-        email: 'john.doe@plantguard.ai',
-        status: _UserStatus.active,
-        role: 'Admin',
-        lastLogin: 'Last login: 2h ago',
-        primaryAction: _UserAction.lock,
+    final provider = context.watch<DashboardProvider>();
+    final usersData = provider.adminUsers;
+
+    final users = usersData.map((u) {
+      final username = u['username'] ?? 'User';
+      final email = u['email'] ?? '';
+      final statusStr = u['accountStatus'] ?? 'Active';
+      
+      // Normalize role for UI consistency and to match dropdown items
+      String role = u['role']?.toString() ?? 'User';
+      if (role == 'Tech') role = 'Technician';
+      final allowedRoles = ['Admin', 'Technician', 'User', 'Farmer', 'Staff'];
+      if (!allowedRoles.contains(role)) {
+        role = 'User'; // Fallback to avoid dropdown crash
+      }
+      
+      _UserStatus status = _UserStatus.active;
+      if (statusStr == 'Locked') status = _UserStatus.locked;
+      if (statusStr == 'Pending') status = _UserStatus.pending;
+      if (statusStr == 'Deleted') status = _UserStatus.locked; // Treat deleted as locked for UI
+
+      return _UserItem(
+        userId: u['userId'] ?? 0,
+        initials: username.isNotEmpty ? username[0].toUpperCase() : 'U',
+        name: username,
+        email: email,
+        status: status,
+        role: role,
+        lastLogin: u['lastLoginAt'] != null 
+          ? 'Truy cập: ${DateTime.parse(u['lastLoginAt'].toString()).day}/${DateTime.parse(u['lastLoginAt'].toString()).month}'
+          : 'Chưa truy cập',
+        primaryAction: status == _UserStatus.locked ? _UserAction.unlock : _UserAction.lock,
         showRoleDropdown: true,
-      ),
-      _UserItem(
-        initials: 'AS',
-        name: 'Alice Smith',
-        email: 'alice.s@farms.net',
-        status: _UserStatus.locked,
-        role: 'Farmer',
-        lastLogin: 'Last login: 5d ago',
-        primaryAction: _UserAction.unlock,
-        showRoleDropdown: true,
-      ),
-      _UserItem(
-        initials: 'RJ',
-        name: 'Robert Johnson',
-        email: 'r.johnson@tech-ops.io',
-        status: _UserStatus.active,
-        role: 'Tech',
-        lastLogin: 'Last login: 15m ago',
-        primaryAction: _UserAction.lock,
-        showRoleDropdown: true,
-      ),
-      _UserItem(
-        initials: 'MK',
-        name: 'Maria K.',
-        email: 'maria.k@farmco.com',
-        status: _UserStatus.pending,
-        role: 'Farmer',
-        lastLogin: 'Invited: 1d ago',
-        primaryAction: _UserAction.resendInvite,
-        secondaryAction: _UserAction.revoke,
-        showRoleDropdown: false,
-      ),
-    ];
+      );
+    }).toList();
 
     return Scaffold(
       appBar: AppBar(
@@ -77,7 +232,7 @@ class AdminUserScreen extends StatelessWidget {
           'User Management',
           style: theme.textTheme.titleLarge?.copyWith(color: textPrimary),
         ),
-
+        actions: [const ThemeToggle(), const SizedBox(width: 8)],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(120),
           child: Padding(
@@ -119,17 +274,37 @@ class AdminUserScreen extends StatelessWidget {
         ),
       ),
       body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 1100),
-            child: ListView.separated(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
-              itemCount: users.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 12),
-              itemBuilder: (context, index) {
-                return _UserCard(user: users[index]);
-              },
+        child: provider.isLoading && users.isEmpty
+          ? const Center(child: CircularProgressIndicator())
+          : RefreshIndicator(
+              onRefresh: provider.fetchAdminUsers,
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 1100),
+                  child: ListView.separated(
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 80), 
+                    itemCount: users.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 12),
+                    itemBuilder: (context, index) {
+                      return _UserCard(user: users[index]);
+                    },
+                  ),
+                ),
+              ),
             ),
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _showAddAccountDialog,
+        backgroundColor: AppColors.primary,
+        icon: Icon(
+          Icons.person_add_outlined,
+          color: isDark ? Colors.black : Colors.white,
+        ),
+        label: Text(
+          'Thêm tài khoản',
+          style: TextStyle(
+            color: isDark ? Colors.black : Colors.white,
+            fontWeight: FontWeight.w600,
           ),
         ),
       ),
@@ -140,6 +315,7 @@ class AdminUserScreen extends StatelessWidget {
 
 class _UserItem {
   const _UserItem({
+    required this.userId,
     required this.initials,
     required this.name,
     required this.email,
@@ -151,6 +327,7 @@ class _UserItem {
     required this.showRoleDropdown,
   });
 
+  final int userId;
   final String initials;
   final String name;
   final String email;
@@ -196,13 +373,13 @@ class _UserCard extends StatelessWidget {
   String _actionLabel(_UserAction action) {
     switch (action) {
       case _UserAction.lock:
-        return 'Lock Account';
+        return 'Khóa Acc';
       case _UserAction.unlock:
-        return 'Unlock';
+        return 'Mở Khóa';
       case _UserAction.resendInvite:
-        return 'Resend Invite';
+        return 'Gửi lại Invite';
       case _UserAction.revoke:
-        return 'Revoke';
+        return 'Thu hồi';
     }
   }
 
@@ -232,6 +409,8 @@ class _UserCard extends StatelessWidget {
     final statusColor = _statusColor(context);
     final statusBackground = statusColor.withOpacity(isDark ? 0.2 : 0.12);
     final isPrimaryAction = user.primaryAction == _UserAction.unlock;
+
+    final provider = context.read<DashboardProvider>();
 
     return Opacity(
       opacity: user.status == _UserStatus.pending ? 0.6 : 1,
@@ -327,7 +506,14 @@ class _UserCard extends StatelessWidget {
                 Expanded(
                   child: isPrimaryAction
                       ? ElevatedButton.icon(
-                          onPressed: () {},
+                          onPressed: () async {
+                            final success = await provider.updateUserStatus(user.userId, 'Active');
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text(success ? 'Đã mở khóa tài khoản' : 'Lỗi khi mở khóa'))
+                              );
+                            }
+                          },
                           icon: Icon(_actionIcon(user.primaryAction), size: 16),
                           label: Text(_actionLabel(user.primaryAction)),
                           style: ElevatedButton.styleFrom(
@@ -343,7 +529,14 @@ class _UserCard extends StatelessWidget {
                           ),
                         )
                       : OutlinedButton.icon(
-                          onPressed: () {},
+                          onPressed: () async {
+                            final success = await provider.updateUserStatus(user.userId, 'Locked');
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text(success ? 'Đã khóa tài khoản' : 'Lỗi khi khóa'))
+                              );
+                            }
+                          },
                           icon: Icon(_actionIcon(user.primaryAction), size: 16),
                           label: Text(_actionLabel(user.primaryAction)),
                           style: OutlinedButton.styleFrom(
@@ -363,29 +556,42 @@ class _UserCard extends StatelessWidget {
                 Expanded(
                   child: user.showRoleDropdown
                       ? DropdownButtonFormField<String>(
-                          value: 'Change Role',
+                          value: user.role,
                           style: theme.textTheme.bodyMedium?.copyWith(
                             color: textPrimary,
                           ),
                           items: const [
                             DropdownMenuItem(
-                              value: 'Change Role',
-                              child: Text('Change Role'),
-                            ),
-                            DropdownMenuItem(
                               value: 'Admin',
                               child: Text('Admin'),
                             ),
                             DropdownMenuItem(
-                              value: 'Tech',
-                              child: Text('Tech'),
+                              value: 'Technician',
+                              child: Text('Technician'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'User',
+                              child: Text('User'),
                             ),
                             DropdownMenuItem(
                               value: 'Farmer',
                               child: Text('Farmer'),
                             ),
+                            DropdownMenuItem(
+                              value: 'Staff',
+                              child: Text('Staff'),
+                            ),
                           ],
-                          onChanged: (_) {},
+                          onChanged: (newRole) async {
+                            if (newRole != null && newRole != user.role) {
+                              final success = await provider.updateUserRole(user.userId, newRole);
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text(success ? 'Đã đổi role thành $newRole' : 'Lỗi khi đổi role'))
+                                );
+                              }
+                            }
+                          },
                           decoration: InputDecoration(
                             isDense: true,
                             contentPadding: const EdgeInsets.symmetric(
