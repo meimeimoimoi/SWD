@@ -167,6 +167,18 @@ class DashboardService {
     }
   }
 
+  Future<List<dynamic>> getFeedbackList() async {
+    try {
+      final response = await _authorizedGet('/api/rating/all');
+      if (response.data['success'] == true) {
+        return response.data['data'] ?? [];
+      }
+      return [];
+    } catch (e) {
+      return [];
+    }
+  }
+
   Future<List<dynamic>> getAdminUsers() async {
     try {
       final response = await _authorizedGet('/api/Admin/users');

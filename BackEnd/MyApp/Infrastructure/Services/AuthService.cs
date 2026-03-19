@@ -60,17 +60,25 @@ namespace MyApp.Infrastructure.Services
                 await _userRepository.UpdateUserAsync(user);
 
                 // Log the activity
-                var log = new ActivityLog
+                try 
                 {
-                    UserId = user.UserId,
-                    Action = "Login",
-                    EntityName = "User",
-                    EntityId = user.UserId.ToString(),
-                    Description = $"User {user.Username} logged in.",
-                    CreatedAt = DateTime.UtcNow
-                };
-                _context.ActivityLogs.Add(log);
-                await _context.SaveChangesAsync();
+                    var log = new ActivityLog
+                    {
+                        UserId = user.UserId,
+                        Action = "Login",
+                        EntityName = "User",
+                        EntityId = user.UserId.ToString(),
+                        Description = $"User {user.Username} logged in.",
+                        CreatedAt = DateTime.UtcNow
+                    };
+                    _context.ActivityLogs.Add(log);
+                    await _context.SaveChangesAsync();
+                }
+                catch (Exception logEx)
+                {
+                    _logger.LogError(logEx, "Failed to record activity log for user {Username}", user.Username);
+                    // We don't throw here so the user can still login even if logging fails
+                }
 
                 return new LoginResponseDTO 
                 {

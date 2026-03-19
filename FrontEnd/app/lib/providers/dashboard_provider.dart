@@ -19,6 +19,17 @@ class DashboardProvider with ChangeNotifier {
   List<dynamic> _adminUsers = [];
   List<dynamic> get adminUsers => _adminUsers;
 
+  List<dynamic> _feedbackList = [];
+  List<dynamic> get feedbackList => _feedbackList;
+
+  Future<void> fetchFeedbackList() async {
+    _isLoading = true;
+    notifyListeners();
+    _feedbackList = await _service.getFeedbackList();
+    _isLoading = false;
+    notifyListeners();
+  }
+
   Future<void> fetchAdminData() async {
     _isLoading = true;
     notifyListeners();
@@ -26,6 +37,7 @@ class DashboardProvider with ChangeNotifier {
     _adminStats = await _service.getAdminStats();
     _adminLogs = await _service.getAdminActivityLogs();
     _adminUsers = await _service.getAdminUsers();
+    _feedbackList = await _service.getFeedbackList();
 
     _isLoading = false;
     notifyListeners();

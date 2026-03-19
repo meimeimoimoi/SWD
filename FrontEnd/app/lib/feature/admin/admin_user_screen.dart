@@ -490,13 +490,17 @@ class _UserCard extends StatelessWidget {
               padding: const EdgeInsets.only(top: 12),
               child: Row(
                 children: [
-                  _MetaInfo(
-                    icon: Icons.badge_outlined,
-                    label: user.role,
-                    emphasize: true,
+                  Expanded(
+                    child: _MetaInfo(
+                      icon: Icons.badge_outlined,
+                      label: user.role,
+                      emphasize: true,
+                    ),
                   ),
-                  const SizedBox(width: 16),
-                  _MetaInfo(icon: Icons.schedule, label: user.lastLogin),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: _MetaInfo(icon: Icons.schedule, label: user.lastLogin),
+                  ),
                 ],
               ),
             ),
@@ -661,14 +665,19 @@ class _MetaInfo extends StatelessWidget {
     final baseStyle = theme.textTheme.bodySmall?.copyWith(color: textSecondary);
 
     return Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
         Icon(icon, size: 16, color: baseStyle?.color),
         const SizedBox(width: 6),
-        Text(
-          label,
-          style: emphasize
-              ? baseStyle?.copyWith(fontWeight: FontWeight.w600)
-              : baseStyle,
+        Expanded(
+          child: Text(
+            label,
+            style: emphasize
+                ? baseStyle?.copyWith(fontWeight: FontWeight.w600)
+                : baseStyle,
+            overflow: TextOverflow.ellipsis,
+            maxLines: 1,
+          ),
         ),
       ],
     );

@@ -1,12 +1,27 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../../../share/theme/app_colors.dart';
 import '../../../share/widgets/app_card.dart';
 import '../../../share/widgets/admin_bottom_nav.dart';
 import '../../../share/widgets/theme_toggle.dart';
+import '../../../providers/dashboard_provider.dart';
 
-class AdminFeedbackListScreen extends StatelessWidget {
+class AdminFeedbackListScreen extends StatefulWidget {
   const AdminFeedbackListScreen({super.key});
+
+  @override
+  State<AdminFeedbackListScreen> createState() => _AdminFeedbackListScreenState();
+}
+
+class _AdminFeedbackListScreenState extends State<AdminFeedbackListScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<DashboardProvider>().fetchFeedbackList();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -23,73 +38,29 @@ class AdminFeedbackListScreen extends StatelessWidget {
         : AppColors.surfaceLight;
     final appBarShadow = isDark ? Colors.transparent : Colors.black12;
 
+    final provider = context.watch<DashboardProvider>();
+    final feedbackList = provider.feedbackList;
+
+    // Calculate dynamic stats from real data
+    int totalCount = feedbackList.length;
+    double avgRating = 0;
+    if (totalCount > 0) {
+      double sum = feedbackList.fold(0.0, (prev, curr) => prev + (curr['score'] ?? 0.0).toDouble());
+      avgRating = sum / totalCount;
+    }
+
     final stats = <_FeedbackStatItem>[
-      const _FeedbackStatItem(
+      _FeedbackStatItem(
         title: 'Total Feedback',
-        value: '1,284',
-        delta: '+12%',
-        deltaColor: AppColors.primary,
-      ),
-      const _FeedbackStatItem(
-        title: 'Average Rating',
-        value: '4.2',
-        delta: '+0.3',
+        value: totalCount.toString(),
+        delta: '',
         deltaColor: AppColors.primary,
       ),
       _FeedbackStatItem(
-        title: 'Pending',
-        value: '48',
-        delta: 'Urgent',
-        deltaColor: Colors.orange,
-      ),
-    ];
-
-    final feedbackItems = <_FeedbackItem>[
-      _FeedbackItem(
-        rating: 2,
-        score: '2.0',
-        userMeta: 'User #8429 • 2h ago',
-        message:
-            'Diagnosis was incorrect. This is clearly late blight, not nitrogen deficiency.',
-        imageUrl:
-            'https://lh3.googleusercontent.com/aida-public/AB6AXuAlHB25NHko4K300X3qBLM4N1e8VmgjqckaZqk-L2K3-RmtXLJN7m3Jq_8IkY4GcKzPgTCRkQCLelleOq1N1_YT-H2z6qcETapCOJQuOkMDjrzjN1Dtfa9MiKIgwGq9v1W2bWtxSefqkwEtl6EfmaTt2c1qWpu-_8PvvH3-C3282La8c2ugSoFU5tiHGdHIoRCefRMiGaEhLLCkSRR0tjGIapcztmoewabDmRBB6Ip1l9dHw7WexlD2CRMpR65n0kE8b1J1X0FleIg',
-        tone: _FeedbackTone.critical,
-        badge: 'Needs Attention',
-        primaryAction: 'Review Diagnosis',
-        secondaryAction: 'Dismiss',
-      ),
-      _FeedbackItem(
-        rating: 3,
-        score: '3.0',
-        userMeta: 'User #1102 • 5h ago',
-        message:
-            'App is a bit slow to load results today. Diagnostic was okay but took 30 seconds.',
-        imageUrl:
-            'https://lh3.googleusercontent.com/aida-public/AB6AXuCSOHBurhyFjCrYufB4QdiGJbuTg8ifImPgnt7SpLDpDpldRrjjkoVDw7N4HZDWi9XI6e2vCSpfnKhydet4y8kuijnmauUX8ZVX52FKgRy3anfK_8WOwa4u8GOdH-gLBZkjhkfPLHICR8J2vAzHzu99K2ds81_abveuqDNrvPTuwD0q7MYo8WIEPh2DGvkMVXyUmaFVu8Am_gS3c70wi0kGtcy1KFRsEr0efr1Zk10bxV_91K9vfAhxhI9G7SJgGMBKMetOz-gx4l8',
-        tone: _FeedbackTone.warning,
-      ),
-      _FeedbackItem(
-        rating: 5,
-        score: '5.0',
-        userMeta: 'User #9521 • 12h ago',
-        message:
-            'Saved my orchid! The suggestion for less water was spot on. Highly recommend.',
-        imageUrl:
-            'https://lh3.googleusercontent.com/aida-public/AB6AXuBCVz4KZX0iJX8yauSYLkwTmrvcSMOmBIw0e7lSbgnOEkbmU4oplvPPKTzgvmXtcukBAjI98vXwVz6RLTXWcXIXNM07tav7RYdlvJSZtZ1eX9CluxKy8NuVvDz3kt8IwwaqnO9VBmImO_Mo7gkii5ltGGIPcUW7wqSZB7KcwygRcG5Y5Zg5L-rgz0QEX2crxmkJ9UEhpFhJSFiFziev8oVackjDArsmpOPHdEYEgs8pZC-gekmW36y6l23gsr4CQkkl2S6_VCN4KT8',
-        tone: _FeedbackTone.positive,
-        dimmed: true,
-      ),
-      _FeedbackItem(
-        rating: 1,
-        score: '1.0',
-        userMeta: 'User #3342 • 1d ago',
-        message:
-            'Payment failed twice but charged me anyway. Please fix immediately.',
-        imageUrl:
-            'https://lh3.googleusercontent.com/aida-public/AB6AXuCQ_2YaE8MZDOuQ-KgoR8Qgs0aHBBdOX94uo7XqpUs6mGNA-lZaRFUX8mC4sERJRc7U-pE9T5iixmn9RtTeNzW-bvLIfu2Vfp5RRidh1HIRc3i4r-pBI-OP7Vutk4FTfrWJBTE_6sYoQxRhNylM3k_9yDsMUWgFb9ezTF0clz9PTZ9GIIVIw-4IrgoBR_8r8mDrlt0Q_WYL12JgxFinghnGDNCJXuVisd_aM4gmPCJdNZ-2zmTgkv3B1uWEz0WmrDUN_2T9EZ5w_zE',
-        tone: _FeedbackTone.critical,
-        primaryAction: 'Contact User',
-        secondaryAction: 'Refund',
+        title: 'Average Rating',
+        value: avgRating.toStringAsFixed(1),
+        delta: '★',
+        deltaColor: AppColors.primary,
       ),
     ];
 
@@ -112,50 +83,105 @@ class AdminFeedbackListScreen extends StatelessWidget {
         actions: [const ThemeToggle(), const SizedBox(width: 8)],
       ),
       body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 1100),
-            child: ListView(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-              children: [
-                Wrap(
-                  spacing: 12,
-                  runSpacing: 12,
-                  children: stats
-                      .map(
-                        (item) =>
-                            SizedBox(width: 220, child: _StatCard(item: item)),
-                      )
-                      .toList(),
-                ),
-                const SizedBox(height: 12),
-                SizedBox(
-                  height: 42,
-                  child: ListView(
-                    scrollDirection: Axis.horizontal,
-                    children: const [
-                      _FilterPill(label: 'All Reviews', isActive: true),
-                      _FilterPill(label: 'Critical (1-2★)'),
-                      _FilterPill(label: 'Negative (3★)'),
-                    ],
+        child: RefreshIndicator(
+          onRefresh: () => provider.fetchFeedbackList(),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 1100),
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+                children: [
+                  Wrap(
+                    spacing: 12,
+                    runSpacing: 12,
+                    children: stats
+                        .map(
+                          (item) =>
+                              SizedBox(width: 180, child: _StatCard(item: item)),
+                        )
+                        .toList(),
                   ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'Recent Feedback',
-                  style: theme.textTheme.labelLarge?.copyWith(
-                    letterSpacing: 1.4,
-                    color: textSecondary.withOpacity(0.7),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    height: 42,
+                    child: ListView(
+                      scrollDirection: Axis.horizontal,
+                      children: const [
+                        _FilterPill(label: 'All Reviews', isActive: true),
+                        _FilterPill(label: 'Critical (1-2★)'),
+                        _FilterPill(label: 'Negative (3★)'),
+                      ],
+                    ),
                   ),
-                ),
-                const SizedBox(height: 12),
-                ...feedbackItems.map(
-                  (item) => Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: _FeedbackCard(item: item),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Recent Feedback',
+                    style: theme.textTheme.labelLarge?.copyWith(
+                      letterSpacing: 1.4,
+                      color: textSecondary.withOpacity(0.7),
+                    ),
                   ),
-                ),
-              ],
+                  const SizedBox(height: 12),
+                  if (provider.isLoading && feedbackList.isEmpty)
+                    const Center(
+                      child: Padding(
+                        padding: EdgeInsets.only(top: 40.0),
+                        child: CircularProgressIndicator(),
+                      ),
+                    )
+                  else if (feedbackList.isEmpty)
+                    Center(
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 40.0),
+                        child: Text(
+                          'No feedback records found',
+                          style: TextStyle(color: textSecondary),
+                        ),
+                      ),
+                    )
+                  else
+                    ...feedbackList.map((data) {
+                      final prediction = data['prediction'] ?? {};
+                      final upload = prediction['upload'] ?? {};
+                      final user = upload['user'] ?? {};
+                      final username = user['username'] ?? 'User';
+                      final illness = prediction['illness']?['name'] ?? 'Unknown';
+                      
+                      // Format relative time (naive)
+                      String timeAgo = 'Just now';
+                      if (data['createdAt'] != null) {
+                        try {
+                          final date = DateTime.parse(data['createdAt']);
+                          final diff = DateTime.now().difference(date);
+                          if (diff.inDays > 0) {
+                            timeAgo = '${diff.inDays}d ago';
+                          } else if (diff.inHours > 0) {
+                            timeAgo = '${diff.inHours}h ago';
+                          } else if (diff.inMinutes > 0) {
+                            timeAgo = '${diff.inMinutes}m ago';
+                          }
+                        } catch (_) {}
+                      }
+
+                      final item = _FeedbackItem(
+                        rating: (data['score'] ?? 0).toInt(),
+                        score: (data['score'] ?? 0).toString(),
+                        userMeta: '$username • $timeAgo',
+                        message: data['comment'] ?? 'No comment provided.',
+                        imageUrl: upload['imageUrl'] ?? 'https://via.placeholder.com/150',
+                        tone: (data['score'] ?? 0) <= 2 
+                            ? _FeedbackTone.critical 
+                            : ((data['score'] ?? 0) <= 3 ? _FeedbackTone.warning : _FeedbackTone.positive),
+                        badge: illness,
+                      );
+                      
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: _FeedbackCard(item: item),
+                      );
+                    }).toList(),
+                ],
+              ),
             ),
           ),
         ),
@@ -379,6 +405,12 @@ class _FeedbackCard extends StatelessWidget {
                     width: 76,
                     height: 76,
                     fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => Container(
+                      width: 76,
+                      height: 76,
+                      color: Colors.grey.withOpacity(0.2),
+                      child: const Icon(Icons.broken_image, size: 24),
+                    ),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -397,6 +429,8 @@ class _FeedbackCard extends StatelessWidget {
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: textSecondary,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 6),
                       Text(
@@ -405,6 +439,8 @@ class _FeedbackCard extends StatelessWidget {
                           color: textPrimary,
                           fontWeight: FontWeight.w600,
                         ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ],
                   ),
