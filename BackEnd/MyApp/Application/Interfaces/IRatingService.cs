@@ -5,16 +5,21 @@ namespace MyApp.Application.Interfaces
     public interface IRatingService
     {
         /// <summary>
-        /// T?o ?·nh gi· cho m?t prediction.
-        /// Throws KeyNotFoundException n?u prediction khÙng t?n t?i.
-        /// Throws UnauthorizedAccessException n?u prediction khÙng thu?c v? user.
-        /// Throws InvalidOperationException n?u prediction ?„ ???c ?·nh gi·.
+        /// T?o ?√°nh gi√° cho m?t prediction.
+        /// Throws KeyNotFoundException n?u prediction kh√¥ng t?n t?i.
+        /// Throws UnauthorizedAccessException n?u prediction kh√¥ng thu?c v? user.
+        /// Throws InvalidOperationException n?u prediction ?√£ ???c ?√°nh gi√°.
         /// </summary>
         Task<RatingResponseDto> CreateRatingAsync(int userId, int predictionId, RatingRequestDto dto);
 
         /// <summary>
-        /// L?y ?·nh gi· c?a m?t prediction theo predictionId.
+        /// L?y ?√°nh gi√° c?a m?t prediction theo predictionId.
         /// </summary>
         Task<RatingResponseDto?> GetRatingByPredictionIdAsync(int predictionId);
+
+        /// <summary>
+        /// L·∫•y t·∫•t c·∫£ ƒë√°nh gi√° cho Admin.
+        /// </summary>
+        Task<IEnumerable<RatingResponseDto>> GetAllRatingsAsync();
     }
 }
