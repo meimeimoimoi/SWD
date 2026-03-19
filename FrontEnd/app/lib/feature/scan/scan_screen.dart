@@ -87,7 +87,7 @@ class _ScanScreenState extends State<ScanScreen> {
                       ),
                       Expanded(
                         child: Text(
-                          'Capture Leaf',
+                          'Chụp lá cây lúa',
                           textAlign: TextAlign.center,
                           style: theme.textTheme.titleLarge,
                         ),
@@ -121,13 +121,13 @@ class _ScanScreenState extends State<ScanScreen> {
                         ),
                         const SizedBox(height: 20),
                         Text(
-                          'Selected Leaf Image',
+                          'Hình ảnh lá đã chọn',
                           textAlign: TextAlign.center,
                           style: theme.textTheme.headlineSmall,
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Please ensure the leaf is clearly visible and in focus for the most accurate diagnosis.',
+                          'Hãy đảm bảo lá cây được chụp rõ ràng và có đủ ánh sáng để có kết quả phân tích tốt nhất.',
                           textAlign: TextAlign.center,
                           style: theme.textTheme.bodyMedium,
                         ),
@@ -144,7 +144,7 @@ class _ScanScreenState extends State<ScanScreen> {
                         children: [
                           Expanded(
                             child: AppButton(
-                              label: 'Retake',
+                              label: 'Chụp lại',
                               variant: AppButtonVariant.outlined,
                               onPressed: () => Navigator.of(
                                 context,
@@ -154,7 +154,7 @@ class _ScanScreenState extends State<ScanScreen> {
                           const SizedBox(width: 12),
                           Expanded(
                             child: AppButton(
-                              label: 'Confirm',
+                              label: 'Xác nhận',
                               onPressed: () => Navigator.of(
                                 context,
                               ).pop(_CaptureLeafAction.confirm),
@@ -185,13 +185,13 @@ class _ScanScreenState extends State<ScanScreen> {
         _uploadStatus = _UploadStatus.idle;
       });
     } catch (_) {
-      _setStatus(_UploadStatus.error, 'Failed to pick image.');
+      _setStatus(_UploadStatus.error, 'Chọn ảnh thất bại. Vui lòng thử lại.');
     }
   }
 
   Future<void> _uploadSelectedImage() async {
     if (_selectedImage == null || _isUploading) {
-      _setStatus(_UploadStatus.error, 'Please choose an image first.');
+      _setStatus(_UploadStatus.error, 'Vui lòng chọn một ảnh trước.');
       return;
     }
 
@@ -226,7 +226,7 @@ class _ScanScreenState extends State<ScanScreen> {
   Future<void> _predictImage() async {
     if (_selectedImage == null || _isUploading) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select an image first.')),
+        const SnackBar(content: Text('Vui lòng chọn một ảnh trước.')),
       );
       return;
     }

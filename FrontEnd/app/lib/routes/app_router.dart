@@ -6,10 +6,11 @@ import '../feature/admin/admin_user_screen.dart';
 import '../feature/auth/login/login_screen.dart';
 import '../feature/auth/register/register_screen.dart';
 import '../feature/dashboard/dashboard_screen.dart';
-import '../feature/feedback/feedback_sceern.dart';
+import '../feature/feedback/feedback_screen.dart';
 import '../feature/scan/scan_screen.dart';
 import '../feature/profile/profile_screen.dart';
 import '../feature/profile/update_profile_screen.dart';
+import '../feature/history/hisstory_screen.dart';
 import '../feature/prediction/prediction_screen.dart';
 
 class AppRouter {
@@ -29,6 +30,7 @@ class AppRouter {
   static const String updateProfile = '/profile/update';
   static const String prediction = '/prediction';
   static const String feedback = '/feedback';
+  static const String history = '/history';
   static const String treatmentHub = '/treatments';
 
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
@@ -58,9 +60,14 @@ class AppRouter {
         return MaterialPageRoute(
           builder: (_) => PredictionScreen(result: result),
         );
- 
+
+      case history:
+        return MaterialPageRoute(builder: (_) => const HistoryScreen());
       case feedback:
-        return MaterialPageRoute(builder: (_) => const FeedbackScreen());
+        final predictionResult = settings.arguments as PredictionResult?;
+        return MaterialPageRoute(
+          builder: (_) => FeedbackScreen(predictionResult: predictionResult),
+        );
       case login:
       default:
         return MaterialPageRoute(builder: (_) => const LoginScreen());

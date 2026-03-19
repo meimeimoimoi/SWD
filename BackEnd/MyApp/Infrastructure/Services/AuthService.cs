@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using MyApp.Application.Features.Users.DTOs;
 using MyApp.Application.Interfaces;
 using MyApp.Domain.Entities;
@@ -58,6 +58,19 @@ namespace MyApp.Infrastructure.Services
                 user.LastLoginAt = DateTime.UtcNow;
                 user.UpdatedAt = DateTime.UtcNow;
                 await _userRepository.UpdateUserAsync(user);
+
+                // Log the activity
+                var log = new ActivityLog
+                {
+                    UserId = user.UserId,
+                    Action = "Login",
+                    EntityName = "User",
+                    EntityId = user.UserId.ToString(),
+                    Description = $"User {user.Username} logged in.",
+                    CreatedAt = DateTime.UtcNow
+                };
+                _context.ActivityLogs.Add(log);
+                await _context.SaveChangesAsync();
 
                 return new LoginResponseDTO 
                 {

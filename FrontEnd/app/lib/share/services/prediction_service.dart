@@ -30,6 +30,7 @@ class PredictionData {
   final String? symptoms;
   final String? causes;
   final List<dynamic> treatments;
+  final List<dynamic> medicines;
 
   PredictionData({
     required this.predictionId,
@@ -41,6 +42,7 @@ class PredictionData {
     this.symptoms,
     this.causes,
     required this.treatments,
+    required this.medicines,
   });
 
   factory PredictionData.fromJson(Map<String, dynamic> json) {
@@ -54,6 +56,7 @@ class PredictionData {
       symptoms: json['symptoms'],
       causes: json['causes'],
       treatments: json['treatments'] ?? [],
+      medicines: json['medicines'] ?? [],
     );
   }
 }

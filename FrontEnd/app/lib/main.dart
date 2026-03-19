@@ -6,6 +6,7 @@ import 'routes/app_router.dart';
 import 'share/services/auth_api_service.dart';
 import 'share/theme/app_theme.dart';
 import 'share/theme/theme_notifier.dart';
+import 'providers/dashboard_provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -17,34 +18,37 @@ Future<void> main() async {
     }
     navigator.pushNamedAndRemoveUntil(AppRouter.login, (route) => false);
   };
-  runApp(MyApp(themeNotifier: ThemeNotifier(prefs: prefs)));
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => ThemeNotifier(prefs: prefs)),
+        ChangeNotifierProvider(create: (_) => DashboardProvider()),
+      ],
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key, required this.themeNotifier});
-
-  final ThemeNotifier themeNotifier;
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider.value(
-      value: themeNotifier,
-      child: Consumer<ThemeNotifier>(
-        builder: (context, notifier, _) {
-          return MaterialApp(
-            title: 'SWD System',
-            debugShowCheckedModeBanner: false,
-            navigatorKey: AppRouter.navigatorKey,
-            theme: AppTheme.light,
-            darkTheme: AppTheme.dark,
-            themeMode: notifier.themeMode,
-            initialRoute: AppRouter.initialRoute,
-            onGenerateRoute: AppRouter.onGenerateRoute,
-            onUnknownRoute: (_) =>
-                MaterialPageRoute(builder: (_) => const LoginScreen()),
-          );
-        },
-      ),
+    return Consumer<ThemeNotifier>(
+      builder: (context, notifier, _) {
+        return MaterialApp(
+          title: 'SWD System',
+          debugShowCheckedModeBanner: false,
+          navigatorKey: AppRouter.navigatorKey,
+          theme: AppTheme.light,
+          darkTheme: AppTheme.dark,
+          themeMode: notifier.themeMode,
+          initialRoute: AppRouter.initialRoute,
+          onGenerateRoute: AppRouter.onGenerateRoute,
+          onUnknownRoute: (_) =>
+              MaterialPageRoute(builder: (_) => const LoginScreen()),
+        );
+      },
     );
   }
 }

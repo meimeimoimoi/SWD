@@ -1,13 +1,28 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+import '../../providers/dashboard_provider.dart';
 import '../../routes/app_router.dart';
 import '../../share/theme/app_colors.dart';
 import '../../share/widgets/app_card.dart';
 import '../../share/widgets/admin_bottom_nav.dart';
 import '../../share/widgets/theme_toggle.dart';
 
-class AdminDashboardScreen extends StatelessWidget {
+class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({super.key});
+
+  @override
+  State<AdminDashboardScreen> createState() => _AdminDashboardScreenState();
+}
+
+class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<DashboardProvider>().fetchAdminData();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,61 +39,51 @@ class AdminDashboardScreen extends StatelessWidget {
         : AppColors.surfaceLight;
     final appBarShadow = isDark ? Colors.transparent : Colors.black12;
 
+    final provider = context.watch<DashboardProvider>();
+    final statsData = provider.adminStats;
+    final adminLogs = provider.adminLogs;
+
     final stats = <_AdminStatItem>[
       _AdminStatItem(
         title: 'Tổng User',
-        value: '12.842',
-        note: '+12% từ tháng trước',
+        value: statsData?.totalUsers.toString() ?? '...',
+        note: '${statsData?.activeUsers ?? 0} active',
         icon: Icons.groups_outlined,
         statusColor: AppColors.primary,
         onTap: () => Navigator.pushNamed(context, AppRouter.adminUsers),
       ),
       _AdminStatItem(
         title: 'Số lần Quét',
-        value: '84.201',
-        note: '+24k tuần này',
+        value: statsData?.totalPredictions.toString() ?? '...',
+        note: '+${statsData?.todayPredictions ?? 0} hôm nay',
         icon: Icons.camera_alt_outlined,
         statusColor: AppColors.primary,
       ),
       _AdminStatItem(
-        title: 'Độ chính xác',
-        value: '98.4%',
-        note: 'Model v4.2 Stable',
+        title: 'Model',
+        value: statsData?.totalModels.toString() ?? '...',
+        note: '${statsData?.activeModels ?? 0} active',
         icon: Icons.verified_outlined,
         statusColor: AppColors.primary,
       ),
       _AdminStatItem(
         title: 'Cảnh báo',
-        value: '03',
-        note: 'Cần xử lý ngay',
+        value: '0', 
+        note: 'Hệ thống ổn định',
         icon: Icons.warning_amber_rounded,
         statusColor: theme.colorScheme.error,
       ),
     ];
 
-    final activities = <_RecentActivityItem>[
-      _RecentActivityItem(
-        title: 'Đốm lá Cà chua',
-        subtitle: 'User ID: #8492 • 2 phút trước',
-        badge: 'Phát hiện',
-        badgeColor: AppColors.warning,
-        icon: Icons.eco_outlined,
-      ),
-      _RecentActivityItem(
-        title: 'Lá khỏe mạnh (Cam)',
-        subtitle: 'User ID: #1102 • 15 phút trước',
-        badge: 'Bình thường',
-        badgeColor: AppColors.primary,
-        icon: Icons.check_circle_outline,
-      ),
-      _RecentActivityItem(
-        title: 'Rỉ sắt Cà phê',
-        subtitle: 'User ID: #2398 • 40 phút trước',
-        badge: 'Cảnh báo',
-        badgeColor: theme.colorScheme.error,
-        icon: Icons.local_florist_outlined,
-      ),
-    ];
+    final activities = adminLogs.map((log) {
+      return _RecentActivityItem(
+        title: log.action,
+        subtitle: '${log.username ?? 'System'} • ${_formatTime(log.createdAt)}',
+        badge: log.entityName,
+        badgeColor: _getBadgeColor(log.action, theme),
+        icon: _getIconForAction(log.action),
+      );
+    }).toList();
 
     return Scaffold(
       appBar: AppBar(
@@ -106,66 +111,98 @@ class AdminDashboardScreen extends StatelessWidget {
         actions: [const ThemeToggle(), const SizedBox(width: 8)],
       ),
       body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 1100),
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  GridView.builder(
-                    physics: const NeverScrollableScrollPhysics(),
-                    shrinkWrap: true,
-                    itemCount: stats.length,
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          crossAxisSpacing: 12,
-                          mainAxisSpacing: 12,
-                          childAspectRatio: 1.1,
-                        ),
-                    itemBuilder: (context, index) {
-                      return _StatCard(item: stats[index]);
-                    },
-                  ),
-                  const SizedBox(height: 18),
-                  AppCard(
-                    padding: const EdgeInsets.all(18),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Hoạt động gần đây',
-                              style: theme.textTheme.titleMedium,
+        child: provider.isLoading && statsData == null
+            ? const Center(child: CircularProgressIndicator())
+            : RefreshIndicator(
+                onRefresh: provider.fetchAdminData,
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 1100),
+                    child: SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          GridView.builder(
+                            physics: const NeverScrollableScrollPhysics(),
+                            shrinkWrap: true,
+                            itemCount: stats.length,
+                            gridDelegate:
+                                const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2,
+                              crossAxisSpacing: 12,
+                              mainAxisSpacing: 12,
+                              childAspectRatio: 1.1,
                             ),
-                            TextButton(
-                              onPressed: () {},
-                              child: const Text('Xem tất cả'),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        ...activities.map(
-                          (item) => Padding(
-                            padding: const EdgeInsets.only(bottom: 10),
-                            child: _ActivityTile(item: item),
+                            itemBuilder: (context, index) {
+                              return _StatCard(item: stats[index]);
+                            },
                           ),
-                        ),
-                      ],
+                          const SizedBox(height: 18),
+                          AppCard(
+                            padding: const EdgeInsets.all(18),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      'Hoạt động gần đây',
+                                      style: theme.textTheme.titleMedium,
+                                    ),
+                                    TextButton(
+                                      onPressed: () {},
+                                      child: const Text('Xem tất cả'),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 8),
+                                if (activities.isEmpty && !provider.isLoading)
+                                  const Center(
+                                    child: Padding(
+                                      padding: EdgeInsets.symmetric(vertical: 20),
+                                      child: Text('Không có hoạt động nào.'),
+                                    ),
+                                  )
+                                else
+                                  ...activities.map(
+                                    (item) => Padding(
+                                      padding: const EdgeInsets.only(bottom: 10),
+                                      child: _ActivityTile(item: item),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ],
+                ),
               ),
-            ),
-          ),
-        ),
       ),
       bottomNavigationBar: const AdminBottomNav(currentIndex: 0),
     );
+  }
+
+  String _formatTime(DateTime time) {
+    return '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
+  }
+
+  Color _getBadgeColor(String action, ThemeData theme) {
+    if (action.contains('Login')) return AppColors.primary;
+    if (action.contains('Create')) return Colors.green;
+    if (action.contains('Delete')) return theme.colorScheme.error;
+    return AppColors.warning;
+  }
+
+  IconData _getIconForAction(String action) {
+    if (action.contains('Login')) return Icons.login;
+    if (action.contains('Prediction')) return Icons.eco_outlined;
+    if (action.contains('User')) return Icons.person_outline;
+    return Icons.history_edu;
   }
 }
 

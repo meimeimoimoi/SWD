@@ -77,5 +77,20 @@ namespace MyApp.Api.Controllers
                 return StatusCode(500, new { success = false, message = "Internal server error." });
             }
         }
+
+        [HttpGet("activity-logs")]
+        public async Task<IActionResult> GetActivityLogs([FromQuery] int count = 50)
+        {
+            try
+            {
+                var logs = await _monitoringService.GetActivityLogsAsync(count);
+                return Ok(new { success = true, count = logs.Count, data = logs });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching activity logs.");
+                return StatusCode(500, new { success = false, message = "Internal server error." });
+            }
+        }
     }
 }

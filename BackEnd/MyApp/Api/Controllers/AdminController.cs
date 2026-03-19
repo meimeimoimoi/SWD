@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MyApp.Application.Features.Admin.DTOs;
 using MyApp.Application.Features.Users.DTOs;
@@ -234,6 +234,49 @@ namespace MyApp.Api.Controllers
                 {
                     success = false,
                     message = "An error occurred while creating staff user",
+                    error = ex.Message
+                });
+            }
+        }
+
+        [HttpPost("users")]
+        public async Task<IActionResult> CreateUser([FromBody] CreateUserDto createDto)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(new
+                    {
+                        success = false,
+                        message = "Invalid input data",
+                        errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage)
+                    });
+                }
+
+                var result = await _adminService.CreateUserAsync(createDto);
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "User created successfully"
+                });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = ex.Message
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error creating user by admin");
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "An error occurred while creating user",
                     error = ex.Message
                 });
             }

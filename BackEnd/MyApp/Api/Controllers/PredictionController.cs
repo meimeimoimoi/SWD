@@ -22,6 +22,11 @@ namespace MyApp.Api.Controllers
             _logger = logger;
         }
 
+/// <summary>
+/// Dự đoán bệnh trên lá lúa từ hình ảnh được tải lên. Trả về treatment - thuốc(medicine)
+/// </summary>
+/// <param name="image"></param>
+/// <returns></returns>
         [HttpPost("predict")]
         [Consumes("multipart/form-data")]
         [ProducesResponseType(StatusCodes.Status200OK)]

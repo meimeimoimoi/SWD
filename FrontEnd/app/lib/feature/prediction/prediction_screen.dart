@@ -8,6 +8,7 @@ class PredictionResult {
   static const String _imageBaseUrl = 'http://10.0.2.2:5299';
   static const String _imagePathPrefix = '/uploads/images/';
 
+  final int predictionId;
   final String diseaseName;
   final String vietnameseName;
   final String scientificName;
@@ -15,11 +16,14 @@ class PredictionResult {
   final double confidence;
   final String description;
   final String cause;
+  final String symptoms;
   final String impact;
   final List<TreatmentProduct> treatments;
+  final List<TreatmentProduct> medicines;
   final bool isHealthy;
 
   const PredictionResult({
+    required this.predictionId,
     required this.diseaseName,
     required this.vietnameseName,
     required this.scientificName,
@@ -27,8 +31,10 @@ class PredictionResult {
     required this.confidence,
     required this.description,
     required this.cause,
+    required this.symptoms,
     required this.impact,
     required this.treatments,
+    required this.medicines,
     required this.isHealthy,
   });
 
@@ -41,6 +47,7 @@ class PredictionResult {
     final imageUrl = _buildImageUrl(data.imageUrl);
 
     return PredictionResult(
+      predictionId: data.predictionId,
       diseaseName: englishName,
       vietnameseName: vietnameseName,
       scientificName: scientificName,
@@ -48,10 +55,28 @@ class PredictionResult {
       confidence: data.confidence,
       description: data.symptoms ?? 'Chưa có dữ liệu mô tả.',
       cause: data.causes ?? 'Chưa có thông tin.',
-      impact: 'Chưa có thông tin tác động.',
-      treatments: [], // Will be populated based on diagnosis
+      symptoms: data.symptoms ?? 'Chưa có thông tin triệu chứng.',
+      impact: DiseaseMapper.getImpact(englishName),
+      treatments: _mapTreatments(data.treatments),
+      medicines: _mapTreatments(data.medicines),
       isHealthy: isHealthy,
     );
+  }
+
+  static List<TreatmentProduct> _mapTreatments(List<dynamic> items) {
+    return items.map((item) {
+      final map = item as Map<String, dynamic>;
+      final type = (map['type'] ?? '') as String;
+      final isMedicine = type == 'medicine';
+      return TreatmentProduct(
+        name: (map['name'] ?? '') as String,
+        imageUrl: '',
+        badge: isMedicine ? 'Thuốc' : 'Chăm sóc',
+        instruction: (map['description'] ?? '') as String,
+        price: '',
+        isPrimary: isMedicine,
+      );
+    }).toList();
   }
 
   static String _buildImageUrl(String imageUrl) {
@@ -66,6 +91,8 @@ class PredictionResult {
     return '$_imageBaseUrl$_imagePathPrefix$normalizedPath';
   }
 }
+
+final List<String> _tags = const ['Chăm sóc', 'Thuốc'];
 
 /// Model for treatment product
 class TreatmentProduct {
@@ -86,13 +113,22 @@ class TreatmentProduct {
   });
 }
 
-class PredictionScreen extends StatelessWidget {
+class PredictionScreen extends StatefulWidget {
   const PredictionScreen({super.key, this.result});
 
   final PredictionResult? result;
 
+  @override
+  State<PredictionScreen> createState() => _PredictionScreenState();
+}
+
+class _PredictionScreenState extends State<PredictionScreen> {
+  // 0 = Chăm sóc (treatments), 1 = Thuốc (medicines)
+  int _selectedTab = 0;
+
   // Sample data for demonstration
   static const _sampleResult = PredictionResult(
+    predictionId: 0,
     diseaseName: 'Leaf Blast',
     vietnameseName: 'Đạo ôn (cháy lá do nấm)',
     scientificName: 'Magnaporthe oryzae',
@@ -102,14 +138,16 @@ class PredictionScreen extends StatelessWidget {
     description:
         'Bệnh đốm lá do nấm gây ra, thường xuất hiện dưới dạng các đốm nhỏ màu nâu hoặc xám trên bề mặt lá. Nếu không được điều trị, các đốm này có thể lan rộng và làm héo lá, ảnh hưởng nghiêm trọng đến khả năng quang hợp của cây.',
     cause: 'Độ ẩm cao, nấm bào tử',
+    symptoms: 'Đốm lá, héo lá, giảm năng suất',
     impact: 'Giảm năng suất 15-30%',
     treatments: [],
+    medicines: [],
     isHealthy: false,
   );
 
   @override
   Widget build(BuildContext context) {
-    final data = result ?? _sampleResult;
+    final data = widget.result ?? _sampleResult;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
@@ -140,9 +178,37 @@ class PredictionScreen extends StatelessWidget {
                 ),
               ),
             ),
-            _buildBottomNavigation(context, isDark),
           ],
         ),
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: 1, // Defaulting to scan/result context
+        type: BottomNavigationBarType.fixed,
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+          BottomNavigationBarItem(icon: Icon(Icons.camera_alt), label: 'Scan'),
+          BottomNavigationBarItem(icon: Icon(Icons.history), label: 'History'),
+          BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Setting'),
+        ],
+        onTap: (index) {
+          switch (index) {
+            case 0:
+              Navigator.of(context).pushNamedAndRemoveUntil(
+                AppRouter.dashboard,
+                (route) => false,
+              );
+              break;
+            case 1:
+              Navigator.of(context).pushNamed(AppRouter.scan);
+              break;
+            case 2:
+              Navigator.of(context).pushNamed(AppRouter.history);
+              break;
+            case 3:
+              Navigator.of(context).pushNamed(AppRouter.profile);
+              break;
+          }
+        },
       ),
     );
   }
@@ -330,7 +396,7 @@ class PredictionScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  data.scientificName,
+                  data.diseaseName,
                   style: TextStyle(
                     fontSize: 14,
                     fontStyle: FontStyle.italic,
@@ -557,7 +623,7 @@ class PredictionScreen extends StatelessWidget {
             ),
             const SizedBox(width: 8),
             Text(
-              'Thuốc điều trị đề xuất',
+              'Đề xuất điều trị',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -566,14 +632,125 @@ class PredictionScreen extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: 16),
-        ...data.treatments.map(
-          (treatment) => Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: _buildTreatmentCard(context, treatment, isDark),
+        const SizedBox(height: 12),
+        // Tab buttons
+        Container(
+          padding: const EdgeInsets.all(4),
+          decoration: BoxDecoration(
+            color: isDark
+                ? const Color(0xFF0F1724).withOpacity(0.15)
+                : const Color(0xFFF3F4F6).withOpacity(0.6),
+            borderRadius: BorderRadius.circular(999),
+          ),
+          child: Row(
+            children: [
+              _buildTabItem(title: 'Chăm sóc', index: 0, isDark: isDark),
+              const SizedBox(width: 4),
+              _buildTabItem(title: 'Thuốc', index: 1, isDark: isDark),
+            ],
           ),
         ),
+
+        const SizedBox(height: 16),
+        Builder(
+          builder: (context) {
+            final items = _selectedTab == 0 ? data.treatments : data.medicines;
+            if (items.isEmpty) {
+              return Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF27272a) : Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: isDark
+                        ? const Color(0xFF3F3F46)
+                        : const Color(0xFFE5E7EB),
+                  ),
+                ),
+                child: Center(
+                  child: Text(
+                    _selectedTab == 0
+                        ? 'Chưa có đề xuất chăm sóc.'
+                        : 'Chưa có gợi ý thuốc.',
+                    style: TextStyle(
+                      color: isDark
+                          ? const Color(0xFFD1D5DB)
+                          : const Color(0xFF6B7280),
+                    ),
+                  ),
+                ),
+              );
+            }
+
+            return Column(
+              children: items
+                  .map(
+                    (treatment) => Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: _buildTreatmentCard(context, treatment, isDark),
+                    ),
+                  )
+                  .toList(),
+            );
+          },
+        ),
       ],
+    );
+  }
+
+  Widget _buildTabItem({
+    required String title,
+    required int index,
+    required bool isDark,
+  }) {
+    final bool isSelected = _selectedTab == index;
+
+    return Expanded(
+      child: GestureDetector(
+        onTap: () => setState(() => _selectedTab = index),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeOutCubic,
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? (isDark ? const Color(0xFFE4E4E7) : Colors.white)
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(999),
+          ),
+          alignment: Alignment.center,
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 250),
+            transitionBuilder: (child, animation) {
+              return FadeTransition(
+                opacity: animation,
+                child: ScaleTransition(
+                  scale: Tween<double>(begin: 0.95, end: 1).animate(
+                    CurvedAnimation(
+                      parent: animation,
+                      curve: Curves.easeOutBack,
+                    ),
+                  ),
+                  child: child,
+                ),
+              );
+            },
+            child: Text(
+              title,
+              key: ValueKey(isSelected),
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+                color: isSelected
+                    ? (isDark ? Colors.black : const Color(0xFF111827))
+                    : (isDark
+                          ? const Color(0xFF9CA3AF)
+                          : const Color(0xFF6B7280)),
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 
@@ -663,20 +840,7 @@ class PredictionScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 2),
-                Text(
-                  treatment.badge,
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w500,
-                    color: treatment.isPrimary
-                        ? (isDark
-                              ? const Color(0xFF4ADE80)
-                              : const Color(0xFF16A34A))
-                        : (isDark
-                              ? const Color(0xFF9CA3AF)
-                              : const Color(0xFF6B7280)),
-                  ),
-                ),
+
                 const SizedBox(height: 6),
                 Text(
                   '"${treatment.instruction}"',
@@ -818,163 +982,6 @@ class PredictionScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildBottomNavigation(BuildContext context, bool isDark) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF27272a) : Colors.white,
-        border: Border(
-          top: BorderSide(
-            color: isDark ? const Color(0xFF374151) : const Color(0xFFE5E7EB),
-          ),
-        ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          _buildNavItem(
-            icon: Icons.home,
-            label: 'Trang chủ',
-            onTap: () => _navigateToHome(context),
-            isDark: isDark,
-          ),
-          // Camera button
-          Transform.translate(
-            offset: const Offset(0, -20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 56,
-                  height: 56,
-                  decoration: BoxDecoration(
-                    color: isDark
-                        ? const Color(0xFFE4E4E7)
-                        : const Color(0xFF27272A),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: isDark
-                          ? const Color(0xFF18181b)
-                          : const Color(0xFFF4F4F5),
-                      width: 4,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.2),
-                        blurRadius: 8,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      onTap: () => _navigateToScan(context),
-                      borderRadius: BorderRadius.circular(12),
-                      child: Icon(
-                        Icons.camera_alt,
-                        color: isDark ? Colors.black : Colors.white,
-                        size: 26,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Chụp ảnh',
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                    color: isDark ? Colors.white : const Color(0xFF27272A),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          _buildNavItem(
-            icon: Icons.history,
-            label: 'Lịch sử',
-            onTap: () => _navigateToHistory(context),
-            isDark: isDark,
-          ),
-          _buildNavItem(
-            icon: Icons.person,
-            label: 'Cá nhân',
-            onTap: () => _navigateToProfile(context),
-            isDark: isDark,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildNavItem({
-    required IconData icon,
-    required String label,
-    required VoidCallback onTap,
-    required bool isDark,
-    bool isActive = false,
-  }) {
-    return Expanded(
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                icon,
-                color: isActive
-                    ? (isDark ? Colors.white : const Color(0xFF27272A))
-                    : (isDark
-                          ? const Color(0xFF6B7280)
-                          : const Color(0xFF9CA3AF)),
-                size: 24,
-              ),
-              const SizedBox(height: 4),
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w500,
-                  color: isActive
-                      ? (isDark ? Colors.white : const Color(0xFF27272A))
-                      : (isDark
-                            ? const Color(0xFF6B7280)
-                            : const Color(0xFF9CA3AF)),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  // Navigation methods
-  void _navigateToHome(BuildContext context) {
-    Navigator.of(
-      context,
-    ).pushNamedAndRemoveUntil('/dashboard', (route) => false);
-  }
-
-  void _navigateToScan(BuildContext context) {
-    Navigator.of(context).pushNamed('/scan');
-  }
-
-  void _navigateToHistory(BuildContext context) {
-    // TODO: Implement history navigation
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Chức năng lịch sử đang phát triển')),
-    );
-  }
-
-  void _navigateToProfile(BuildContext context) {
-    Navigator.of(context).pushNamed('/profile');
-  }
-
   // Action methods
   void _showOptionsMenu(BuildContext context) {
     showModalBottomSheet(
@@ -1021,144 +1028,174 @@ class PredictionScreen extends StatelessWidget {
       backgroundColor: Colors.transparent,
       builder: (context) {
         final isDark = Theme.of(context).brightness == Brightness.dark;
+
         return Container(
-          height: MediaQuery.of(context).size.height * 0.7,
+          height: MediaQuery.of(context).size.height * 0.75,
           decoration: BoxDecoration(
             color: isDark ? const Color(0xFF27272a) : Colors.white,
             borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
           ),
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: isDark
-                        ? const Color(0xFF3F3F46)
-                        : const Color(0xFFE5E7EB),
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
-              Text(
-                product.name,
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.white : const Color(0xFF111827),
-                ),
-              ),
-              const SizedBox(height: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: product.isPrimary
-                      ? (isDark
-                            ? const Color(0xFF166534).withOpacity(0.3)
-                            : const Color(0xFFDCFCE7))
-                      : (isDark
-                            ? const Color(0xFF3F3F46)
-                            : const Color(0xFFF3F4F6)),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Text(
-                  product.badge,
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                    color: product.isPrimary
-                        ? (isDark
-                              ? const Color(0xFF4ADE80)
-                              : const Color(0xFF16A34A))
-                        : (isDark
-                              ? const Color(0xFF9CA3AF)
-                              : const Color(0xFF6B7280)),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
-              Text(
-                'Hướng dẫn sử dụng',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.white : const Color(0xFF111827),
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                product.instruction,
-                style: TextStyle(
-                  fontSize: 14,
-                  height: 1.6,
-                  color: isDark
-                      ? const Color(0xFFD1D5DB)
-                      : const Color(0xFF4B5563),
-                ),
-              ),
-              const Spacer(),
-              Row(
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
                 children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Giá tham khảo',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: isDark
-                                ? const Color(0xFF9CA3AF)
-                                : const Color(0xFF6B7280),
-                          ),
-                        ),
-                        Text(
-                          product.price,
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: isDark
-                                ? Colors.white
-                                : const Color(0xFF111827),
-                          ),
-                        ),
-                      ],
+                  /// Drag Handle
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? const Color(0xFF3F3F46)
+                            : const Color(0xFFE5E7EB),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
                     ),
                   ),
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Đã thêm vào danh sách mua'),
-                        ),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: isDark
-                          ? const Color(0xFFE4E4E7)
-                          : const Color(0xFF27272A),
-                      foregroundColor: isDark ? Colors.black : Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 14,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+
+                  const SizedBox(height: 20),
+
+                  /// CONTENT
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          /// Product name
+                          Text(
+                            product.name,
+                            style: TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                              color: isDark
+                                  ? Colors.white
+                                  : const Color(0xFF111827),
+                            ),
+                          ),
+
+                          const SizedBox(height: 10),
+
+                          /// Badge
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: product.isPrimary
+                                  ? (isDark
+                                        ? const Color(
+                                            0xFF166534,
+                                          ).withOpacity(0.3)
+                                        : const Color(0xFFDCFCE7))
+                                  : (isDark
+                                        ? const Color(0xFF3F3F46)
+                                        : const Color(0xFFF3F4F6)),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              product.badge,
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                                color: product.isPrimary
+                                    ? (isDark
+                                          ? const Color(0xFF4ADE80)
+                                          : const Color(0xFF16A34A))
+                                    : (isDark
+                                          ? const Color(0xFF9CA3AF)
+                                          : const Color(0xFF6B7280)),
+                              ),
+                            ),
+                          ),
+
+                          const SizedBox(height: 24),
+
+                          /// Description title
+                          Text(
+                            'Mô tả',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: isDark
+                                  ? Colors.white
+                                  : const Color(0xFF111827),
+                            ),
+                          ),
+
+                          const SizedBox(height: 8),
+
+                          Text(
+                            product.instruction,
+                            style: TextStyle(
+                              fontSize: 14,
+                              height: 1.6,
+                              color: isDark
+                                  ? const Color(0xFFD1D5DB)
+                                  : const Color(0xFF4B5563),
+                            ),
+                          ),
+
+                          /// Ingredient section (chỉ hiện nếu là thuốc)
+                          if (product.isPrimary) ...[
+                            const SizedBox(height: 24),
+
+                            Text(
+                              'Thành phần',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: isDark
+                                    ? Colors.white
+                                    : const Color(0xFF111827),
+                              ),
+                            ),
+
+                            const SizedBox(height: 8),
+
+                            Text(
+                              'Thành phần chi tiết của sản phẩm này chưa được cập nhật.',
+                              style: TextStyle(
+                                fontSize: 14,
+                                height: 1.6,
+                                color: isDark
+                                    ? const Color(0xFFD1D5DB)
+                                    : const Color(0xFF4B5563),
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
                     ),
-                    child: const Text(
-                      'Mua ngay',
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  /// CLOSE BUTTON
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: isDark
+                            ? const Color(0xFFE4E4E7)
+                            : const Color(0xFF27272A),
+                        foregroundColor: isDark ? Colors.black : Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text(
+                        'Đóng',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
                     ),
                   ),
                 ],
               ),
-            ],
+            ),
           ),
         );
       },
@@ -1175,7 +1212,10 @@ class PredictionScreen extends StatelessWidget {
   }
 
   void _onFeedback(BuildContext context) {
-    Navigator.of(context).pushNamed(AppRouter.feedback);
+    Navigator.of(context).pushNamed(
+      AppRouter.feedback,
+      arguments: widget.result ?? _sampleResult,
+    );
   }
 
   Widget _buildFeedbackOption({

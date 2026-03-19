@@ -22,6 +22,14 @@ namespace MyApp
             builder.Services.AddApplicationSerivce();
             builder.Services.AddInfrastructureService();
             builder.Services.AddPersitenceService();
+            
+// Cấu hình JSON để không escape ký tự Unicode (để hiển thị tiếng Việt đúng)
+            builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Encoder = 
+        System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping;
+    });
 
             // Add DbContext
             builder.Services.AddDbContext<AppDbContext>(options =>
