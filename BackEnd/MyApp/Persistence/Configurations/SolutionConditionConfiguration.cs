@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using MyApp.Domain.Entities;
 
@@ -25,7 +25,7 @@ namespace MyApp.Persistence.Configurations
 
             entity.HasOne(d => d.Solution).WithMany(p => p.SolutionConditions)
                 .HasForeignKey(d => d.SolutionId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.Restrict)
                 .HasConstraintName("FK_condition_solution");
         }
     }

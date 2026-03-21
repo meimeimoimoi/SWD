@@ -29,7 +29,6 @@
 		<Folder Include="Infrastructure\Cache\" />
 		<Folder Include="Infrastructure\Messaging\" />
 		<Folder Include="Infrastructure\Storage\" />
-		<Folder Include="Persistence\Migrations\" />
 		<Folder Include="Shared\Constants\" />
 		<Folder Include="Shared\Exceptions\" />
 		<Folder Include="Shared\Extensions\" />
@@ -53,6 +52,7 @@
 		</PackageReference>
 		<PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.6" />
 		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.6" />
+		<PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="9.0.6" />
 		<PackageReference Include="Microsoft.Extensions.Identity.Core" Version="9.0.6" />
 		<PackageReference Include="Microsoft.ML.OnnxRuntime" Version="1.24.2" />
 		<PackageReference Include="MimeKit" Version="4.14.0" />

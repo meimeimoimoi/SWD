@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.OpenApi.Models;
 using MyApp.Api;
@@ -35,25 +37,34 @@ namespace MyApp
             builder.Services.AddDbContext<AppDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+            builder.Services.AddHealthChecks()
+                .AddCheck("self", () => HealthCheckResult.Healthy(), tags: new[] { "live" })
+                .AddDbContextCheck<AppDbContext>(
+                    name: "database",
+                    failureStatus: HealthStatus.Unhealthy,
+                    tags: new[] { "ready", "db" });
+
             // Add JWT Authentication
             builder.Services.AddJwtAuthentication(builder.Configuration);
 
 
             var app = builder.Build();
 
-            // Seed database
+            // Migrations + seed: fail fast so the host never serves traffic against a missing or stale schema.
             using (var scope = app.Services.CreateScope())
             {
                 var services = scope.ServiceProvider;
+                var logger = services.GetRequiredService<ILogger<Program>>();
+                var seeder = services.GetRequiredService<DataSeeder>();
                 try
                 {
-                    var seeder = services.GetRequiredService<DataSeeder>();
+                    await seeder.MigrateDatabaseAsync();
                     await seeder.SeedAsync();
                 }
                 catch (Exception ex)
                 {
-                    var logger = services.GetRequiredService<ILogger<Program>>();
-                    logger.LogError(ex, "An error occurred while seeding the database");
+                    logger.LogCritical(ex, "Database migration or seeding failed; the application will not start.");
+                    throw;
                 }
             }
 
@@ -72,6 +83,16 @@ namespace MyApp
             app.UseAuthorization();
 
             app.MapControllers();
+
+            app.MapHealthChecks("/health");
+            app.MapHealthChecks("/health/live", new HealthCheckOptions
+            {
+                Predicate = r => r.Tags.Contains("live")
+            });
+            app.MapHealthChecks("/health/ready", new HealthCheckOptions
+            {
+                Predicate = r => r.Tags.Contains("ready")
+            });
 
             app.Run();
         }
