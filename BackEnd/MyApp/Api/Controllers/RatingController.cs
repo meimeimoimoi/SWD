@@ -1,7 +1,8 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MyApp.Application.Features.Users.DTOs;
 using MyApp.Application.Interfaces;
+using MyApp.Domain.Enums;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 
@@ -48,7 +49,7 @@ namespace MyApp.Api.Controllers
         }
 
         [HttpGet("all")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = RolePolicy.Admin)]
         public async Task<IActionResult> GetAllRatings()
         {
             try

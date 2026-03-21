@@ -3,12 +3,13 @@ using Microsoft.AspNetCore.Mvc;
 using MyApp.Application.Features.Admin.DTOs;
 using MyApp.Application.Features.Users.DTOs;
 using MyApp.Application.Interfaces;
+using MyApp.Domain.Enums;
 
 namespace MyApp.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = RolePolicy.Admin)]
     public class AdminController : ControllerBase
     {
         private readonly IAdminService _adminService;

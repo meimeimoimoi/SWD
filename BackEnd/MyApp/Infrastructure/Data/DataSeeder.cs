@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using MyApp.Application.Interfaces;
 using MyApp.Domain.Entities;
+using MyApp.Domain.Enums;
 using MyApp.Persistence.Context;
 
 namespace MyApp.Infrastructure.Data
@@ -70,7 +71,7 @@ namespace MyApp.Infrastructure.Data
         private async Task SeedAdminUserAsync(CancellationToken cancellationToken = default)
         {
             // Check if any admin user exists
-            var adminExists = await _context.Users.AnyAsync(u => u.Role == "Admin", cancellationToken);
+            var adminExists = await _context.Users.AnyAsync(u => u.Role == UserRole.Admin, cancellationToken);
 
             if (adminExists)
             {
@@ -90,7 +91,7 @@ namespace MyApp.Infrastructure.Data
                 PasswordHash = _passwordHasher.Hash(adminPassword),
                 FirstName = "System",
                 LastName = "Administrator",
-                Role = "Admin",
+                Role = UserRole.Admin,
                 AccountStatus = "Active",
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow

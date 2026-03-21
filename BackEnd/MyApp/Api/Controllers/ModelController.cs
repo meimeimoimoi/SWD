@@ -2,12 +2,13 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MyApp.Application.Features.ModelManagement.DTOs;
 using MyApp.Application.Interfaces;
+using MyApp.Domain.Enums;
 
 namespace MyApp.Api.Controllers
 {
     [Route("api/admin/models")]
     [ApiController]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = RolePolicy.Admin)]
     public class ModelController : ControllerBase
     {
         private readonly IModelService _modelService;

@@ -20,7 +20,7 @@ namespace MyApp.Infrastructure.Services
         {
             jti = Guid.NewGuid().ToString();
 
-            var role = user.Role ?? string.Empty;
+            var role = user.Role?.ToString() ?? string.Empty;
             var claims = new[]
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.UserId.ToString()),

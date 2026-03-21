@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using MyApp.Domain.Entities;
 
@@ -58,7 +58,8 @@ namespace MyApp.Persistence.Configurations
             entity.Property(e => e.Role)
                 .HasMaxLength(50)
                 .IsUnicode(false)
-                .HasColumnName("role");
+                .HasColumnName("role")
+                .HasConversion<string>();
             entity.Property(e => e.UpdatedAt)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnName("updated_at");

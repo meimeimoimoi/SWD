@@ -1,12 +1,13 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MyApp.Application.Interfaces;
+using MyApp.Domain.Enums;
 
 namespace MyApp.Api.Controllers
 {
     [Route("api/admin")]
     [ApiController]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = RolePolicy.Admin)]
     public class DashboardController : ControllerBase
     {
         private readonly IMonitoringService _monitoringService;

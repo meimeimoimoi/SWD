@@ -2,12 +2,13 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MyApp.Application.Features.Technician.DTOs;
 using MyApp.Application.Interfaces;
+using MyApp.Domain.Enums;
 
 namespace MyApp.Api.Controllers
 {
     [Route("api/treatments")]
     [ApiController]
-    [Authorize(Roles = "Technician,Admin")]
+    [Authorize(Roles = RolePolicy.TechnicianOrAdmin)]
     public class TreatmentManagementController : ControllerBase
     {
         private readonly ITechnicianService _technicianService;

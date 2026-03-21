@@ -3,6 +3,7 @@ using MyApp.Application.Features.Admin.DTOs;
 using MyApp.Application.Features.Users.DTOs;
 using MyApp.Application.Interfaces;
 using MyApp.Domain.Entities;
+using MyApp.Domain.Enums;
 using MyApp.Persistence.Repositories;
 using System.Security.Cryptography;
 
@@ -44,9 +45,9 @@ namespace MyApp.Infrastructure.Services
                 }
 
                 // Apply role filter
-                if (!string.IsNullOrWhiteSpace(role))
+                if (!string.IsNullOrWhiteSpace(role) && UserRoles.TryParse(role, out var roleFilter))
                 {
-                    query = query.Where(u => u.Role == role);
+                    query = query.Where(u => u.Role == roleFilter);
                 }
 
                 // Apply sorting
@@ -80,7 +81,7 @@ namespace MyApp.Infrastructure.Services
                     Phone = u.Phone,
                     ProfileImagePath = u.ProfileImagePath,
                     LastLoginAt = u.LastLoginAt,
-                    Role = u.Role
+                    Role = u.Role?.ToString()
                 }).ToList();
 
                 _logger.LogInformation("Retrieved {Count} users", userDtos.Count);
@@ -113,7 +114,7 @@ namespace MyApp.Infrastructure.Services
                     Phone = user.Phone,
                     ProfileImagePath = user.ProfileImagePath,
                     LastLoginAt = user.LastLoginAt,
-                    Role = user.Role
+                    Role = user.Role?.ToString()
                 };
             }
             catch (Exception ex)
@@ -157,7 +158,7 @@ namespace MyApp.Infrastructure.Services
                     user.ProfileImagePath = updateDto.ProfileImagePath;
 
                 if (!string.IsNullOrWhiteSpace(updateDto.Role))
-                    user.Role = updateDto.Role;
+                    user.Role = UserRoles.ParseRequired(updateDto.Role);
 
                 user.UpdatedAt = DateTime.UtcNow;
 
@@ -216,10 +217,10 @@ namespace MyApp.Infrastructure.Services
 
                 // Auto-generate secure password using BCryptPasswordHasher
                 string temporaryPassword = _passwordHasher.GenerateRandomPassword(12);
-                
+                var staffRole = UserRoles.ParseRequired(createDto.Role);
+
                 _logger.LogInformation("Creating staff user: {Username}, Auto-generated password", createDto.Username);
-                
-                // Create new user
+
                 var user = new User
                 {
                     Username = createDto.Username,
@@ -228,13 +229,13 @@ namespace MyApp.Infrastructure.Services
                     FirstName = createDto.FirstName,
                     LastName = createDto.LastName,
                     Phone = createDto.Phone,
-                    Role = createDto.Role,
+                    Role = staffRole,
                     AccountStatus = "Active",
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow
                 };
 
-                await _userRepository.CreateTechnicianStaff(user, createDto.Role);
+                await _userRepository.CreateTechnicianStaff(user, staffRole);
 
                 // Generate confirmation token
                 string confirmationToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
@@ -261,7 +262,7 @@ namespace MyApp.Infrastructure.Services
                     Phone = user.Phone,
                     ProfileImagePath = user.ProfileImagePath,
                     LastLoginAt = user.LastLoginAt,
-                    Role = user.Role
+                    Role = user.Role?.ToString()
                 };
             }
             catch (Exception ex)
@@ -289,18 +290,19 @@ namespace MyApp.Infrastructure.Services
                     username = $"{dto.Email.Split('@')[0]}{count++}";
                 }
 
+                var newRole = UserRoles.ParseRequired(dto.Role);
                 var user = new User
                 {
                     Username = username,
                     Email = dto.Email,
                     PasswordHash = _passwordHasher.Hash(dto.Password),
-                    Role = dto.Role,
+                    Role = newRole,
                     AccountStatus = "Active",
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow
                 };
 
-                await _userRepository.CreateTechnicianStaff(user, dto.Role);
+                await _userRepository.CreateTechnicianStaff(user, newRole);
                 _logger.LogInformation("Admin created user {Email} with role {Role}", dto.Email, dto.Role);
                 return true;
             }
@@ -323,7 +325,7 @@ namespace MyApp.Infrastructure.Services
                     return false;
                 }
 
-                if (user.Role == "Admin")
+                if (user.Role == UserRole.Admin)
                 {
                     _logger.LogWarning("Delete failed - Cannot delete Admin user: {UserId}, Username: {Username}", 
                         userId, user.Username);

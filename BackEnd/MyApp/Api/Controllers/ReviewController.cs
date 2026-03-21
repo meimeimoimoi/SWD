@@ -1,13 +1,14 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MyApp.Application.Features.Admin.DTOs;
 using MyApp.Application.Interfaces;
+using MyApp.Domain.Enums;
 
 namespace MyApp.Api.Controllers
 {
     [Route("api/admin/review")]
     [ApiController]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = RolePolicy.Admin)]
     public class ReviewController : ControllerBase
     {
         private readonly IReviewService _reviewService;
