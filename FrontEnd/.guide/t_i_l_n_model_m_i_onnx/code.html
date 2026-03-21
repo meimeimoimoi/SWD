@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+
+<html lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#2d7b31",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#141e15",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "2xl": "1rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: "Space Grotesk", sans-serif;
+        }
+        .form-select {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%232d7b31' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.5rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+            padding-right: 2.5rem;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen flex flex-col">
+<!-- Top App Bar -->
+<header class="sticky top-0 z-50 bg-white dark:bg-slate-900 border-b border-primary/10 px-4 py-4 flex items-center gap-4">
+<button class="flex items-center justify-center size-10 rounded-full hover:bg-primary/10 transition-colors text-primary">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h1 class="text-xl font-bold tracking-tight">Tải lên Model mới</h1>
+</header>
+<!-- Main Content Area -->
+<main class="flex-1 w-full max-w-md mx-auto p-4 space-y-6">
+<!-- Form Section -->
+<div class="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-primary/5 space-y-5">
+<!-- Model Name -->
+<div class="space-y-2">
+<label class="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">Tên model</label>
+<input class="w-full h-12 rounded-xl border-primary/20 bg-primary/5 px-4 focus:ring-2 focus:ring-primary focus:border-primary transition-all placeholder:text-slate-400 dark:bg-slate-800 dark:border-slate-700" placeholder="VD: RiceBlast_ResNet18" type="text"/>
+</div>
+<!-- Version -->
+<div class="space-y-2">
+<label class="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">Phiên bản</label>
+<input class="w-full h-12 rounded-xl border-primary/20 bg-primary/5 px-4 focus:ring-2 focus:ring-primary focus:border-primary transition-all placeholder:text-slate-400 dark:bg-slate-800 dark:border-slate-700" placeholder="VD: v1.0.2" type="text"/>
+</div>
+<!-- Model Type -->
+<div class="space-y-2">
+<label class="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">Loại model</label>
+<select class="form-select w-full h-12 rounded-xl border-primary/20 bg-primary/5 px-4 focus:ring-2 focus:ring-primary focus:border-primary transition-all dark:bg-slate-800 dark:border-slate-700">
+<option value="classification">Phân loại ảnh</option>
+<option value="detection">Phát hiện vật thể</option>
+<option value="segmentation">Phân đoạn</option>
+</select>
+</div>
+<!-- Description -->
+<div class="space-y-2">
+<label class="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">Chi tiết mô tả</label>
+<textarea class="w-full min-h-[120px] rounded-xl border-primary/20 bg-primary/5 p-4 focus:ring-2 focus:ring-primary focus:border-primary transition-all placeholder:text-slate-400 dark:bg-slate-800 dark:border-slate-700 resize-none" placeholder="Nhập thông tin chi tiết về model..."></textarea>
+</div>
+</div>
+<!-- File Upload Area -->
+<div class="bg-white dark:bg-slate-900 rounded-2xl p-2 shadow-sm border border-primary/5">
+<div class="border-2 border-dashed border-primary/30 rounded-xl p-8 flex flex-col items-center justify-center text-center bg-primary/5 hover:bg-primary/10 transition-all cursor-pointer group">
+<div class="size-16 rounded-full bg-primary/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-primary text-4xl">cloud_upload</span>
+</div>
+<h3 class="text-lg font-bold text-slate-800 dark:text-slate-200">Tải lên file model (.onnx)</h3>
+<p class="text-sm text-slate-500 mt-2">Kéo thả hoặc nhấn để chọn tập tin từ thiết bị</p>
+<div class="mt-4 px-3 py-1 bg-white dark:bg-slate-800 rounded-full border border-primary/20 flex items-center gap-2">
+<span class="material-symbols-outlined text-sm text-primary">info</span>
+<span class="text-[12px] font-medium text-slate-600 dark:text-slate-400">Hệ thống chỉ chấp nhận định dạng .onnx</span>
+</div>
+</div>
+</div>
+<!-- Spacer for fixed bottom buttons -->
+</main>
+<!-- Bottom Actions -->
+<footer class="fixed bottom-0 left-0 right-0 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 px-2 py-3 z-50">
+<div class="max-w-md mx-auto flex justify-around items-center">
+<!-- Tổng quan -->
+<a class="flex flex-col items-center gap-1 text-slate-500 dark:text-slate-400" href="#">
+<span class="material-symbols-outlined text-2xl">grid_view</span>
+<span class="text-[10px] font-medium">Tổng quan</span>
+</a>
+<!-- Models (Active) -->
+<a class="flex flex-col items-center gap-1 text-primary" href="#">
+<span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1">extension</span>
+<span class="text-[10px] font-bold">Models</span>
+</a>
+<!-- Bệnh -->
+<a class="flex flex-col items-center gap-1 text-slate-500 dark:text-slate-400" href="#">
+<span class="material-symbols-outlined text-2xl">bug_report</span>
+<span class="text-[10px] font-medium">Bệnh</span>
+</a>
+<!-- Cá nhân -->
+<a class="flex flex-col items-center gap-1 text-slate-500 dark:text-slate-400" href="#">
+<span class="material-symbols-outlined text-2xl">person</span>
+<span class="text-[10px] font-medium">Cá nhân</span>
+</a>
+</div>
+</footer>
+</body></html>
