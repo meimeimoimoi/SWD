@@ -1,9 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.ML.OnnxRuntime;
 using MyApp.Application.Interfaces;
 using MyApp.Domain.Entities;
 using MyApp.Domain.Enums;
+using MyApp.Infrastructure.Ml;
 using MyApp.Persistence.Context;
 
 namespace MyApp.Infrastructure.Data
@@ -65,6 +67,7 @@ namespace MyApp.Infrastructure.Data
         {
             await SeedAdminUserAsync(cancellationToken);
             await SeedDefaultModelAsync(cancellationToken);
+            await SeedTreeIllnessNamesFromOnnxAsync(cancellationToken);
             _logger.LogInformation("Data seeding completed successfully");
         }
 
@@ -161,6 +164,41 @@ namespace MyApp.Infrastructure.Data
             _logger.LogInformation(
                 "Default model seeded — Id={Id}, Name='{Name}', v{Version}, FilePath='{Path}'",
                 model.ModelVersionId, model.ModelName, model.Version, filePath);
+        }
+
+        private async Task SeedTreeIllnessNamesFromOnnxAsync(CancellationToken cancellationToken)
+        {
+            var mv = await _context.ModelVersions
+                .FirstOrDefaultAsync(m => m.IsDefault == true && m.IsActive == true, cancellationToken);
+            if (mv?.FilePath is not { } rel)
+                return;
+
+            var full = Path.Combine(AppContext.BaseDirectory, rel.Replace('/', Path.DirectorySeparatorChar));
+            if (!File.Exists(full))
+                return;
+
+            try
+            {
+                using var session = new InferenceSession(full);
+                var now = DateTime.UtcNow;
+                foreach (var name in OnnxModelLabels.Read(session))
+                {
+                    if (await _context.TreeIllnesses.AnyAsync(t => t.IllnessName == name, cancellationToken))
+                        continue;
+                    _context.TreeIllnesses.Add(new TreeIllness
+                    {
+                        IllnessName = name,
+                        CreatedAt = now,
+                        UpdatedAt = now
+                    });
+                }
+
+                await _context.SaveChangesAsync(cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Could not seed tree_illnesses from ONNX (needs metadata class_labels).");
+            }
         }
     }
 }
