@@ -12,17 +12,20 @@ namespace MyApp.Infrastructure.Data
         private readonly AppDbContext _context;
         private readonly IPasswordHasher _passwordHasher;
         private readonly IConfiguration _configuration;
+        private readonly EfMigrationHistoryChecksumService _migrationChecksums;
         private readonly ILogger<DataSeeder> _logger;
 
         public DataSeeder(
-            AppDbContext context, 
+            AppDbContext context,
             IPasswordHasher passwordHasher,
             IConfiguration configuration,
+            EfMigrationHistoryChecksumService migrationChecksums,
             ILogger<DataSeeder> logger)
         {
             _context = context;
             _passwordHasher = passwordHasher;
             _configuration = configuration;
+            _migrationChecksums = migrationChecksums;
             _logger = logger;
         }
 
@@ -45,6 +48,8 @@ namespace MyApp.Infrastructure.Data
             }
 
             await _context.Database.MigrateAsync(cancellationToken);
+
+            await _migrationChecksums.ValidateSealAndVerifyAsync(cancellationToken);
 
             if (list.Count > 0)
             {

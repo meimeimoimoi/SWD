@@ -30,6 +30,7 @@ namespace MyApp.Infrastructure
             services.AddScoped<IReviewService, ReviewService>();
             services.AddScoped<IRatingService, RatingService>();
             services.AddScoped<ISystemSettingService, SystemSettingService>();
+            services.AddScoped<EfMigrationHistoryChecksumService>();
             services.AddScoped<DataSeeder>();
             return services;
         }
