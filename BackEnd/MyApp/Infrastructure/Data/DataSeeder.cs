@@ -31,10 +31,10 @@ namespace MyApp.Infrastructure.Data
         /// </summary>
         public async Task MigrateDatabaseAsync(CancellationToken cancellationToken = default)
         {
-            if (!await _context.Database.CanConnectAsync(cancellationToken))
+            if (string.IsNullOrWhiteSpace(_configuration.GetConnectionString("DefaultConnection")))
             {
                 throw new InvalidOperationException(
-                    "Cannot connect to the database. Check ConnectionStrings:DefaultConnection and that SQL Server is reachable.");
+                    "ConnectionStrings:DefaultConnection is missing or empty. Set it in appsettings.json, user secrets, or environment variables.");
             }
 
             var pending = await _context.Database.GetPendingMigrationsAsync(cancellationToken);
