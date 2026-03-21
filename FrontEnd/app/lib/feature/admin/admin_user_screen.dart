@@ -51,7 +51,7 @@ class _AdminUserScreenState extends State<AdminUserScreen> {
           builder: (context, setState) {
             return AlertDialog(
               title: Text(
-                'Thêm tài khoản mới',
+                'Add new account',
                 style: theme.textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.w700,
                   color: AppColors.primary,
@@ -72,11 +72,11 @@ class _AdminUserScreenState extends State<AdminUserScreen> {
                         keyboardType: TextInputType.emailAddress,
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Vui lòng nhập email';
+                            return 'Please enter an email';
                           }
                           if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
                               .hasMatch(value)) {
-                            return 'Email không hợp lệ';
+                            return 'Invalid email';
                           }
                           return null;
                         },
@@ -86,7 +86,7 @@ class _AdminUserScreenState extends State<AdminUserScreen> {
                         controller: _passwordController,
                         obscureText: _obscurePassword,
                         decoration: InputDecoration(
-                          labelText: 'Mật khẩu',
+                          labelText: 'Password',
                           prefixIcon: const Icon(Icons.lock_outline),
                           suffixIcon: IconButton(
                             icon: Icon(
@@ -101,10 +101,10 @@ class _AdminUserScreenState extends State<AdminUserScreen> {
                         ),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Vui lòng nhập mật khẩu';
+                            return 'Please enter a password';
                           }
                           if (value.length < 6) {
-                            return 'Mật khẩu phải ít nhất 6 ký tự';
+                            return 'Password must be at least 6 characters';
                           }
                           return null;
                         },
@@ -114,12 +114,12 @@ class _AdminUserScreenState extends State<AdminUserScreen> {
                         controller: _confirmPasswordController,
                         obscureText: _obscurePassword,
                         decoration: const InputDecoration(
-                          labelText: 'Xác nhận mật khẩu',
+                          labelText: 'Confirm password',
                           prefixIcon: Icon(Icons.lock_clock_outlined),
                         ),
                         validator: (value) {
                           if (value != _passwordController.text) {
-                            return 'Mật khẩu xác nhận không khớp';
+                            return 'Passwords do not match';
                           }
                           return null;
                         },
@@ -132,7 +132,7 @@ class _AdminUserScreenState extends State<AdminUserScreen> {
                 TextButton(
                   onPressed: () => Navigator.pop(context),
                   child: Text(
-                    'Hủy',
+                    'Cancel',
                     style: TextStyle(color: theme.colorScheme.secondary),
                   ),
                 ),
@@ -150,7 +150,7 @@ class _AdminUserScreenState extends State<AdminUserScreen> {
                         Navigator.pop(context);
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: Text(success ? 'Tạo tài khoản thành công' : 'Lỗi khi tạo tài khoản'),
+                            content: Text(success ? 'Account created' : 'Failed to create account'),
                             backgroundColor: success ? Colors.green : Colors.red,
                           ),
                         );
@@ -161,7 +161,7 @@ class _AdminUserScreenState extends State<AdminUserScreen> {
                     backgroundColor: AppColors.primary,
                     foregroundColor: isDark ? Colors.black : Colors.white,
                   ),
-                  child: const Text('Thêm'),
+                  child: const Text('Add'),
                 ),
               ],
             );
@@ -215,8 +215,8 @@ class _AdminUserScreenState extends State<AdminUserScreen> {
         status: status,
         role: role,
         lastLogin: u['lastLoginAt'] != null 
-          ? 'Truy cập: ${DateTime.parse(u['lastLoginAt'].toString()).day}/${DateTime.parse(u['lastLoginAt'].toString()).month}'
-          : 'Chưa truy cập',
+          ? 'Last login: ${DateTime.parse(u['lastLoginAt'].toString()).day}/${DateTime.parse(u['lastLoginAt'].toString()).month}'
+          : 'Never signed in',
         primaryAction: status == _UserStatus.locked ? _UserAction.unlock : _UserAction.lock,
         showRoleDropdown: true,
       );
@@ -301,7 +301,7 @@ class _AdminUserScreenState extends State<AdminUserScreen> {
           color: isDark ? Colors.black : Colors.white,
         ),
         label: Text(
-          'Thêm tài khoản',
+          'Add account',
           style: TextStyle(
             color: isDark ? Colors.black : Colors.white,
             fontWeight: FontWeight.w600,
@@ -373,13 +373,13 @@ class _UserCard extends StatelessWidget {
   String _actionLabel(_UserAction action) {
     switch (action) {
       case _UserAction.lock:
-        return 'Khóa Acc';
+        return 'Lock account';
       case _UserAction.unlock:
-        return 'Mở Khóa';
+        return 'Unlock';
       case _UserAction.resendInvite:
-        return 'Gửi lại Invite';
+        return 'Resend invite';
       case _UserAction.revoke:
-        return 'Thu hồi';
+        return 'Revoke';
     }
   }
 
@@ -514,7 +514,7 @@ class _UserCard extends StatelessWidget {
                             final success = await provider.updateUserStatus(user.userId, 'Active');
                             if (context.mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text(success ? 'Đã mở khóa tài khoản' : 'Lỗi khi mở khóa'))
+                                SnackBar(content: Text(success ? 'Account unlocked' : 'Failed to unlock'))
                               );
                             }
                           },
@@ -537,7 +537,7 @@ class _UserCard extends StatelessWidget {
                             final success = await provider.updateUserStatus(user.userId, 'Locked');
                             if (context.mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text(success ? 'Đã khóa tài khoản' : 'Lỗi khi khóa'))
+                                SnackBar(content: Text(success ? 'Account locked' : 'Failed to lock'))
                               );
                             }
                           },
@@ -591,7 +591,7 @@ class _UserCard extends StatelessWidget {
                               final success = await provider.updateUserRole(user.userId, newRole);
                               if (context.mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text(success ? 'Đã đổi role thành $newRole' : 'Lỗi khi đổi role'))
+                                  SnackBar(content: Text(success ? 'Role updated to $newRole' : 'Failed to update role'))
                                 );
                               }
                             }

@@ -72,8 +72,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
     final d = DateTime(dt.year, dt.month, dt.day);
     final formatted =
         '${dt.day.toString().padLeft(2, '0')}/${dt.month.toString().padLeft(2, '0')}/${dt.year}';
-    if (d == today) return 'Hôm nay - $formatted';
-    if (d == yesterday) return 'Hôm qua - $formatted';
+    if (d == today) return 'Today - $formatted';
+    if (d == yesterday) return 'Yesterday - $formatted';
     return formatted;
   }
 
@@ -97,7 +97,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return AppScaffold(
-      title: 'Lịch sử quét',
+      title: 'Scan history',
       actions: [
         IconButton(
           onPressed: _loadHistory,
@@ -111,7 +111,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
       ],
       centerContent: false,
       showUserBottomNav: true,
-      selectedNavIndex: 2,
       child: Column(
         children: [
           Expanded(
@@ -156,7 +155,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
-            'Lịch sử quét',
+            'Scan history',
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
@@ -359,7 +358,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                         _buildSeverityBadge(severity, isDark),
                         const SizedBox(width: 8),
                         Text(
-                          'Mức độ nghiêm trọng',
+                          'Severity',
                           style: TextStyle(
                             fontSize: 11,
                             fontStyle: FontStyle.italic,
@@ -429,19 +428,19 @@ class _HistoryScreenState extends State<HistoryScreen> {
             ? AppColors.accent.withOpacity(0.2)
             : AppColors.accent.withOpacity(0.13);
         fg = isDark ? AppColors.accent : AppColors.primary;
-        label = 'Thấp';
+        label = 'Low';
       case _Severity.medium:
         bg = isDark
             ? AppColors.warning.withOpacity(0.2)
             : AppColors.warning.withOpacity(0.15);
         fg = isDark ? AppColors.warning : const Color(0xFFB45309);
-        label = 'Trung bình';
+        label = 'Medium';
       case _Severity.high:
         bg = isDark
             ? const Color(0xFFEF4444).withOpacity(0.2)
             : const Color(0xFFEF4444).withOpacity(0.12);
         fg = isDark ? const Color(0xFFF87171) : const Color(0xFFB91C1C);
-        label = 'Cao';
+        label = 'High';
     }
 
     return Container(
@@ -478,7 +477,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
           ),
           const SizedBox(height: 16),
           Text(
-            'Chưa có lịch sử quét',
+            'No scan history yet',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
@@ -489,7 +488,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
           ),
           const SizedBox(height: 6),
           Text(
-            'Hãy quét lá cây để bắt đầu.',
+            'Scan a leaf to get started.',
             style: TextStyle(
               fontSize: 14,
               color: isDark
@@ -518,7 +517,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
             ),
             const SizedBox(height: 16),
             Text(
-              'Không thể tải dữ liệu',
+              'Could not load data',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
@@ -542,7 +541,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
             ElevatedButton.icon(
               onPressed: _loadHistory,
               icon: const Icon(Icons.refresh, size: 18),
-              label: const Text('Thử lại'),
+              label: const Text('Retry'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
@@ -564,21 +563,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
   // ── navigation ────────────────────────────────────────────────────────────
 
   void _openDetail(HistoryItem item) {
-    final result = PredictionResult(
-      diseaseName: item.diseaseName,
-      vietnameseName: DiseaseMapper.toVietnamese(item.diseaseName),
-      scientificName: DiseaseMapper.getScientificName(item.diseaseName),
-      imageUrl: item.imageUrl,
-      confidence: item.confidence,
-      description: 'Chưa có dữ liệu mô tả.',
-      cause: 'Chưa có thông tin.',
-      symptoms: 'Chưa có thông tin triệu chứng.',
-      impact: DiseaseMapper.getImpact(item.diseaseName),
-      treatments: [],
-      medicines: [],
-      isHealthy: DiseaseMapper.isHealthy(item.diseaseName),
-      predictionId: item.predictionId,
-    );
+    final result = PredictionResult.fromHistoryItem(item);
     Navigator.of(context).pushNamed(AppRouter.prediction, arguments: result);
   }
 }

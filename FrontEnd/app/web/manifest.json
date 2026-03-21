@@ -1,11 +1,11 @@
 {
-    "name": "app",
-    "short_name": "app",
+    "name": "Argivision",
+    "short_name": "Argivision",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#F6F8F6",
+    "theme_color": "#2D7B31",
+    "description": "AI crop health, models, and disease insights.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

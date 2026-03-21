@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../routes/app_router.dart';
+import '../../share/services/history_service.dart';
 import '../../share/services/prediction_service.dart';
 import '../../share/utils/disease_mapper.dart';
 
@@ -53,14 +54,44 @@ class PredictionResult {
       scientificName: scientificName,
       imageUrl: imageUrl,
       confidence: data.confidence,
-      description: data.symptoms ?? 'Chưa có dữ liệu mô tả.',
-      cause: data.causes ?? 'Chưa có thông tin.',
-      symptoms: data.symptoms ?? 'Chưa có thông tin triệu chứng.',
+      description: data.symptoms ?? 'No description available.',
+      cause: data.causes ?? 'No information available.',
+      symptoms: data.symptoms ?? 'No symptom information available.',
       impact: DiseaseMapper.getImpact(englishName),
       treatments: _mapTreatments(data.treatments),
       medicines: _mapTreatments(data.medicines),
       isHealthy: isHealthy,
     );
+  }
+
+  /// Rebuild a result screen from stored history (partial detail vs live API).
+  static PredictionResult fromHistoryItem(HistoryItem item) {
+    final d = item.diseaseName;
+    final sci = item.scientificName?.trim();
+    return PredictionResult(
+      predictionId: item.predictionId,
+      diseaseName: d,
+      vietnameseName: DiseaseMapper.toVietnamese(d),
+      scientificName:
+          (sci != null && sci.isNotEmpty) ? sci : DiseaseMapper.getScientificName(d),
+      imageUrl: item.imageUrl,
+      confidence: item.confidence,
+      description: _nonEmpty(item.illnessDescription) ??
+          _nonEmpty(item.symptoms) ??
+          'No description available.',
+      cause: _nonEmpty(item.causes) ?? 'No information available.',
+      symptoms: _nonEmpty(item.symptoms) ?? 'No symptom information available.',
+      impact: DiseaseMapper.getImpact(d),
+      treatments: const [],
+      medicines: const [],
+      isHealthy: DiseaseMapper.isHealthy(d),
+    );
+  }
+
+  static String? _nonEmpty(String? s) {
+    final t = s?.trim();
+    if (t == null || t.isEmpty) return null;
+    return t;
   }
 
   static List<TreatmentProduct> _mapTreatments(List<dynamic> items) {
@@ -71,7 +102,7 @@ class PredictionResult {
       return TreatmentProduct(
         name: (map['name'] ?? '') as String,
         imageUrl: '',
-        badge: isMedicine ? 'Thuốc' : 'Chăm sóc',
+        badge: isMedicine ? 'Medicine' : 'Care',
         instruction: (map['description'] ?? '') as String,
         price: '',
         isPrimary: isMedicine,
@@ -92,7 +123,7 @@ class PredictionResult {
   }
 }
 
-final List<String> _tags = const ['Chăm sóc', 'Thuốc'];
+final List<String> _tags = const ['Care', 'Medicine'];
 
 /// Model for treatment product
 class TreatmentProduct {
@@ -123,23 +154,23 @@ class PredictionScreen extends StatefulWidget {
 }
 
 class _PredictionScreenState extends State<PredictionScreen> {
-  // 0 = Chăm sóc (treatments), 1 = Thuốc (medicines)
+  // 0 = Care (treatments), 1 = Medicine (medicines)
   int _selectedTab = 0;
 
   // Sample data for demonstration
   static const _sampleResult = PredictionResult(
     predictionId: 0,
     diseaseName: 'Leaf Blast',
-    vietnameseName: 'Đạo ôn (cháy lá do nấm)',
+    vietnameseName: 'Rice blast (fungal leaf blight)',
     scientificName: 'Magnaporthe oryzae',
     imageUrl:
         'https://lh3.googleusercontent.com/aida-public/AB6AXuA998KIbzaAWHJSTjnx-DfsJtgPMFNyeETxvOnpYgoua7rzPHly7c4NTeriJVTVkEJH_CjMXLxDMjzZxHXzgQKmmv-E_NzGBnWIPOn8_kVsF5a2eQ34JF-a-ZsFk9EU4DS78O1ZIp9y85lKfIPp6snaGQ_rpTjBuKD6_ngh-DPVUeIynJXCTN07eXgLJgGzepqSgf07FPym-d3zP_EGCU8_skAI4DWlvzYEaj8RIvEuwTiBRwv2XaNc0GdSayp2myoLHrmXx2YXzdY',
     confidence: 0.98,
     description:
-        'Bệnh đốm lá do nấm gây ra, thường xuất hiện dưới dạng các đốm nhỏ màu nâu hoặc xám trên bề mặt lá. Nếu không được điều trị, các đốm này có thể lan rộng và làm héo lá, ảnh hưởng nghiêm trọng đến khả năng quang hợp của cây.',
-    cause: 'Độ ẩm cao, nấm bào tử',
-    symptoms: 'Đốm lá, héo lá, giảm năng suất',
-    impact: 'Giảm năng suất 15-30%',
+        'A fungal leaf spot disease that appears as small brown or gray spots on leaf surfaces. Without treatment, spots can spread, wilt leaves, and seriously reduce photosynthesis.',
+    cause: 'High humidity, fungal spores',
+    symptoms: 'Leaf spots, wilting, yield loss',
+    impact: 'Yield reduction 15–30%',
     treatments: [],
     medicines: [],
     isHealthy: false,
@@ -240,7 +271,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
             isDark: isDark,
           ),
           Text(
-            'Kết quả chẩn đoán',
+            'Diagnosis result',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
@@ -440,7 +471,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Độ tin cậy của AI',
+                'AI confidence',
                 style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
               ),
               Text(
@@ -486,7 +517,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  'Độ chính xác rất cao dựa trên dữ liệu hiện có.',
+                  'Very high accuracy based on current data.',
                   style: TextStyle(
                     fontSize: 12,
                     color: isDark
@@ -519,7 +550,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
             ),
             const SizedBox(width: 8),
             Text(
-              'Mô tả bệnh',
+              'Disease description',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -543,7 +574,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
           children: [
             Expanded(
               child: _buildInfoCard(
-                title: 'Nguyên nhân',
+                title: 'Cause',
                 content: data.cause,
                 isDark: isDark,
               ),
@@ -551,7 +582,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
             const SizedBox(width: 12),
             Expanded(
               child: _buildInfoCard(
-                title: 'Ảnh hưởng',
+                title: 'Impact',
                 content: data.impact,
                 isDark: isDark,
               ),
@@ -623,7 +654,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
             ),
             const SizedBox(width: 8),
             Text(
-              'Đề xuất điều trị',
+              'Treatment suggestions',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -644,9 +675,9 @@ class _PredictionScreenState extends State<PredictionScreen> {
           ),
           child: Row(
             children: [
-              _buildTabItem(title: 'Chăm sóc', index: 0, isDark: isDark),
+              _buildTabItem(title: 'Care', index: 0, isDark: isDark),
               const SizedBox(width: 4),
-              _buildTabItem(title: 'Thuốc', index: 1, isDark: isDark),
+              _buildTabItem(title: 'Medicine', index: 1, isDark: isDark),
             ],
           ),
         ),
@@ -670,8 +701,8 @@ class _PredictionScreenState extends State<PredictionScreen> {
                 child: Center(
                   child: Text(
                     _selectedTab == 0
-                        ? 'Chưa có đề xuất chăm sóc.'
-                        : 'Chưa có gợi ý thuốc.',
+                        ? 'No care suggestions yet.'
+                        : 'No medicine suggestions yet.',
                     style: TextStyle(
                       color: isDark
                           ? const Color(0xFFD1D5DB)
@@ -897,7 +928,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           child: Text(
-            'Chi tiết',
+            'Details',
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.bold,
@@ -917,7 +948,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
         Expanded(
           child: _buildActionButton(
             icon: Icons.save,
-            label: 'Lưu lại',
+            label: 'Save',
             onTap: () => _onSave(context),
             isDark: isDark,
           ),
@@ -926,7 +957,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
         Expanded(
           child: _buildActionButton(
             icon: Icons.feedback,
-            label: 'Phản hồi',
+            label: 'Feedback',
             onTap: () => _onFeedback(context),
             isDark: isDark,
           ),
@@ -993,7 +1024,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
           children: [
             ListTile(
               leading: const Icon(Icons.share),
-              title: const Text('Chia sẻ kết quả'),
+              title: const Text('Share result'),
               onTap: () {
                 Navigator.pop(context);
                 // TODO: Implement share
@@ -1001,7 +1032,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.download),
-              title: const Text('Tải xuống báo cáo'),
+              title: const Text('Download report'),
               onTap: () {
                 Navigator.pop(context);
                 // TODO: Implement download
@@ -1009,7 +1040,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.help_outline),
-              title: const Text('Trợ giúp'),
+              title: const Text('Help'),
               onTap: () {
                 Navigator.pop(context);
                 // TODO: Implement help
@@ -1114,7 +1145,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
 
                           /// Description title
                           Text(
-                            'Mô tả',
+                            'Description',
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
@@ -1137,12 +1168,12 @@ class _PredictionScreenState extends State<PredictionScreen> {
                             ),
                           ),
 
-                          /// Ingredient section (chỉ hiện nếu là thuốc)
+                          /// Ingredient section (medicine only)
                           if (product.isPrimary) ...[
                             const SizedBox(height: 24),
 
                             Text(
-                              'Thành phần',
+                              'Ingredients',
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
@@ -1155,7 +1186,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
                             const SizedBox(height: 8),
 
                             Text(
-                              'Thành phần chi tiết của sản phẩm này chưa được cập nhật.',
+                              'Detailed ingredients for this product are not available yet.',
                               style: TextStyle(
                                 fontSize: 14,
                                 height: 1.6,
@@ -1188,7 +1219,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
                         ),
                       ),
                       child: const Text(
-                        'Đóng',
+                        'Close',
                         style: TextStyle(fontWeight: FontWeight.bold),
                       ),
                     ),
@@ -1205,7 +1236,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
   void _onSave(BuildContext context) {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('Đã lưu kết quả chẩn đoán'),
+        content: Text('Diagnosis result saved'),
         behavior: SnackBarBehavior.floating,
       ),
     );

@@ -39,7 +39,7 @@ class _FeedbackListScreenState extends State<FeedbackListScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Phản hồi từ người dùng'),
+        title: const Text('User feedback'),
         elevation: 0,
         backgroundColor: Colors.transparent,
       ),
@@ -47,7 +47,7 @@ class _FeedbackListScreenState extends State<FeedbackListScreen> {
         child: provider.isLoading && feedbackList.isEmpty
             ? const Center(child: CircularProgressIndicator())
             : feedbackList.isEmpty
-                ? const Center(child: Text('Chưa có phản hồi nào'))
+                ? const Center(child: Text('No feedback yet'))
                 : RefreshIndicator(
                     onRefresh: provider.fetchFeedbackList,
                     child: ListView.separated(
@@ -58,7 +58,7 @@ class _FeedbackListScreenState extends State<FeedbackListScreen> {
                         final feedback = feedbackList[index];
                         final score = feedback['score'] as int?;
                         final scoreLabel = feedback['scoreLabel'] ?? 'N/A';
-                        final comment = feedback['comment'] ?? 'Không có nhận xét';
+                        final comment = feedback['comment'] ?? 'No comment';
                         final userEmail = feedback['userEmail'] ?? 'User';
                         final userName = feedback['userName'] ?? '';
                         final predictedClass = feedback['predictedClass'] ?? 'Unknown';
@@ -120,8 +120,8 @@ class _FeedbackListScreenState extends State<FeedbackListScreen> {
                               Text(
                                 comment,
                                 style: theme.textTheme.bodyMedium?.copyWith(
-                                  fontStyle: comment == 'Không có nhận xét' ? FontStyle.italic : null,
-                                  color: comment == 'Không có nhận xét' ? Colors.grey : null,
+                                  fontStyle: comment == 'No comment' ? FontStyle.italic : null,
+                                  color: comment == 'No comment' ? Colors.grey : null,
                                 ),
                               ),
                               const SizedBox(height: 16),
@@ -139,7 +139,7 @@ class _FeedbackListScreenState extends State<FeedbackListScreen> {
                                         const Icon(Icons.psychology_outlined, size: 16, color: Colors.grey),
                                         const SizedBox(width: 8),
                                         Text(
-                                          'Kết quả: $predictedClass ($confidence)',
+                                          'Result: $predictedClass ($confidence)',
                                           style: theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w500),
                                         ),
                                       ],
@@ -151,7 +151,7 @@ class _FeedbackListScreenState extends State<FeedbackListScreen> {
                                           const Icon(Icons.medical_services_outlined, size: 16, color: Colors.grey),
                                           const SizedBox(width: 8),
                                           Text(
-                                            'Bệnh: $illnessName',
+                                            'Disease: $illnessName',
                                             style: theme.textTheme.bodySmall,
                                           ),
                                         ],

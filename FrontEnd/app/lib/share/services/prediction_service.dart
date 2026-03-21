@@ -100,8 +100,9 @@ class PredictionService {
         );
       }
 
+      // Matches OpenAPI + PredictionController (IFormFile image).
       final formData = FormData.fromMap({
-        'Image': await MultipartFile.fromFile(imagePath),
+        'image': await MultipartFile.fromFile(imagePath),
       });
 
       final response = await _dio.post(

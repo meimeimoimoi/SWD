@@ -45,7 +45,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
     final stats = <_AdminStatItem>[
       _AdminStatItem(
-        title: 'Tổng User',
+        title: 'Total users',
         value: statsData?.totalUsers.toString() ?? '...',
         note: '${statsData?.activeUsers ?? 0} active',
         icon: Icons.groups_outlined,
@@ -53,9 +53,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         onTap: () => Navigator.pushNamed(context, AppRouter.adminUsers),
       ),
       _AdminStatItem(
-        title: 'Số lần Quét',
+        title: 'Scans',
         value: statsData?.totalPredictions.toString() ?? '...',
-        note: '+${statsData?.todayPredictions ?? 0} hôm nay',
+        note: '+${statsData?.todayPredictions ?? 0} today',
         icon: Icons.camera_alt_outlined,
         statusColor: AppColors.primary,
       ),
@@ -67,9 +67,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         statusColor: AppColors.primary,
       ),
       _AdminStatItem(
-        title: 'Cảnh báo',
-        value: '0', 
-        note: 'Hệ thống ổn định',
+        title: 'Alerts',
+        value: '0',
+        note: 'System stable',
         icon: Icons.warning_amber_rounded,
         statusColor: theme.colorScheme.error,
       ),
@@ -96,7 +96,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'PlantGuard AI',
+              'Argivision',
               style: theme.textTheme.titleLarge?.copyWith(
                 color: AppColors.primary,
                 fontWeight: FontWeight.w700,
@@ -149,12 +149,12 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
                                     Text(
-                                      'Hoạt động gần đây',
+                                      'Recent activity',
                                       style: theme.textTheme.titleMedium,
                                     ),
                                     TextButton(
                                       onPressed: () {},
-                                      child: const Text('Xem tất cả'),
+                                      child: const Text('See all'),
                                     ),
                                   ],
                                 ),
@@ -163,7 +163,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                                   const Center(
                                     child: Padding(
                                       padding: EdgeInsets.symmetric(vertical: 20),
-                                      child: Text('Không có hoạt động nào.'),
+                                      child: Text('No activity yet.'),
                                     ),
                                   )
                                 else

@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -87,7 +88,7 @@ class _ScanScreenState extends State<ScanScreen> {
                       ),
                       Expanded(
                         child: Text(
-                          'Chụp lá cây lúa',
+                          'Capture leaf',
                           textAlign: TextAlign.center,
                           style: theme.textTheme.titleLarge,
                         ),
@@ -107,7 +108,8 @@ class _ScanScreenState extends State<ScanScreen> {
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(16),
                               border: Border.all(
-                                color: theme.dividerColor.withOpacity(0.3),
+                                color: theme.dividerColor
+                                    .withValues(alpha: 0.3),
                               ),
                             ),
                             child: ClipRRect(
@@ -121,13 +123,13 @@ class _ScanScreenState extends State<ScanScreen> {
                         ),
                         const SizedBox(height: 20),
                         Text(
-                          'Hình ảnh lá đã chọn',
+                          'Selected leaf image',
                           textAlign: TextAlign.center,
                           style: theme.textTheme.headlineSmall,
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Hãy đảm bảo lá cây được chụp rõ ràng và có đủ ánh sáng để có kết quả phân tích tốt nhất.',
+                          'Make sure the leaf is in focus and well lit for the best analysis.',
                           textAlign: TextAlign.center,
                           style: theme.textTheme.bodyMedium,
                         ),
@@ -144,7 +146,7 @@ class _ScanScreenState extends State<ScanScreen> {
                         children: [
                           Expanded(
                             child: AppButton(
-                              label: 'Chụp lại',
+                              label: 'Retake',
                               variant: AppButtonVariant.outlined,
                               onPressed: () => Navigator.of(
                                 context,
@@ -154,7 +156,7 @@ class _ScanScreenState extends State<ScanScreen> {
                           const SizedBox(width: 12),
                           Expanded(
                             child: AppButton(
-                              label: 'Xác nhận',
+                              label: 'Confirm',
                               onPressed: () => Navigator.of(
                                 context,
                               ).pop(_CaptureLeafAction.confirm),
@@ -185,19 +187,112 @@ class _ScanScreenState extends State<ScanScreen> {
         _uploadStatus = _UploadStatus.idle;
       });
     } catch (_) {
-      _setStatus(_UploadStatus.error, 'Chọn ảnh thất bại. Vui lòng thử lại.');
+      _setStatus(_UploadStatus.error, 'Could not pick image. Please try again.');
     }
+  }
+
+  Future<void> _pickFromFiles() async {
+    if (_isUploading) return;
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.image,
+        allowCompression: true,
+        withData: false,
+      );
+      if (result == null || result.files.isEmpty) return;
+      final f = result.files.single;
+      final path = f.path;
+      if (path == null || path.isEmpty) return;
+      if (!mounted) return;
+      setState(() {
+        _selectedImage = XFile(path);
+        _statusMessage = null;
+        _uploadStatus = _UploadStatus.idle;
+      });
+    } catch (_) {
+      _setStatus(
+        _UploadStatus.error,
+        'Could not open file. Please try again.',
+      );
+    }
+  }
+
+  /// Gallery or file picker (used by Upload button / empty-state tap).
+  void _showUploadFromDeviceSheet() {
+    if (_isUploading) return;
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: cs.surface,
+      showDragHandle: true,
+      builder: (ctx) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(8, 0, 8, 12),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+                  child: Text(
+                    'Upload from device',
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w800,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                ListTile(
+                  leading: CircleAvatar(
+                    backgroundColor: cs.secondaryContainer,
+                    child: Icon(
+                      Icons.photo_library_outlined,
+                      color: cs.onSecondaryContainer,
+                    ),
+                  ),
+                  title: const Text('Photo library'),
+                  subtitle: const Text('Pick from gallery'),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    Future<void>.microtask(
+                      () => _pickImage(ImageSource.gallery),
+                    );
+                  },
+                ),
+                ListTile(
+                  leading: CircleAvatar(
+                    backgroundColor: cs.tertiaryContainer,
+                    child: Icon(
+                      Icons.folder_open,
+                      color: cs.onTertiaryContainer,
+                    ),
+                  ),
+                  title: const Text('Files'),
+                  subtitle: const Text('Browse image files'),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    Future<void>.microtask(_pickFromFiles);
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   Future<void> _uploadSelectedImage() async {
     if (_selectedImage == null || _isUploading) {
-      _setStatus(_UploadStatus.error, 'Vui lòng chọn một ảnh trước.');
+      _setStatus(_UploadStatus.error, 'Please select an image first.');
       return;
     }
 
     setState(() {
       _uploadStatus = _UploadStatus.uploading;
-      _statusMessage = 'Đang tải ảnh...';
+      _statusMessage = 'Uploading image...';
     });
 
     final result = await _uploadService.uploadImage(imageFile: _selectedImage!);
@@ -226,14 +321,14 @@ class _ScanScreenState extends State<ScanScreen> {
   Future<void> _predictImage() async {
     if (_selectedImage == null || _isUploading) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Vui lòng chọn một ảnh trước.')),
+        const SnackBar(content: Text('Please select an image first.')),
       );
       return;
     }
 
     setState(() {
       _uploadStatus = _UploadStatus.uploading;
-      _statusMessage = 'Đang phân tích ảnh...';
+      _statusMessage = 'Analyzing image...';
     });
 
     try {
@@ -248,30 +343,38 @@ class _ScanScreenState extends State<ScanScreen> {
         );
 
         // Navigate to prediction screen with the result
-        Navigator.pushNamed(
+        await Navigator.pushNamed(
           context,
           AppRouter.prediction,
           arguments: predictionResult,
         );
+        if (mounted) {
+          setState(() {
+            _uploadStatus = _UploadStatus.idle;
+            _statusMessage = null;
+          });
+        }
       } else {
+        if (!mounted) return;
         setState(() {
           _uploadStatus = _UploadStatus.error;
           _statusMessage = response.message;
         });
 
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(response.message)));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(response.message)),
+        );
       }
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _uploadStatus = _UploadStatus.error;
         _statusMessage = 'Error: $e';
       });
 
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
     }
   }
 
@@ -297,6 +400,7 @@ class _ScanScreenState extends State<ScanScreen> {
     return AppScaffold(
       centerContent: false,
       showUserBottomNav: true,
+      selectedNavIndex: 1,
       title: 'Scan',
       child: SingleChildScrollView(
         child: Column(
@@ -318,8 +422,8 @@ class _ScanScreenState extends State<ScanScreen> {
                   isUploading: _isUploading,
                   statusMessage: _statusMessage,
                   uploadStatus: _uploadStatus,
-                  onPickFromGallery: () => _pickImage(ImageSource.gallery),
-                  onPickFromCamera: _pickFromCameraFlow,
+                  onCapture: _pickFromCameraFlow,
+                  onUploadFromDevice: _showUploadFromDeviceSheet,
                   onClearImage: _clearImage,
                   onUpload: _uploadSelectedImage,
                   onPredict: _predictImage,
@@ -364,8 +468,8 @@ class _UploadCard extends StatelessWidget {
     required this.isUploading,
     required this.statusMessage,
     required this.uploadStatus,
-    required this.onPickFromGallery,
-    required this.onPickFromCamera,
+    required this.onCapture,
+    required this.onUploadFromDevice,
     required this.onClearImage,
     required this.onUpload,
     this.onPredict,
@@ -376,8 +480,8 @@ class _UploadCard extends StatelessWidget {
   final bool isUploading;
   final String? statusMessage;
   final _UploadStatus uploadStatus;
-  final VoidCallback onPickFromGallery;
-  final VoidCallback onPickFromCamera;
+  final VoidCallback onCapture;
+  final VoidCallback onUploadFromDevice;
   final VoidCallback onClearImage;
   final VoidCallback onUpload;
   final VoidCallback? onPredict;
@@ -397,10 +501,10 @@ class _UploadCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final closeBackground = hasImage ? Colors.red : Colors.grey.shade300;
-    final closeIconColor = hasImage ? Colors.white : Colors.black;
-    final arrowBackground = hasImage ? Colors.blue : Colors.grey.shade300;
-    final arrowIconColor = hasImage ? Colors.white : Colors.black;
+    final cs = Theme.of(context).colorScheme;
+    final closeBackground =
+        hasImage ? cs.error : cs.surfaceContainerHighest;
+    final closeIconColor = hasImage ? cs.onError : cs.onSurfaceVariant;
 
     return AppCard(
       child: Column(
@@ -410,15 +514,23 @@ class _UploadCard extends StatelessWidget {
           const SizedBox(height: 12),
           Stack(
             children: [
-              Container(
+              Material(
+                color: cs.surface,
+                borderRadius: BorderRadius.circular(14),
+                child: InkWell(
+                  onTap: !isUploading && !hasImage ? onUploadFromDevice : null,
+                  borderRadius: BorderRadius.circular(14),
+                  child: Container(
                 height: 180,
                 width: double.infinity,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(14),
                   border: Border.all(
-                    color: Theme.of(context).dividerColor.withOpacity(0.3),
+                    color: Theme.of(context)
+                        .dividerColor
+                        .withValues(alpha: 0.3),
                   ),
-                  color: Theme.of(context).colorScheme.surface,
+                  color: cs.surface,
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(14),
@@ -433,34 +545,45 @@ class _UploadCard extends StatelessWidget {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Icon(
-                                Icons.cloud_upload_outlined,
-                                size: 36,
-                                color: Theme.of(context).colorScheme.primary,
+                                Icons.add_photo_alternate_outlined,
+                                size: 40,
+                                color: cs.primary,
                               ),
                               const SizedBox(height: 10),
                               Text(
-                                'Tải ảnh lên để bắt đầu',
-                                style: Theme.of(context).textTheme.bodyLarge,
+                                'Tap to upload',
+                                style: Theme.of(context).textTheme.titleSmall
+                                    ?.copyWith(fontWeight: FontWeight.w700),
                               ),
+                              const SizedBox(height: 4),
                               Text(
-                                'Định dạng: JPG, PNG|tối đa: 5MB',
-                                style: Theme.of(context).textTheme.bodyMedium,
+                                'Or use Capture / Upload below · JPG, PNG',
+                                style: Theme.of(context).textTheme.bodySmall
+                                    ?.copyWith(
+                                  color: cs.onSurfaceVariant,
+                                ),
+                                textAlign: TextAlign.center,
                               ),
                             ],
                           ),
                         ),
                       if (isUploading)
                         Container(
-                          color: Colors.black.withOpacity(0.08),
-                          child: const Center(
+                          color: cs.scrim.withValues(alpha: 0.12),
+                          child: Center(
                             child: SizedBox(
                               width: 28,
                               height: 28,
-                              child: CircularProgressIndicator(strokeWidth: 3),
+                              child: CircularProgressIndicator(
+                                strokeWidth: 3,
+                                color: cs.primary,
+                              ),
                             ),
                           ),
                         ),
                     ],
+                  ),
+                ),
                   ),
                 ),
               ),
@@ -482,28 +605,6 @@ class _UploadCard extends StatelessWidget {
                   ),
                 ),
               ),
-              Positioned(
-                bottom: 12,
-                right: 12,
-                child: GestureDetector(
-                  onTap: hasImage && !isUploading
-                      ? (onPredict ?? onUpload)
-                      : null,
-                  child: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8),
-                      color: arrowBackground,
-                      border: Border.all(color: arrowBackground, width: 1),
-                    ),
-                    child: Icon(
-                      Icons.arrow_forward,
-                      color: arrowIconColor,
-                      size: 24,
-                    ),
-                  ),
-                ),
-              ),
             ],
           ),
           const SizedBox(height: 16),
@@ -511,21 +612,31 @@ class _UploadCard extends StatelessWidget {
             children: [
               Expanded(
                 child: AppButton(
-                  label: 'Tải ảnh',
-                  icon: Icons.folder_open,
-                  onPressed: isUploading ? null : onPickFromGallery,
+                  label: 'Capture',
+                  variant: AppButtonVariant.outlined,
+                  icon: Icons.photo_camera_outlined,
+                  onPressed: isUploading ? null : onCapture,
                 ),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: AppButton(
-                  label: 'Chụp ảnh',
+                  label: 'Upload',
                   variant: AppButtonVariant.outlined,
-                  icon: Icons.photo_camera_outlined,
-                  onPressed: isUploading ? null : onPickFromCamera,
+                  icon: Icons.upload_file_outlined,
+                  onPressed: isUploading ? null : onUploadFromDevice,
                 ),
               ),
             ],
+          ),
+          const SizedBox(height: 14),
+          AppButton(
+            label: 'Submit',
+            minimumHeight: 56,
+            icon: Icons.biotech_outlined,
+            onPressed: hasImage && !isUploading
+                ? (onPredict ?? onUpload)
+                : null,
           ),
           if (statusMessage != null) ...[
             const SizedBox(height: 12),
@@ -538,7 +649,7 @@ class _UploadCard extends StatelessWidget {
           ] else ...[
             const SizedBox(height: 12),
             Text(
-              'Chọn ảnh để bắt đầu',
+              'Choose an image to begin',
               style: Theme.of(context).textTheme.bodyMedium,
             ),
           ],
@@ -562,14 +673,11 @@ class _HistoryCard extends StatelessWidget {
           const SizedBox(height: 12),
           ...uploads.map((item) => _ScanTile(item: item)),
           const SizedBox(height: 12),
-          AppButton(
+            AppButton(
             label: 'View full history',
             variant: AppButtonVariant.ghost,
-            onPressed: () => Navigator.pushNamed(
-              context,
-              AppRouter.treatmentHub,
-              arguments: 2,
-            ),
+            onPressed: () =>
+                Navigator.pushNamed(context, AppRouter.history),
           ),
         ],
       ),
@@ -612,7 +720,9 @@ class _ScanTile extends StatelessWidget {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
         color: theme.colorScheme.surface,
-        border: Border.all(color: theme.dividerColor.withOpacity(0.3)),
+        border: Border.all(
+          color: theme.dividerColor.withValues(alpha: 0.3),
+        ),
       ),
       child: Row(
         children: [

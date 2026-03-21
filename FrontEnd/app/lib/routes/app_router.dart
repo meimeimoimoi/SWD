@@ -12,6 +12,9 @@ import '../feature/profile/profile_screen.dart';
 import '../feature/profile/update_profile_screen.dart';
 import '../feature/history/hisstory_screen.dart';
 import '../feature/prediction/prediction_screen.dart';
+import '../feature/trees/tree_detail_screen.dart';
+import '../feature/trees/trees_screen.dart';
+import '../feature/trees/user_tree_models.dart';
 
 class AppRouter {
   static final GlobalKey<NavigatorState> navigatorKey =
@@ -31,6 +34,8 @@ class AppRouter {
   static const String prediction = '/prediction';
   static const String feedback = '/feedback';
   static const String history = '/history';
+  static const String trees = '/trees';
+  static const String treeDetail = '/trees/detail';
   static const String treatmentHub = '/treatments';
 
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
@@ -63,6 +68,16 @@ class AppRouter {
 
       case history:
         return MaterialPageRoute(builder: (_) => const HistoryScreen());
+      case trees:
+        return MaterialPageRoute(builder: (_) => const TreesScreen());
+      case treeDetail:
+        final summary = settings.arguments;
+        if (summary is! UserTreeSummary) {
+          return MaterialPageRoute(builder: (_) => const TreesScreen());
+        }
+        return MaterialPageRoute(
+          builder: (_) => TreeDetailScreen(summary: summary),
+        );
       case feedback:
         final predictionResult = settings.arguments as PredictionResult?;
         return MaterialPageRoute(

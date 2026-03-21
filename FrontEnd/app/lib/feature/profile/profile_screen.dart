@@ -180,7 +180,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               ),
                             ],
                           ),
-                          const SizedBox(height: 20),
+                          const SizedBox(height: 16),
+                          if (role != null &&
+                              role.toLowerCase().contains('admin'))
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 12),
+                              child: OutlinedButton.icon(
+                                onPressed: () => Navigator.pushNamed(
+                                  context,
+                                  AppRouter.adminDashboard,
+                                ),
+                                icon: const Icon(Icons.admin_panel_settings_outlined),
+                                label: const Text('Admin panel'),
+                              ),
+                            ),
+                          const SizedBox(height: 8),
                           _InfoRow(label: 'Email', value: email),
                           _InfoRow(label: 'Phone', value: phone),
                           _InfoRow(

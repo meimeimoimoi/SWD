@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using MyApp.Application.Features.Prediction;
 using MyApp.Application.Interfaces;
 using MyApp.Persistence.Context;
@@ -69,17 +69,26 @@ namespace MyApp.Infrastructure.Services
 
         private static PredictionHistoryDto MapToDto(Domain.Entities.Prediction p) => new()
         {
-            PredictionId     = p.PredictionId,
-            UploadId         = p.UploadId,
-            ImageUrl         = p.Upload?.StoredFilename,
-            OriginalFilename = p.Upload?.OriginalFilename,
-            PredictedClass   = p.PredictedClass,
-            ConfidenceScore  = p.ConfidenceScore,
-            ProcessingTimeMs = p.ProcessingTimeMs,
-            CreatedAt        = p.CreatedAt,
-            IllnessName      = p.Illness?.IllnessName,
-            IllnessSeverity  = p.Illness?.Severity,
-            TreeName         = p.Tree?.TreeName
+            PredictionId       = p.PredictionId,
+            UploadId           = p.UploadId,
+            ImageUrl           = p.Upload?.StoredFilename,
+            OriginalFilename   = p.Upload?.OriginalFilename,
+            PredictedClass     = p.PredictedClass,
+            ConfidenceScore    = p.ConfidenceScore,
+            ProcessingTimeMs   = p.ProcessingTimeMs,
+            CreatedAt          = p.CreatedAt,
+            IllnessName        = p.Illness?.IllnessName,
+            IllnessSeverity    = p.Illness?.Severity,
+            IllnessId          = p.IllnessId,
+            ScientificName     = p.Illness?.ScientificName,
+            IllnessDescription = p.Illness?.Description,
+            Symptoms           = p.Illness?.Symptoms,
+            Causes             = p.Illness?.Causes,
+            TreeId             = p.TreeId,
+            TreeName           = p.Tree?.TreeName,
+            TreeScientificName = p.Tree?.ScientificName,
+            TreeDescription    = p.Tree?.Description,
+            TreeImagePath      = p.Tree?.ImagePath
         };
     }
 }

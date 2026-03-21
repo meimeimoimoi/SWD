@@ -1,0 +1,2484 @@
+{
+    "openapi": "3.0.4",
+    "info": {
+      "title": "MyApp API",
+      "description": "API for Tree Disease Detection System",
+      "contact": {
+        "name": "SWD Team",
+        "email": "support@swd.com"
+      },
+      "version": "v1"
+    },
+    "paths": {
+      "/api/Admin/users": {
+        "get": {
+          "tags": [
+            "Admin"
+          ],
+          "parameters": [
+            {
+              "name": "search",
+              "in": "query",
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "role",
+              "in": "query",
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "sortBy",
+              "in": "query",
+              "schema": {
+                "type": "string",
+                "default": "email"
+              }
+            },
+            {
+              "name": "sortOrder",
+              "in": "query",
+              "schema": {
+                "type": "string",
+                "default": "asc"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK"
+            }
+          }
+        },
+        "post": {
+          "tags": [
+            "Admin"
+          ],
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateUserDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateUserDto"
+                }
+              },
+              "application/*+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateUserDto"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "OK"
+            }
+          }
+        }
+      },
+      "/api/Admin/users/{userId}": {
+        "get": {
+          "tags": [
+            "Admin"
+          ],
+          "parameters": [
+            {
+              "name": "userId",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "integer",
+                "format": "int32"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK"
+            }
+          }
+        },
+        "put": {
+          "tags": [
+            "Admin"
+          ],
+          "parameters": [
+            {
+              "name": "userId",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "integer",
+                "format": "int32"
+              }
+            }
+          ],
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateUserDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateUserDto"
+                }
+              },
+              "application/*+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateUserDto"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "OK"
+            }
+          }
+        },
+        "delete": {
+          "tags": [
+            "Admin"
+          ],
+          "parameters": [
+            {
+              "name": "userId",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "integer",
+                "format": "int32"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK"
+            }
+          }
+        }
+      },
+      "/api/Admin/users/{userId}/status": {
+        "patch": {
+          "tags": [
+            "Admin"
+          ],
+          "parameters": [
+            {
+              "name": "userId",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "integer",
+                "format": "int32"
+              }
+            }
+          ],
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateStatusRequest"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateStatusRequest"
+                }
+              },
+              "application/*+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateStatusRequest"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "OK"
+            }
+          }
+        }
+      },
+      "/api/Admin/users/staff": {
+        "post": {
+          "tags": [
+            "Admin"
+          ],
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateTechnicianStaffDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateTechnicianStaffDto"
+                }
+              },
+              "application/*+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateTechnicianStaffDto"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "OK"
+            }
+          }
+        }
+      },
+      "/api/Admin/predictions": {
+        "get": {
+          "tags": [
+            "Admin"
+          ],
+          "responses": {
+            "200": {
+              "description": "OK"
+            }
+          }
+        }
+      },
+      "/api/Auth/login": {
+        "post": {
+          "tags": [
+            "Auth"
+          ],
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginRequestDTO"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginRequestDTO"
+                }
+              },
+              "application/*+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginRequestDTO"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "OK"
+            },
+            "400": {
+              "description": "Bad Request",
+              "content": {
+                "text/plain": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                },
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                },
+                "text/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized",
+              "content": {
+                "text/plain": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                },
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                },
+                "text/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/api/Auth/register": {
+        "post": {
+          "tags": [
+            "Auth"
+          ],
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResgisterRequestDTO"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResgisterRequestDTO"
+                }
+              },
+              "application/*+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResgisterRequestDTO"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "OK"
+            }
+          }
+        }
+      },
+      "/api/Auth/refresh": {
+        "post": {
+          "tags": [
+            "Auth"
+          ],
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RefreshTokenRequestDTO"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RefreshTokenRequestDTO"
+                }
+              },
+              "application/*+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RefreshTokenRequestDTO"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "OK"
+            },
+            "400": {
+              "description": "Bad Request",
+              "content": {
+                "text/plain": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                },
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                },
+                "text/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized",
+              "content": {
+                "text/plain": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                },
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                },
+                "text/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/api/Auth/logout": {
+        "post": {
+          "tags": [
+            "Auth"
+          ],
+          "parameters": [
+            {
+              "name": "token",
+              "in": "header",
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK"
+            },
+            "401": {
+              "description": "Unauthorized",
+              "content": {
+                "text/plain": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                },
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                },
+                "text/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/api/admin/stats": {
+        "get": {
+          "tags": [
+            "Dashboard"
+          ],
+          "responses": {
+            "200": {
+              "description": "OK"
+            }
+          }
+        }
+      },
+      "/api/admin/predictions/stats": {
+        "get": {
+          "tags": [
+            "Dashboard"
+          ],
+          "parameters": [
+            {
+              "name": "days",
+              "in": "query",
+              "schema": {
+                "type": "integer",
+                "format": "int32",
+                "default": 7
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK"
+            }
+          }
+        }
+      },
+      "/api/admin/models/accuracy": {
+        "get": {
+          "tags": [
+            "Dashboard"
+          ],
+          "responses": {
+            "200": {
+              "description": "OK"
+            }
+          }
+        }
+      },
+      "/api/admin/ratings": {
+        "get": {
+          "tags": [
+            "Dashboard"
+          ],
+          "parameters": [
+            {
+              "name": "page",
+              "in": "query",
+              "schema": {
+                "type": "integer",
+                "format": "int32",
+                "default": 1
+              }
+            },
+            {
+              "name": "pageSize",
+              "in": "query",
+              "schema": {
+                "type": "integer",
+                "format": "int32",
+                "default": 20
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK"
+            }
+          }
+        }
+      },
+      "/api/admin/activity-logs": {
+        "get": {
+          "tags": [
+            "Dashboard"
+          ],
+          "parameters": [
+            {
+              "name": "count",
+              "in": "query",
+              "schema": {
+                "type": "integer",
+                "format": "int32",
+                "default": 50
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK"
+            }
+          }
+        }
+      },
+      "/api/admin/data/stages": {
+        "get": {
+          "tags": [
+            "DataManagement"
+          ],
+          "responses": {
+            "200": {
+              "description": "OK"
+            }
+          }
+        },
+        "post": {
+          "tags": [
+            "DataManagement"
+          ],
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateTreeStageDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateTreeStageDto"
+                }
+              },
+              "application/*+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateTreeStageDto"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "OK"
+            }
+          }
+        }
+      },
+      "/api/admin/data/stages/{id}": {
+        "get": {
+          "tags": [
+            "DataManagement"
+          ],
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "integer",
+                "format": "int32"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK"
+            }
+          }
+        },
+        "put": {
+          "tags": [
+            "DataManagement"
+          ],
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "integer",
+                "format": "int32"
+              }
+            }
+          ],
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateTreeStageDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateTreeStageDto"
+                }
+              },
+              "application/*+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateTreeStageDto"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "OK"
+            }
+          }
+        },
+        "delete": {
+          "tags": [
+            "DataManagement"
+          ],
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "integer",
+                "format": "int32"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK"
+            }
+          }
+        }
+      },
+      "/api/admin/data/relationships": {
+        "get": {
+          "tags": [
+            "DataManagement"
+          ],
+          "parameters": [
+            {
+              "name": "treeId",
+              "in": "query",
+              "schema": {
+                "type": "integer",
+                "format": "int32"
+              }
+            },
+            {
+              "name": "illnessId",
+              "in": "query",
+              "schema": {
+                "type": "integer",
+                "format": "int32"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK"
+            }
+          }
+        },
+        "post": {
+          "tags": [
+            "DataManagement"
+          ],
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateRelationshipDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateRelationshipDto"
+                }
+              },
+              "application/*+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateRelationshipDto"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "OK"
+            }
+          }
+        }
+      },
+      "/api/admin/data/relationships/{id}": {
+        "delete": {
+          "tags": [
+            "DataManagement"
+          ],
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "integer",
+                "format": "int32"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK"
+            }
+          }
+        }
+      },
+      "/api/ImageUpload/upload": {
+        "post": {
+          "tags": [
+            "ImageUpload"
+          ],
+          "requestBody": {
+            "content": {
+              "multipart/form-data": {
+                "schema": {
+                  "required": [
+                    "Image"
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "Image": {
+                      "type": "string",
+                      "format": "binary"
+                    }
+                  }
+                },
+                "encoding": {
+                  "Image": {
+                    "style": "form"
+                  }
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "OK"
+            },
+            "400": {
+              "description": "Bad Request",
+              "content": {
+                "text/plain": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                },
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                },
+                "text/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized",
+              "content": {
+                "text/plain": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                },
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                },
+                "text/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Internal Server Error"
+            }
+          }
+        }
+      },
+      "/api/ImageUpload/{uploadId}": {
+        "get": {
+          "tags": [
+            "ImageUpload"
+          ],
+          "parameters": [
+            {
+              "name": "uploadId",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "integer",
+                "format": "int32"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK"
+            },
+            "404": {
+              "description": "Not Found",
+              "content": {
+                "text/plain": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                },
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                },
+                "text/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized",
+              "content": {
+                "text/plain": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                },
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                },
+                "text/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/api/ImageUpload/my-images": {
+        "get": {
+          "tags": [
+            "ImageUpload"
+          ],
+          "responses": {
+            "200": {
+              "description": "OK"
+            },
+            "401": {
+              "description": "Unauthorized",
+              "content": {
+                "text/plain": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                },
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                },
+                "text/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/api/admin/models": {
+        "get": {
+          "tags": [
+            "Model"
+          ],
+          "responses": {
+            "200": {
+              "description": "OK"
+            }
+          }
+        },
+        "post": {
+          "tags": [
+            "Model"
+          ],
+          "requestBody": {
+            "content": {
+              "multipart/form-data": {
+                "schema": {
+                  "required": [
+                    "ModelFile",
+                    "ModelName",
+                    "Version"
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "ModelName": {
+                      "type": "string"
+                    },
+                    "Version": {
+                      "type": "string"
+                    },
+                    "ModelType": {
+                      "type": "string"
+                    },
+                    "Description": {
+                      "type": "string"
+                    },
+                    "ModelFile": {
+                      "type": "string",
+                      "description": ".onnx file - required, only .onnx extension is accepted.",
+                      "format": "binary"
+                    }
+                  }
+                },
+                "encoding": {
+                  "ModelName": {
+                    "style": "form"
+                  },
+                  "Version": {
+                    "style": "form"
+                  },
+                  "ModelType": {
+                    "style": "form"
+                  },
+                  "Description": {
+                    "style": "form"
+                  },
+                  "ModelFile": {
+                    "style": "form"
+                  }
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "OK"
+            }
+          }
+        }
+      },
+      "/api/admin/models/{id}/active": {
+        "patch": {
+          "tags": [
+            "Model"
+          ],
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "integer",
+                "format": "int32"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK"
+            }
+          }
+        }
+      },
+      "/api/Prediction/predict": {
+        "post": {
+          "tags": [
+            "Prediction"
+          ],
+          "summary": "Dự đoán bệnh trên lá lúa từ hình ảnh được tải lên. Trả về treatment - thuốc(medicine)",
+          "requestBody": {
+            "content": {
+              "multipart/form-data": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "image": {
+                      "type": "string",
+                      "description": "",
+                      "format": "binary"
+                    }
+                  }
+                },
+                "encoding": {
+                  "image": {
+                    "style": "form"
+                  }
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "OK"
+            },
+            "400": {
+              "description": "Bad Request",
+              "content": {
+                "text/plain": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                },
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                },
+                "text/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ProblemDetails"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/api/Prediction/classes": {
+        "get": {
+          "tags": [
+            "Prediction"
+          ],
+          "responses": {
+            "200": {
+              "description": "OK"
+            }
+          }
+        }
+      },
+      "/api/Prediction/health": {
+        "get": {
+          "tags": [
+            "Prediction"
+          ],
+          "responses": {
+            "200": {
+              "description": "OK"
+            }
+          }
+        }
+      },
+      "/api/rating/prediction/{predictionId}": {
+        "post": {
+          "tags": [
+            "Rating"
+          ],
+          "parameters": [
+            {
+              "name": "predictionId",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "integer",
+                "format": "int32"
+              }
+            }
+          ],
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RatingRequestDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RatingRequestDto"
+                }
+              },
+              "application/*+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RatingRequestDto"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "OK"
+            }
+          }
+        },
+        "get": {
+          "tags": [
+            "Rating"
+          ],
+          "parameters": [
+            {
+              "name": "predictionId",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "integer",
+                "format": "int32"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK"
+            }
+          }
+        }
+      },
+      "/api/rating/all": {
+        "get": {
+          "tags": [
+            "Rating"
+          ],
+          "responses": {
+            "200": {
+              "description": "OK"
+            }
+          }
+        }
+      },
+      "/api/admin/review/treatments": {
+        "get": {
+          "tags": [
+            "Review"
+          ],
+          "responses": {
+            "200": {
+              "description": "OK"
+            }
+          }
+        }
+      },
+      "/api/admin/review/treatments/{id}": {
+        "get": {
+          "tags": [
+            "Review"
+          ],
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "integer",
+                "format": "int32"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK"
+            }
+          }
+        },
+        "put": {
+          "tags": [
+            "Review"
+          ],
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "integer",
+                "format": "int32"
+              }
+            }
+          ],
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateTreatmentDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateTreatmentDto"
+                }
+              },
+              "application/*+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateTreatmentDto"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "OK"
+            }
+          }
+        },
+        "delete": {
+          "tags": [
+            "Review"
+          ],
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "integer",
+                "format": "int32"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK"
+            }
+          }
+        }
+      },
+      "/api/admin/review/models": {
+        "get": {
+          "tags": [
+            "Review"
+          ],
+          "responses": {
+            "200": {
+              "description": "OK"
+            }
+          }
+        }
+      },
+      "/api/admin/review/models/{id}/activate": {
+        "patch": {
+          "tags": [
+            "Review"
+          ],
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "integer",
+                "format": "int32"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK"
+            }
+          }
+        }
+      },
+      "/api/admin/review/models/{id}/deactivate": {
+        "patch": {
+          "tags": [
+            "Review"
+          ],
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "integer",
+                "format": "int32"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK"
+            }
+          }
+        }
+      },
+      "/api/admin/settings": {
+        "get": {
+          "tags": [
+            "Settings"
+          ],
+          "responses": {
+            "200": {
+              "description": "OK"
+            }
+          }
+        }
+      },
+      "/api/admin/settings/{key}": {
+        "put": {
+          "tags": [
+            "Settings"
+          ],
+          "parameters": [
+            {
+              "name": "key",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateSettingRequest"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateSettingRequest"
+                }
+              },
+              "application/*+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateSettingRequest"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "OK"
+            }
+          }
+        }
+      },
+      "/api/technician/illnesses": {
+        "get": {
+          "tags": [
+            "Technician"
+          ],
+          "responses": {
+            "200": {
+              "description": "OK"
+            }
+          }
+        },
+        "post": {
+          "tags": [
+            "Technician"
+          ],
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateIllnessDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateIllnessDto"
+                }
+              },
+              "application/*+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateIllnessDto"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "OK"
+            }
+          }
+        }
+      },
+      "/api/technician/illnesses/{id}": {
+        "get": {
+          "tags": [
+            "Technician"
+          ],
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "integer",
+                "format": "int32"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK"
+            }
+          }
+        },
+        "put": {
+          "tags": [
+            "Technician"
+          ],
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "integer",
+                "format": "int32"
+              }
+            }
+          ],
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateIllnessDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateIllnessDto"
+                }
+              },
+              "application/*+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateIllnessDto"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "OK"
+            }
+          }
+        },
+        "delete": {
+          "tags": [
+            "Technician"
+          ],
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "integer",
+                "format": "int32"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK"
+            }
+          }
+        }
+      },
+      "/api/technician/illnesses/{id}/assign-tree": {
+        "post": {
+          "tags": [
+            "Technician"
+          ],
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "integer",
+                "format": "int32"
+              }
+            }
+          ],
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssignIllnessToTreeDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssignIllnessToTreeDto"
+                }
+              },
+              "application/*+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssignIllnessToTreeDto"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "OK"
+            }
+          }
+        }
+      },
+      "/api/technician/stages": {
+        "get": {
+          "tags": [
+            "Technician"
+          ],
+          "responses": {
+            "200": {
+              "description": "OK"
+            }
+          }
+        },
+        "post": {
+          "tags": [
+            "Technician"
+          ],
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateTreeStageDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateTreeStageDto"
+                }
+              },
+              "application/*+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateTreeStageDto"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "OK"
+            }
+          }
+        }
+      },
+      "/api/technician/stages/{id}": {
+        "get": {
+          "tags": [
+            "Technician"
+          ],
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "integer",
+                "format": "int32"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK"
+            }
+          }
+        },
+        "put": {
+          "tags": [
+            "Technician"
+          ],
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "integer",
+                "format": "int32"
+              }
+            }
+          ],
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateTreeStageDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateTreeStageDto"
+                }
+              },
+              "application/*+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateTreeStageDto"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "OK"
+            }
+          }
+        }
+      },
+      "/api/diseases/{id}/detail": {
+        "get": {
+          "tags": [
+            "Treatment"
+          ],
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "integer",
+                "format": "int32"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK"
+            }
+          }
+        }
+      },
+      "/api/treatments": {
+        "get": {
+          "tags": [
+            "TreatmentManagement"
+          ],
+          "responses": {
+            "200": {
+              "description": "OK"
+            }
+          }
+        },
+        "post": {
+          "tags": [
+            "TreatmentManagement"
+          ],
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateTreatmentDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateTreatmentDto"
+                }
+              },
+              "application/*+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateTreatmentDto"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "OK"
+            }
+          }
+        }
+      },
+      "/api/treatments/{id}/assign": {
+        "post": {
+          "tags": [
+            "TreatmentManagement"
+          ],
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "integer",
+                "format": "int32"
+              }
+            }
+          ],
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssignTreatmentToIllnessDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssignTreatmentToIllnessDto"
+                }
+              },
+              "application/*+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssignTreatmentToIllnessDto"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "OK"
+            }
+          }
+        }
+      },
+      "/api/User/profile": {
+        "get": {
+          "tags": [
+            "User"
+          ],
+          "responses": {
+            "200": {
+              "description": "OK"
+            }
+          }
+        },
+        "put": {
+          "tags": [
+            "User"
+          ],
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateProfileDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateProfileDto"
+                }
+              },
+              "application/*+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateProfileDto"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "OK"
+            }
+          }
+        }
+      },
+      "/api/User/notifications": {
+        "get": {
+          "tags": [
+            "User"
+          ],
+          "responses": {
+            "200": {
+              "description": "OK"
+            }
+          }
+        }
+      },
+      "/api/User/activities": {
+        "get": {
+          "tags": [
+            "User"
+          ],
+          "responses": {
+            "200": {
+              "description": "OK"
+            }
+          }
+        }
+      },
+      "/api/treatments/recommendations": {
+        "get": {
+          "tags": [
+            "UserTreatment"
+          ],
+          "parameters": [
+            {
+              "name": "illnessId",
+              "in": "query",
+              "schema": {
+                "type": "integer",
+                "format": "int32"
+              }
+            },
+            {
+              "name": "illnessStageId",
+              "in": "query",
+              "schema": {
+                "type": "integer",
+                "format": "int32"
+              }
+            },
+            {
+              "name": "treeStageId",
+              "in": "query",
+              "schema": {
+                "type": "integer",
+                "format": "int32"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK"
+            }
+          }
+        }
+      },
+      "/api/treatments/solutions/{id}": {
+        "get": {
+          "tags": [
+            "UserTreatment"
+          ],
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "integer",
+                "format": "int32"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK"
+            }
+          }
+        }
+      },
+      "/api/predictions/history": {
+        "get": {
+          "tags": [
+            "UserTreatment"
+          ],
+          "responses": {
+            "200": {
+              "description": "OK"
+            }
+          }
+        }
+      },
+      "/api/predictions/history/{id}": {
+        "get": {
+          "tags": [
+            "UserTreatment"
+          ],
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "integer",
+                "format": "int32"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK"
+            }
+          }
+        }
+      }
+    },
+    "components": {
+      "schemas": {
+        "AssignIllnessToTreeDto": {
+          "required": [
+            "treeId"
+          ],
+          "type": "object",
+          "properties": {
+            "treeId": {
+              "maximum": 2147483647,
+              "minimum": 1,
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          "additionalProperties": false
+        },
+        "AssignTreatmentToIllnessDto": {
+          "required": [
+            "illnessId"
+          ],
+          "type": "object",
+          "properties": {
+            "illnessId": {
+              "maximum": 2147483647,
+              "minimum": 1,
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          "additionalProperties": false
+        },
+        "CreateIllnessDto": {
+          "required": [
+            "illnessName"
+          ],
+          "type": "object",
+          "properties": {
+            "illnessName": {
+              "maxLength": 255,
+              "minLength": 1,
+              "type": "string"
+            },
+            "scientificName": {
+              "maxLength": 255,
+              "minLength": 0,
+              "type": "string",
+              "nullable": true
+            },
+            "description": {
+              "type": "string",
+              "nullable": true
+            },
+            "symptoms": {
+              "type": "string",
+              "nullable": true
+            },
+            "causes": {
+              "type": "string",
+              "nullable": true
+            },
+            "severity": {
+              "maxLength": 50,
+              "minLength": 0,
+              "type": "string",
+              "nullable": true
+            }
+          },
+          "additionalProperties": false
+        },
+        "CreateRelationshipDto": {
+          "required": [
+            "illnessId",
+            "treeId"
+          ],
+          "type": "object",
+          "properties": {
+            "treeId": {
+              "maximum": 2147483647,
+              "minimum": 1,
+              "type": "integer",
+              "format": "int32"
+            },
+            "illnessId": {
+              "maximum": 2147483647,
+              "minimum": 1,
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          "additionalProperties": false
+        },
+        "CreateTechnicianStaffDto": {
+          "required": [
+            "email",
+            "firstName",
+            "role",
+            "username"
+          ],
+          "type": "object",
+          "properties": {
+            "username": {
+              "maxLength": 255,
+              "minLength": 1,
+              "type": "string"
+            },
+            "email": {
+              "maxLength": 255,
+              "minLength": 1,
+              "type": "string",
+              "format": "email"
+            },
+            "firstName": {
+              "maxLength": 100,
+              "minLength": 1,
+              "type": "string"
+            },
+            "lastName": {
+              "maxLength": 100,
+              "type": "string",
+              "nullable": true
+            },
+            "phone": {
+              "maxLength": 20,
+              "type": "string",
+              "nullable": true
+            },
+            "role": {
+              "maxLength": 50,
+              "minLength": 1,
+              "type": "string",
+              "description": "One of MyApp.Domain.Enums.UserRole names (e.g. Technician, Staff)."
+            }
+          },
+          "additionalProperties": false
+        },
+        "CreateTreatmentDto": {
+          "required": [
+            "illnessId",
+            "solutionName",
+            "treeStageId"
+          ],
+          "type": "object",
+          "properties": {
+            "illnessId": {
+              "maximum": 2147483647,
+              "minimum": 1,
+              "type": "integer",
+              "format": "int32"
+            },
+            "treeStageId": {
+              "maximum": 2147483647,
+              "minimum": 1,
+              "type": "integer",
+              "format": "int32"
+            },
+            "solutionName": {
+              "maxLength": 255,
+              "minLength": 1,
+              "type": "string"
+            },
+            "solutionType": {
+              "maxLength": 100,
+              "minLength": 0,
+              "type": "string",
+              "nullable": true
+            },
+            "description": {
+              "type": "string",
+              "nullable": true
+            },
+            "minConfidence": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number",
+              "format": "double",
+              "nullable": true
+            },
+            "priority": {
+              "maximum": 2147483647,
+              "minimum": 1,
+              "type": "integer",
+              "format": "int32",
+              "nullable": true
+            }
+          },
+          "additionalProperties": false
+        },
+        "CreateTreeStageDto": {
+          "required": [
+            "stageName"
+          ],
+          "type": "object",
+          "properties": {
+            "stageName": {
+              "maxLength": 100,
+              "minLength": 1,
+              "type": "string"
+            },
+            "description": {
+              "maxLength": 500,
+              "minLength": 0,
+              "type": "string",
+              "nullable": true
+            }
+          },
+          "additionalProperties": false
+        },
+        "CreateUserDto": {
+          "required": [
+            "email",
+            "password",
+            "role"
+          ],
+          "type": "object",
+          "properties": {
+            "email": {
+              "maxLength": 255,
+              "minLength": 1,
+              "type": "string",
+              "format": "email"
+            },
+            "password": {
+              "maxLength": 100,
+              "minLength": 6,
+              "type": "string"
+            },
+            "role": {
+              "maxLength": 50,
+              "minLength": 1,
+              "type": "string",
+              "description": "One of MyApp.Domain.Enums.UserRole names."
+            }
+          },
+          "additionalProperties": false
+        },
+        "LoginRequestDTO": {
+          "required": [
+            "password",
+            "usernameOrEmail"
+          ],
+          "type": "object",
+          "properties": {
+            "usernameOrEmail": {
+              "minLength": 1,
+              "type": "string",
+              "description": "Username or Email for login (flexible)"
+            },
+            "password": {
+              "minLength": 6,
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "ProblemDetails": {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "nullable": true
+            },
+            "title": {
+              "type": "string",
+              "nullable": true
+            },
+            "status": {
+              "type": "integer",
+              "format": "int32",
+              "nullable": true
+            },
+            "detail": {
+              "type": "string",
+              "nullable": true
+            },
+            "instance": {
+              "type": "string",
+              "nullable": true
+            }
+          },
+          "additionalProperties": { }
+        },
+        "RatingRequestDto": {
+          "required": [
+            "score"
+          ],
+          "type": "object",
+          "properties": {
+            "score": {
+              "maximum": 5,
+              "minimum": 1,
+              "type": "integer",
+              "description": "Thang ?i?m ?ánh giá t? 1 ??n 5\r\n1 = R?t không chính xác, 2 = Không chính xác, 3 = Trung bình, 4 = Chính xác, 5 = R?t chính xác",
+              "format": "int32"
+            },
+            "comment": {
+              "maxLength": 1000,
+              "type": "string",
+              "nullable": true
+            }
+          },
+          "additionalProperties": false
+        },
+        "RefreshTokenRequestDTO": {
+          "required": [
+            "accessToken",
+            "refreshToken"
+          ],
+          "type": "object",
+          "properties": {
+            "accessToken": {
+              "type": "string",
+              "nullable": true
+            },
+            "refreshToken": {
+              "type": "string",
+              "nullable": true
+            }
+          },
+          "additionalProperties": false
+        },
+        "ResgisterRequestDTO": {
+          "required": [
+            "email",
+            "password",
+            "username"
+          ],
+          "type": "object",
+          "properties": {
+            "username": {
+              "type": "string",
+              "nullable": true
+            },
+            "email": {
+              "type": "string",
+              "nullable": true
+            },
+            "password": {
+              "type": "string",
+              "nullable": true
+            }
+          },
+          "additionalProperties": false
+        },
+        "UpdateIllnessDto": {
+          "type": "object",
+          "properties": {
+            "illnessName": {
+              "maxLength": 255,
+              "minLength": 1,
+              "type": "string",
+              "nullable": true
+            },
+            "scientificName": {
+              "maxLength": 255,
+              "minLength": 0,
+              "type": "string",
+              "nullable": true
+            },
+            "description": {
+              "type": "string",
+              "nullable": true
+            },
+            "symptoms": {
+              "type": "string",
+              "nullable": true
+            },
+            "causes": {
+              "type": "string",
+              "nullable": true
+            },
+            "severity": {
+              "maxLength": 50,
+              "minLength": 0,
+              "type": "string",
+              "nullable": true
+            }
+          },
+          "additionalProperties": false
+        },
+        "UpdateProfileDto": {
+          "type": "object",
+          "properties": {
+            "email": {
+              "maxLength": 255,
+              "type": "string",
+              "format": "email",
+              "nullable": true
+            },
+            "firstName": {
+              "maxLength": 100,
+              "type": "string",
+              "nullable": true
+            },
+            "lastName": {
+              "maxLength": 100,
+              "type": "string",
+              "nullable": true
+            },
+            "phone": {
+              "maxLength": 20,
+              "type": "string",
+              "nullable": true
+            },
+            "profileImagePath": {
+              "maxLength": 500,
+              "type": "string",
+              "nullable": true
+            }
+          },
+          "additionalProperties": false
+        },
+        "UpdateSettingRequest": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": "string",
+              "nullable": true
+            }
+          },
+          "additionalProperties": false
+        },
+        "UpdateStatusRequest": {
+          "type": "object",
+          "properties": {
+            "status": {
+              "type": "string",
+              "nullable": true
+            }
+          },
+          "additionalProperties": false
+        },
+        "UpdateTreatmentDto": {
+          "type": "object",
+          "properties": {
+            "solutionName": {
+              "maxLength": 200,
+              "minLength": 1,
+              "type": "string",
+              "nullable": true
+            },
+            "solutionType": {
+              "maxLength": 50,
+              "minLength": 0,
+              "type": "string",
+              "nullable": true
+            },
+            "description": {
+              "maxLength": 1000,
+              "minLength": 0,
+              "type": "string",
+              "nullable": true
+            },
+            "minConfidence": {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number",
+              "format": "double",
+              "nullable": true
+            },
+            "priority": {
+              "maximum": 2147483647,
+              "minimum": 1,
+              "type": "integer",
+              "format": "int32",
+              "nullable": true
+            }
+          },
+          "additionalProperties": false
+        },
+        "UpdateTreeStageDto": {
+          "type": "object",
+          "properties": {
+            "stageName": {
+              "maxLength": 100,
+              "minLength": 1,
+              "type": "string",
+              "nullable": true
+            },
+            "description": {
+              "maxLength": 500,
+              "minLength": 0,
+              "type": "string",
+              "nullable": true
+            }
+          },
+          "additionalProperties": false
+        },
+        "UpdateUserDto": {
+          "type": "object",
+          "properties": {
+            "email": {
+              "maxLength": 255,
+              "type": "string",
+              "nullable": true
+            },
+            "firstName": {
+              "maxLength": 100,
+              "type": "string",
+              "nullable": true
+            },
+            "lastName": {
+              "maxLength": 100,
+              "type": "string",
+              "nullable": true
+            },
+            "phone": {
+              "maxLength": 20,
+              "type": "string",
+              "nullable": true
+            },
+            "profileImagePath": {
+              "maxLength": 500,
+              "type": "string",
+              "nullable": true
+            },
+            "role": {
+              "maxLength": 50,
+              "type": "string",
+              "nullable": true
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "securitySchemes": {
+        "Bearer": {
+          "type": "apiKey",
+          "description": "JWT Authorization header using the Bearer scheme. Example: \"Bearer {token}\"",
+          "name": "Authorization",
+          "in": "header"
+        }
+      }
+    },
+    "security": [
+      {
+        "Bearer": [ ]
+      }
+    ]
+  }

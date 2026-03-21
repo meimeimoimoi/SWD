@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../../routes/app_router.dart';
 import '../../../share/services/auth_api_service.dart';
 import '../../../share/services/storage_service.dart';
-import '../../../share/theme/app_colors.dart';
+import '../../../share/constants/app_brand.dart';
 import '../../../share/widgets/app_button.dart';
 import '../../../share/widgets/app_card.dart';
 import '../../../share/widgets/app_input.dart';
 import '../../../share/widgets/app_scaffold.dart';
+import '../../../share/widgets/auth_hero_banner.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -17,8 +19,10 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _emailController =
+      TextEditingController(text: 'User1@swd.com');
+  final TextEditingController _passwordController =
+      TextEditingController(text: 'User123!');
   bool _rememberMe = true;
   bool _obscurePassword = true;
   bool _isLoading = false;
@@ -70,13 +74,8 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           );
 
-          final normalizedRole = role?.toLowerCase();
-          final targetRoute = normalizedRole == 'admin'
-              ? AppRouter.adminDashboard
-              : AppRouter.dashboard;
-
-          // Navigate to dashboard based on role
-          Navigator.pushReplacementNamed(context, targetRoute);
+          // Home is always Argivision; admins open admin from Profile.
+          Navigator.pushReplacementNamed(context, AppRouter.dashboard);
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -116,59 +115,75 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return AppScaffold(
       centerContent: false,
+      showThemeToggle: false,
       child: LayoutBuilder(
         builder: (context, constraints) {
           final bool isWide = constraints.maxWidth > 900;
-          if (isWide) {
-            return Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(child: _HeroPanel(isWide: isWide)),
-                const SizedBox(width: 24),
-                Expanded(
-                  child: _AuthCard(
-                    formKey: _formKey,
-                    emailController: _emailController,
-                    passwordController: _passwordController,
-                    rememberMe: _rememberMe,
-                    obscurePassword: _obscurePassword,
-                    isLoading: _isLoading,
-                    onRememberChanged: (value) =>
-                        setState(() => _rememberMe = value),
-                    onTogglePassword: () =>
-                        setState(() => _obscurePassword = !_obscurePassword),
-                    onSubmit: _submit,
-                  ),
-                ),
-              ],
-            );
-          }
+          final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
+
+          final Widget body = isWide
+              ? Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: AuthHeroBanner(
+                        title: AppBrand.heroTitle,
+                        subtitle: AppBrand.heroSubtitle,
+                        isWide: isWide,
+                      ),
+                    ),
+                    const SizedBox(width: 24),
+                    Expanded(
+                      child: _AuthCard(
+                        formKey: _formKey,
+                        emailController: _emailController,
+                        passwordController: _passwordController,
+                        rememberMe: _rememberMe,
+                        obscurePassword: _obscurePassword,
+                        isLoading: _isLoading,
+                        onRememberChanged: (value) =>
+                            setState(() => _rememberMe = value),
+                        onTogglePassword: () => setState(
+                          () => _obscurePassword = !_obscurePassword,
+                        ),
+                        onSubmit: _submit,
+                      ),
+                    ),
+                  ],
+                )
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    AuthHeroBanner(
+                      title: AppBrand.heroTitle,
+                      subtitle: AppBrand.heroSubtitle,
+                      isWide: isWide,
+                    ),
+                    const SizedBox(height: 16),
+                    _AuthCard(
+                      formKey: _formKey,
+                      emailController: _emailController,
+                      passwordController: _passwordController,
+                      rememberMe: _rememberMe,
+                      obscurePassword: _obscurePassword,
+                      isLoading: _isLoading,
+                      onRememberChanged: (value) =>
+                          setState(() => _rememberMe = value),
+                      onTogglePassword: () => setState(
+                        () => _obscurePassword = !_obscurePassword,
+                      ),
+                      onSubmit: _submit,
+                    ),
+                  ],
+                );
 
           return SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _HeroPanel(isWide: isWide),
-                const SizedBox(height: 24),
-                _AuthCard(
-                  formKey: _formKey,
-                  emailController: _emailController,
-                  passwordController: _passwordController,
-                  rememberMe: _rememberMe,
-                  obscurePassword: _obscurePassword,
-                  isLoading: _isLoading,
-                  onRememberChanged: (value) =>
-                      setState(() => _rememberMe = value),
-                  onTogglePassword: () =>
-                      setState(() => _obscurePassword = !_obscurePassword),
-                  onSubmit: _submit,
-                ),
-              ],
-            ),
+            keyboardDismissBehavior:
+                ScrollViewKeyboardDismissBehavior.onDrag,
+            padding: EdgeInsets.only(bottom: bottomInset + 8),
+            child: body,
           );
         },
       ),
@@ -209,11 +224,16 @@ class _AuthCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('Welcome back', style: theme.textTheme.displayMedium),
+            Text(
+              'Welcome back',
+              style: theme.textTheme.displayMedium,
+              softWrap: true,
+            ),
             const SizedBox(height: 8),
             Text(
               'Please sign in to continue',
               style: theme.textTheme.bodyLarge,
+              softWrap: true,
             ),
             const SizedBox(height: 24),
             AppInput(
@@ -251,18 +271,33 @@ class _AuthCard extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Row(
-                  children: [
-                    Checkbox(
-                      value: rememberMe,
-                      onChanged: (value) => onRememberChanged(value ?? false),
-                    ),
-                    const Text('Remember me'),
-                  ],
+                Expanded(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Checkbox(
+                        value: rememberMe,
+                        onChanged: (value) =>
+                            onRememberChanged(value ?? false),
+                      ),
+                      Flexible(
+                        child: Text(
+                          'Remember me',
+                          style: theme.textTheme.bodyMedium,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
                 TextButton(
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
                   onPressed: () {},
                   child: const Text('Forgot password?'),
                 ),
@@ -285,11 +320,16 @@ class _AuthCard extends StatelessWidget {
             Row(
               children: [
                 const Expanded(child: Divider()),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  child: Text(
-                    'or continue with',
-                    style: theme.textTheme.bodyMedium,
+                Flexible(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    child: Text(
+                      'or continue with',
+                      style: theme.textTheme.bodyMedium,
+                      textAlign: TextAlign.center,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
                 ),
                 const Expanded(child: Divider()),
@@ -299,89 +339,15 @@ class _AuthCard extends StatelessWidget {
             AppButton(
               label: 'Continue with Google',
               variant: AppButtonVariant.ghost,
-              icon: Icons.g_translate,
+              leading: FaIcon(
+                FontAwesomeIcons.google,
+                size: 18,
+                color: const Color(0xFF4285F4),
+              ),
               onPressed: isLoading ? null : () {},
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _HeroPanel extends StatelessWidget {
-  const _HeroPanel({required this.isWide});
-  final bool isWide;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [AppColors.primary, AppColors.accent],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(18),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.15),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Icon(Icons.eco, color: Colors.white, size: 32),
-          ),
-          const SizedBox(height: 20),
-          Text(
-            'Smart tree health',
-            style: theme.textTheme.displayLarge?.copyWith(color: Colors.white),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            'Monitor, predict, and respond to tree conditions in real time.',
-            style: theme.textTheme.bodyLarge?.copyWith(color: Colors.white70),
-          ),
-          const SizedBox(height: 24),
-          Wrap(
-            spacing: 12,
-            runSpacing: 12,
-            // children: const [
-            //   _ChipLabel(text: 'AI Predictions'),
-            //   _ChipLabel(text: 'Live monitoring'),
-            //   _ChipLabel(text: 'Insights'),
-            // ],
-          ),
-          if (!isWide) const SizedBox(height: 12),
-        ],
-      ),
-    );
-  }
-}
-
-class _ChipLabel extends StatelessWidget {
-  const _ChipLabel({required this.text});
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.18),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Text(
-        text,
-        style: Theme.of(
-          context,
-        ).textTheme.bodyMedium?.copyWith(color: Colors.white),
       ),
     );
   }

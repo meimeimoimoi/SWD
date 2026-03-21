@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'routes/app_router.dart';
 import 'share/services/auth_api_service.dart';
+import 'share/constants/app_brand.dart';
 import 'share/theme/app_theme.dart';
 import 'share/theme/theme_notifier.dart';
 import 'providers/dashboard_provider.dart';
@@ -37,7 +38,7 @@ class MyApp extends StatelessWidget {
     return Consumer<ThemeNotifier>(
       builder: (context, notifier, _) {
         return MaterialApp(
-          title: 'SWD System',
+          title: AppBrand.appTitle,
           debugShowCheckedModeBanner: false,
           navigatorKey: AppRouter.navigatorKey,
           theme: AppTheme.light,
