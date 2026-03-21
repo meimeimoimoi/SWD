@@ -399,7 +399,6 @@ FodyWeavers.xsd
 .idea/
 
 # Machine Learning Models (large files)
-*.onnx
 *.zip
 *.pb
 *.h5
@@ -408,7 +407,6 @@ FodyWeavers.xsd
 *.pt
 # Keep model directory structure but ignore model files
 **/ML/Models/*.zip
-**/ML/Models/*.onnx
 !**/ML/Models/README.md
 
 # Flutter / Dart
