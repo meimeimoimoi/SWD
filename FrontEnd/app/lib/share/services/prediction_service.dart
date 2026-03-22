@@ -26,6 +26,7 @@ class PredictionData {
   final String predictedClass;
   final double confidence;
   final int processingTimeMs;
+  final int? illnessId;
   final String diseaseName;
   final String? symptoms;
   final String? causes;
@@ -38,6 +39,7 @@ class PredictionData {
     required this.predictedClass,
     required this.confidence,
     required this.processingTimeMs,
+    this.illnessId,
     required this.diseaseName,
     this.symptoms,
     this.causes,
@@ -46,12 +48,20 @@ class PredictionData {
   });
 
   factory PredictionData.fromJson(Map<String, dynamic> json) {
+    final illRaw = json['illnessId'] ?? json['IllnessId'];
+    int? illnessId;
+    if (illRaw is int) {
+      illnessId = illRaw;
+    } else if (illRaw != null) {
+      illnessId = int.tryParse(illRaw.toString());
+    }
     return PredictionData(
       predictionId: json['predictionId'] ?? 0,
       imageUrl: json['imageUrl'] ?? '',
       predictedClass: json['predictedClass'] ?? '',
       confidence: (json['confidence'] ?? 0).toDouble(),
       processingTimeMs: json['processingTimeMs'] ?? 0,
+      illnessId: illnessId,
       diseaseName: json['diseaseName'] ?? '',
       symptoms: json['symptoms'],
       causes: json['causes'],

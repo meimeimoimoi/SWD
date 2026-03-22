@@ -177,6 +177,7 @@ public class PredictionService : IPredictionService, IDisposable
             PredictedClass = predictedLabel,
             Confidence = Math.Round(output[best], 4),
             ProcessingTimeMs = sw.ElapsedMilliseconds,
+            IllnessId = illnessInfo?.IllnessId,
             DiseaseName = illnessInfo?.IllnessName ?? predictedLabel,
             Symptoms = illnessInfo?.Symptoms,
             Causes = illnessInfo?.Causes,

@@ -4,6 +4,32 @@ import '../constants/api_config.dart';
 import 'auth_api_service.dart';
 import 'storage_service.dart';
 
+class AiSuggestResult {
+  AiSuggestResult({
+    required this.source,
+    required this.summary,
+    required this.actionSteps,
+    required this.disclaimer,
+  });
+
+  final String source;
+  final String summary;
+  final List<String> actionSteps;
+  final String disclaimer;
+
+  factory AiSuggestResult.fromJson(Map<String, dynamic> json) {
+    final steps = json['actionSteps'];
+    return AiSuggestResult(
+      source: (json['source'] ?? 'heuristic').toString(),
+      summary: (json['summary'] ?? '').toString(),
+      actionSteps: steps is List
+          ? steps.map((e) => e.toString()).toList()
+          : const [],
+      disclaimer: (json['disclaimer'] ?? '').toString(),
+    );
+  }
+}
+
 class TreatmentRecommendationItem {
   TreatmentRecommendationItem({
     required this.solutionId,
@@ -105,6 +131,41 @@ class TreatmentApiService {
         return Map<String, dynamic>.from(data['data'] as Map);
       }
       return null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// POST `/api/treatments/ai-suggest` — requires auth. Uses OpenAI on server when configured, else heuristic.
+  Future<AiSuggestResult?> requestAiSolutionSuggestion({
+    int? illnessId,
+    required String diseaseName,
+    required double confidence,
+    int? predictionId,
+  }) async {
+    try {
+      final token = await StorageService.getAccessToken();
+      if (token == null || token.isEmpty) return null;
+      final body = <String, dynamic>{
+        'diseaseName': diseaseName,
+        'confidence': confidence,
+      };
+      if (illnessId != null) body['illnessId'] = illnessId;
+      if (predictionId != null && predictionId > 0) {
+        body['predictionId'] = predictionId;
+      }
+      final response = await _dio.post<Map<String, dynamic>>(
+        ApiPaths.treatmentsAiSuggest,
+        data: body,
+        options: Options(headers: {'Authorization': _bearer(token)}),
+      );
+      final data = response.data;
+      if (data == null || data['success'] != true || data['data'] is! Map) {
+        return null;
+      }
+      return AiSuggestResult.fromJson(
+        Map<String, dynamic>.from(data['data'] as Map),
+      );
     } catch (_) {
       return null;
     }

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MyApp.Application.Features.Prediction;
+using MyApp.Application.Features.Treatment.DTOs;
 using MyApp.Application.Interfaces;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -13,17 +14,20 @@ namespace MyApp.Api.Controllers
     public class UserTreatmentController : ControllerBase
     {
         private readonly ITreatmentService _treatmentService;
+        private readonly IAiSolutionSuggestionService _aiSolutionSuggestionService;
         private readonly IPredictionHistoryService _historyService;
         private readonly IUserTreeService _userTreeService;
         private readonly ILogger<UserTreatmentController> _logger;
 
         public UserTreatmentController(
             ITreatmentService treatmentService,
+            IAiSolutionSuggestionService aiSolutionSuggestionService,
             IPredictionHistoryService historyService,
             IUserTreeService userTreeService,
             ILogger<UserTreatmentController> logger)
         {
             _treatmentService = treatmentService;
+            _aiSolutionSuggestionService = aiSolutionSuggestionService;
             _historyService = historyService;
             _userTreeService = userTreeService;
             _logger = logger;
@@ -66,6 +70,38 @@ namespace MyApp.Api.Controllers
             {
                 _logger.LogError(ex, "Error getting treatment recommendations");
                 return StatusCode(500, new { success = false, message = "Internal server error." });
+            }
+        }
+
+        /// <summary>
+        /// Uses catalog context plus optional OpenAI (see appsettings <c>AiSolution</c>) to propose actions; falls back to heuristic text if no API key.
+        /// </summary>
+        [HttpPost("treatments/ai-suggest")]
+        public async Task<IActionResult> AiSuggestTreatmentPlan(
+            [FromBody] AiSolutionSuggestRequest request,
+            CancellationToken cancellationToken)
+        {
+            try
+            {
+                if (request == null)
+                    return BadRequest(new { success = false, message = "Request body is required." });
+
+                if (!request.IllnessId.HasValue && string.IsNullOrWhiteSpace(request.DiseaseName))
+                {
+                    return BadRequest(new
+                    {
+                        success = false,
+                        message = "Provide illnessId and/or diseaseName.",
+                    });
+                }
+
+                var result = await _aiSolutionSuggestionService.SuggestAsync(request, cancellationToken);
+                return Ok(new { success = true, data = result });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "AI / heuristic solution suggestion failed");
+                return StatusCode(500, new { success = false, message = "Could not build a suggestion." });
             }
         }
 

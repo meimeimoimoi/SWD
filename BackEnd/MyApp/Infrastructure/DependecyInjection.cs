@@ -23,6 +23,8 @@ namespace MyApp.Infrastructure
             // New services
             services.AddScoped<ITechnicianService, TechnicianService>();
             services.AddScoped<ITreatmentService, TreatmentService>();
+            services.AddHttpClient();
+            services.AddScoped<IAiSolutionSuggestionService, AiSolutionSuggestionService>();
             services.AddScoped<IModelService, ModelService>();
             services.AddScoped<IPredictionHistoryService, PredictionHistoryService>();
             services.AddScoped<IUserTreeService, UserTreeService>();

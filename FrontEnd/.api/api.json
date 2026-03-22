@@ -1906,6 +1906,46 @@
           }
         }
       },
+      "/api/treatments/ai-suggest": {
+        "post": {
+          "tags": [
+            "UserTreatment"
+          ],
+          "summary": "AI/heuristic treatment plan from catalog context (optional OpenAI).",
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "illnessId": {
+                      "type": "integer",
+                      "format": "int32"
+                    },
+                    "diseaseName": {
+                      "type": "string"
+                    },
+                    "confidence": {
+                      "type": "number",
+                      "format": "double"
+                    },
+                    "predictionId": {
+                      "type": "integer",
+                      "format": "int32"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "OK"
+            }
+          }
+        }
+      },
       "/api/predictions/history": {
         "get": {
           "tags": [

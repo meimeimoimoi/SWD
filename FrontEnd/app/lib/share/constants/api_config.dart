@@ -132,6 +132,7 @@ abstract final class ApiPaths {
   }
 
   static String treatmentSolution(int id) => '/api/treatments/solutions/$id';
+  static const treatmentsAiSuggest = '/api/treatments/ai-suggest';
   static const predictionsHistory = '/api/predictions/history';
   static String predictionsHistoryItem(int id) => '/api/predictions/history/$id';
 }

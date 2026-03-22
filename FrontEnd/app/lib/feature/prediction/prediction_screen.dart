@@ -7,12 +7,14 @@ import '../../share/services/storage_service.dart';
 import '../../share/theme/app_colors.dart';
 import '../../share/utils/disease_mapper.dart';
 import '../../share/widgets/user_bottom_nav_bar.dart';
+import 'prediction_solutions_sheet.dart';
 
 class PredictionResult {
   static const String _imageBaseUrl = 'http://10.0.2.2:5299';
   static const String _imagePathPrefix = '/uploads/images/';
 
   final int predictionId;
+  final int? illnessId;
   final String diseaseName;
   final String displayName;
   final String scientificName;
@@ -28,6 +30,7 @@ class PredictionResult {
 
   const PredictionResult({
     required this.predictionId,
+    this.illnessId,
     required this.diseaseName,
     required this.displayName,
     required this.scientificName,
@@ -51,6 +54,7 @@ class PredictionResult {
 
     return PredictionResult(
       predictionId: data.predictionId,
+      illnessId: data.illnessId,
       diseaseName: englishName,
       displayName: displayName,
       scientificName: scientificName,
@@ -71,6 +75,7 @@ class PredictionResult {
     final sci = item.scientificName?.trim();
     return PredictionResult(
       predictionId: item.predictionId,
+      illnessId: item.illnessId,
       diseaseName: d,
       displayName: DiseaseMapper.toDisplayName(d),
       scientificName:
@@ -168,6 +173,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
 
   static const _sampleResult = PredictionResult(
     predictionId: 0,
+    illnessId: null,
     diseaseName: 'Leaf Blast',
     displayName: 'Rice blast (fungal leaf blight)',
     scientificName: 'Magnaporthe oryzae',
@@ -977,6 +983,56 @@ class _PredictionScreenState extends State<PredictionScreen> {
           ),
           const SizedBox(height: 12),
         ],
+        Material(
+          color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
+          borderRadius: BorderRadius.circular(12),
+          child: InkWell(
+            onTap: () {
+              showPredictionSolutionsSheet(
+                context: context,
+                displayName: data.displayName,
+                diseaseName: data.diseaseName,
+                confidence: data.confidence,
+                predictionId: data.predictionId,
+                illnessId: data.illnessId,
+              );
+            },
+            borderRadius: BorderRadius.circular(12),
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: const Color(0xFF2D7B31).withValues(alpha: 0.35),
+                ),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.healing_outlined,
+                    color: isDark
+                        ? const Color(0xFFA4F69C)
+                        : const Color(0xFF2D7B31),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'SUGGEST SOLUTIONS',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.6,
+                      color: isDark
+                          ? const Color(0xFFA4F69C)
+                          : const Color(0xFF2D7B31),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
         Row(
           children: [
             Expanded(
