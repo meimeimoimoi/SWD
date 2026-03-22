@@ -8,7 +8,7 @@ namespace MyApp.Api.Controllers
 {
     [Route("api/admin/models")]
     [ApiController]
-    [Authorize(Roles = RolePolicy.Admin)]
+    [Authorize(Roles = RolePolicy.AdminOrTechnician)]
     public class ModelController : ControllerBase
     {
         private readonly IModelService _modelService;

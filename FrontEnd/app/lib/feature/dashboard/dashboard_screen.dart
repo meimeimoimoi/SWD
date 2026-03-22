@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../routes/app_router.dart';
 import '../../share/constants/app_brand.dart';
 import '../../share/theme/app_colors.dart';
+import '../../share/theme/app_layout.dart';
 import '../../share/services/history_service.dart';
 import '../../share/services/prediction_service.dart';
 import '../../share/services/storage_service.dart';
@@ -159,7 +160,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
         onRefresh: () => _loadInsights(silentRefresh: true),
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 28),
+          padding: const EdgeInsets.fromLTRB(
+            AppLayout.screenPaddingH,
+            AppLayout.screenPaddingV,
+            AppLayout.screenPaddingH,
+            28,
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -517,7 +523,7 @@ class _CompactDashboardEmpty extends StatelessWidget {
                   foregroundColor: _DashboardScreenState._primary,
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                 ),
-                child: const Text('My trees'),
+                child: const Text('My plant'),
               ),
             ],
           ),
@@ -583,7 +589,7 @@ class _TreeIllnessOverviewCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    'Per-plant health appears after you scan and link trees.',
+                    'Per-plant health appears after you scan and link plants.',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: Theme.of(context).colorScheme.onSurfaceVariant,
                           height: 1.25,
@@ -656,7 +662,7 @@ class _TreeIllnessOverviewCard extends StatelessWidget {
                     fontSize: 12,
                   ),
                 ),
-                child: const Text('All trees'),
+                child: const Text('All plants'),
               ),
             ],
           ),
@@ -948,7 +954,7 @@ class _InsightsPanel extends StatelessWidget {
               TextButton(
                 onPressed: onSeeTrees,
                 style: _linkButtonStyle(context),
-                child: const Text('Trees'),
+                child: const Text('Plants'),
               ),
           ],
         ),
@@ -990,7 +996,9 @@ class _InsightsPanel extends StatelessWidget {
                 style: Theme.of(context).textTheme.labelSmall?.copyWith(
                       letterSpacing: 1.2,
                       fontWeight: FontWeight.w700,
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? AppColors.textSecondaryDark
+                          : AppColors.textSecondaryLight,
                     ),
               ),
             ),
@@ -1009,7 +1017,7 @@ class _InsightsPanel extends StatelessWidget {
           _RecentScansEmpty(onOpenHistory: onSeeAll)
         else
           SizedBox(
-            height: 104,
+            height: 122,
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
               cacheExtent: 280,
@@ -1046,21 +1054,39 @@ class _RecentScanTile extends StatelessWidget {
   final String timeLabel;
   final VoidCallback onTap;
 
+  static String? _treeLine(HistoryItem item) {
+    final n = item.treeName?.trim();
+    if (n != null && n.isNotEmpty) return n;
+    if (item.treeId != null) return 'Plant #${item.treeId}';
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
-    final label = item.diseaseName.trim().isEmpty ? 'Unknown' : item.diseaseName;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final titleColor =
+        isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
+    final secondary =
+        isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
+
+    final raw = item.diseaseName.trim().isEmpty ? 'Unknown' : item.diseaseName;
+    final label = DiseaseMapper.toDisplayName(raw);
+    final treeLine = _treeLine(item);
+    final confPct = (item.confidence * 100).clamp(0.0, 100.0);
+
     return Material(
-      color: Theme.of(context).colorScheme.surface,
+      color: theme.colorScheme.surface,
       borderRadius: BorderRadius.circular(14),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
         child: Container(
-          width: 236,
+          width: 248,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
-              color: Theme.of(context).brightness == Brightness.dark
+              color: isDark
                   ? const Color(0xFF2A2A2A)
                   : Colors.black.withValues(alpha: 0.06),
             ),
@@ -1075,7 +1101,7 @@ class _RecentScanTile extends StatelessWidget {
                   height: 72,
                   child: item.imageUrl.isEmpty
                       ? ColoredBox(
-                          color: Theme.of(context).brightness == Brightness.dark
+                          color: isDark
                               ? const Color(0xFF2A2A2A)
                               : Colors.grey.shade200,
                           child: Icon(Icons.image_outlined,
@@ -1088,7 +1114,7 @@ class _RecentScanTile extends StatelessWidget {
                           cacheHeight: 160,
                           filterQuality: FilterQuality.low,
                           errorBuilder: (_, __, ___) => ColoredBox(
-                            color: Theme.of(context).brightness == Brightness.dark
+                            color: isDark
                                 ? const Color(0xFF2A2A2A)
                                 : Colors.grey.shade200,
                             child: Icon(Icons.broken_image_outlined,
@@ -1107,22 +1133,36 @@ class _RecentScanTile extends StatelessWidget {
                       label,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                            fontWeight: FontWeight.w700,
-                            fontSize: 13,
-                          ),
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 13,
+                        color: titleColor,
+                        height: 1.2,
+                      ),
                     ),
-                    const SizedBox(height: 4),
+                    if (treeLine != null) ...[
+                      const SizedBox(height: 3),
+                      Text(
+                        treeLine,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 10,
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 3),
                     Text(
-                      timeLabel,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onSurfaceVariant,
-                            fontSize: 11,
-                          ),
+                      '$timeLabel · ${confPct.toStringAsFixed(0)}%',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: secondary,
+                        fontSize: 11,
+                        height: 1.2,
+                      ),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 3),
                     Text(
                       healthy ? 'Healthy' : 'Review',
                       style: TextStyle(
@@ -1159,7 +1199,9 @@ class _RecentScansEmpty extends StatelessWidget {
           Icon(
             Icons.history,
             size: 20,
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
+            color: Theme.of(context).brightness == Brightness.dark
+                ? AppColors.textSecondaryDark
+                : AppColors.textSecondaryLight,
           ),
           const SizedBox(width: 10),
           Expanded(
@@ -1170,13 +1212,18 @@ class _RecentScansEmpty extends StatelessWidget {
                   'No scans yet',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         fontWeight: FontWeight.w600,
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? AppColors.textPrimaryDark
+                            : AppColors.textPrimaryLight,
                       ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   'Use the scanner card above, then pull to refresh.',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? AppColors.textSecondaryDark
+                            : AppColors.textSecondaryLight,
                         height: 1.3,
                       ),
                 ),
@@ -1728,7 +1775,7 @@ class _PopularDiseasesCard extends StatelessWidget {
               child: TextButton(
                 onPressed: onSeeAll,
                 child: Text(
-                  'Open my trees',
+                  'Open my plants',
                   style: TextStyle(
                     fontWeight: FontWeight.w700,
                     fontSize: 13,

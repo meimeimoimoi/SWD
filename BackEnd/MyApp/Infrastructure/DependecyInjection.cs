@@ -25,6 +25,7 @@ namespace MyApp.Infrastructure
             services.AddScoped<ITreatmentService, TreatmentService>();
             services.AddScoped<IModelService, ModelService>();
             services.AddScoped<IPredictionHistoryService, PredictionHistoryService>();
+            services.AddScoped<IUserTreeService, UserTreeService>();
             services.AddScoped<IDataManagementService, DataManagementService>();
             services.AddScoped<IMonitoringService, MonitoringService>();
             services.AddScoped<IReviewService, ReviewService>();

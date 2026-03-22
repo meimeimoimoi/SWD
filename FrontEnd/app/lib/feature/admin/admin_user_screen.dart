@@ -325,7 +325,7 @@ class _AdminUserScreenState extends State<AdminUserScreen> {
           ),
         ),
       ),
-      bottomNavigationBar: const AdminBottomNav(currentIndex: 1),
+      bottomNavigationBar: const AdminBottomNav(selected: AdminShellTab.users),
       ),
     );
   }

@@ -5,9 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../routes/app_router.dart';
+import '../../share/services/history_service.dart';
 import '../../share/services/image_upload_service.dart';
 import '../../share/services/prediction_service.dart';
 import '../../share/services/storage_service.dart';
+import '../../share/utils/disease_mapper.dart';
 import '../../share/theme/app_colors.dart';
 import '../../share/widgets/app_button.dart';
 import '../../share/widgets/app_scaffold.dart';
@@ -30,17 +32,18 @@ class _ScanScreenState extends State<ScanScreen> {
   final ImagePicker _picker = ImagePicker();
   final ImageUploadService _uploadService = ImageUploadService();
   final PredictionService _predictionService = PredictionService();
+  final HistoryService _historyService = HistoryService();
 
   List<PredictionModelOption> _predictionModels = [];
   int? _selectedModelId;
   bool _modelsLoading = true;
   String? _modelsError;
 
-  final List<_ScanItem> _uploads = [
-    _ScanItem(name: 'Oak_leaf.png', status: 'Completed', time: '2m ago'),
-    _ScanItem(name: 'Pine_branch.jpg', status: 'Processing', time: '8m ago'),
-    _ScanItem(name: 'Maple_spot.jpeg', status: 'Queued', time: '15m ago'),
-  ];
+  static const int _kRecentScanLimit = 3;
+
+  List<HistoryItem> _recentHistory = [];
+  bool _historyLoading = true;
+  String? _historyError;
 
   XFile? _selectedImage;
   String? _statusMessage;
@@ -52,6 +55,32 @@ class _ScanScreenState extends State<ScanScreen> {
   void initState() {
     super.initState();
     _loadPredictionModels();
+    _loadRecentHistory();
+  }
+
+  Future<void> _loadRecentHistory({bool silent = false}) async {
+    if (!silent && mounted) {
+      setState(() {
+        _historyLoading = true;
+        _historyError = null;
+      });
+    }
+    final res = await _historyService.getHistory();
+    if (!mounted) return;
+    final sorted = [...res.data]
+      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    setState(() {
+      _recentHistory = sorted.take(_kRecentScanLimit).toList();
+      _historyLoading = false;
+      if (res.success) {
+        _historyError = null;
+      } else {
+        final msg = res.message;
+        _historyError = msg.contains('login') || msg.contains('Unauthorized')
+            ? 'Sign in to see your recent scans.'
+            : msg;
+      }
+    });
   }
 
   Future<void> _loadPredictionModels() async {
@@ -360,14 +389,7 @@ class _ScanScreenState extends State<ScanScreen> {
       _statusMessage = result.message;
 
       if (result.success) {
-        final data = result.data;
-        final name =
-            data?['originalFilename']?.toString() ?? _selectedImage!.name;
-        final status = data?['uploadStatus']?.toString() ?? 'Pending';
-        _uploads.insert(
-          0,
-          _ScanItem(name: name, status: status, time: 'Just now'),
-        );
+        _loadRecentHistory(silent: true);
       }
     });
   }
@@ -415,6 +437,7 @@ class _ScanScreenState extends State<ScanScreen> {
             _uploadStatus = _UploadStatus.idle;
             _statusMessage = null;
           });
+          await _loadRecentHistory(silent: true);
         }
       } else {
         if (!mounted) return;
@@ -500,7 +523,18 @@ class _ScanScreenState extends State<ScanScreen> {
             onRetryLoadModels: _loadPredictionModels,
           );
           const tips = _ScanPageTipsCard();
-          final recent = _RecentActivityCard(uploads: _uploads);
+          final recent = _RecentActivityCard(
+            items: _recentHistory,
+            loading: _historyLoading,
+            errorMessage: _historyError,
+            onOpenItem: (item) {
+              Navigator.pushNamed(
+                context,
+                AppRouter.prediction,
+                arguments: PredictionResult.fromHistoryItem(item),
+              );
+            },
+          );
 
           if (isWide) {
             return SingleChildScrollView(
@@ -849,30 +883,54 @@ class _ScanWorkbenchCard extends StatelessWidget {
                       value: selectedModelId,
                       isExpanded: true,
                       decoration: InputDecoration(
-                        labelText: 'AI model',
-                        labelStyle: TextStyle(color: muted, fontSize: 13),
+                        labelText: null,
+                        floatingLabelBehavior: FloatingLabelBehavior.always,
+                        labelStyle: TextStyle(
+                          color: muted,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.2,
+                        ),
                         filled: true,
                         fillColor: innerSurface,
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(14),
                           borderSide: BorderSide(
-                            color: Colors.black.withValues(alpha: 0.08),
+                            color: _kBrandGreen.withValues(alpha: 0.45),
+                            width: 1.25,
                           ),
                         ),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 12,
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: BorderSide(
+                            color: _kBrandGreen.withValues(alpha: 0.5),
+                            width: 1.25,
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: const BorderSide(
+                            color: _kBrandGreen,
+                            width: 2,
+                          ),
+                        ),
+                        errorBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        contentPadding: const EdgeInsets.fromLTRB(
+                          16,
+                          14,
+                          12,
+                          14,
                         ),
                       ),
                       dropdownColor: innerSurface,
-                      iconEnabledColor: const Color(0xFF1B2D20),
+                      iconEnabledColor: _kBrandGreen,
                       style: const TextStyle(
                         color: Color(0xFF1B2D20),
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.w700,
                         fontSize: 14,
+                        height: 1.25,
                       ),
                       items: predictionModels
                           .map(
@@ -898,7 +956,7 @@ class _ScanWorkbenchCard extends StatelessWidget {
                     onPressed: hasImage && !isUploading && !modelsLoading
                         ? (onPredict ?? onUpload)
                         : null,
-                    icon: const Icon(Icons.biotech_outlined, size: 22),
+                    icon: const Icon(Icons.auto_awesome_rounded, size: 22),
                     label: const Text(
                       'Submit',
                       style: TextStyle(
@@ -1064,14 +1122,32 @@ class _ScanPageTipsCard extends StatelessWidget {
   }
 }
 
-class _RecentActivityCard extends StatelessWidget {
-  const _RecentActivityCard({required this.uploads});
+String _scanRelativeTime(DateTime dt, DateTime now) {
+  final diff = now.difference(dt);
+  if (diff.inSeconds < 60) return 'Just now';
+  if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
+  if (diff.inHours < 24) return '${diff.inHours}h ago';
+  if (diff.inDays < 7) return '${diff.inDays}d ago';
+  return '${dt.day}/${dt.month}/${dt.year}';
+}
 
-  final List<_ScanItem> uploads;
+class _RecentActivityCard extends StatelessWidget {
+  const _RecentActivityCard({
+    required this.items,
+    required this.loading,
+    this.errorMessage,
+    required this.onOpenItem,
+  });
+
+  final List<HistoryItem> items;
+  final bool loading;
+  final String? errorMessage;
+  final void Function(HistoryItem item) onOpenItem;
 
   @override
   Widget build(BuildContext context) {
     final line = Theme.of(context).dividerColor.withValues(alpha: 0.12);
+    final now = DateTime.now();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -1124,7 +1200,39 @@ class _RecentActivityCard extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 14),
-              ...uploads.map((item) => _ScanTile(item: item)),
+              if (loading)
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 24),
+                  child: Center(
+                    child: SizedBox(
+                      width: 28,
+                      height: 28,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.5,
+                        color: _kBrandGreen,
+                      ),
+                    ),
+                  ),
+                )
+              else if (items.isEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Text(
+                    errorMessage ??
+                        'No scans yet. Run an analysis above to see it here.',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          height: 1.4,
+                        ),
+                  ),
+                )
+              else
+                for (final item in items)
+                  _ScanHistoryTile(
+                    item: item,
+                    timeLabel: _scanRelativeTime(item.createdAt, now),
+                    onTap: () => onOpenItem(item),
+                  ),
               const SizedBox(height: 8),
               SizedBox(
                 width: double.infinity,
@@ -1157,83 +1265,110 @@ class _RecentActivityCard extends StatelessWidget {
   }
 }
 
-class _ScanItem {
-  const _ScanItem({
-    required this.name,
-    required this.status,
-    required this.time,
+class _ScanHistoryTile extends StatelessWidget {
+  const _ScanHistoryTile({
+    required this.item,
+    required this.timeLabel,
+    required this.onTap,
   });
-  final String name;
-  final String status;
-  final String time;
-}
 
-class _ScanTile extends StatelessWidget {
-  const _ScanTile({required this.item});
-  final _ScanItem item;
+  final HistoryItem item;
+  final String timeLabel;
+  final VoidCallback onTap;
 
-  Color _statusAccent() {
-    switch (item.status.toLowerCase()) {
-      case 'completed':
-        return _kBrandGreen;
-      case 'processing':
-        return const Color(0xFFD4A017);
-      default:
-        return const Color(0xFF64748B);
-    }
+  Color _accent(bool healthy) {
+    if (healthy) return _kBrandGreen;
+    return const Color(0xFFD4A017);
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final soft = theme.dividerColor.withValues(alpha: 0.2);
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        color: theme.colorScheme.surface.withValues(alpha: 0.65),
-        border: Border.all(color: soft),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 40,
-            height: 40,
+    final healthy = DiseaseMapper.isHealthy(item.diseaseName);
+    final accent = _accent(healthy);
+    final title = DiseaseMapper.toDisplayName(
+      item.diseaseName.trim().isEmpty ? 'Leaf scan' : item.diseaseName,
+    );
+    final statusLabel = healthy ? 'Healthy' : 'Review';
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(12),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
             decoration: BoxDecoration(
-              color: _statusAccent().withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(12),
+              color: theme.colorScheme.surface.withValues(alpha: 0.65),
+              border: Border.all(color: soft),
             ),
-            child: Icon(Icons.image_outlined, color: _statusAccent(), size: 22),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            child: Row(
               children: [
-                Text(
-                  item.name,
-                  style: theme.textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w700,
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: SizedBox(
+                    width: 40,
+                    height: 40,
+                    child: item.imageUrl.isEmpty
+                        ? ColoredBox(
+                            color: accent.withValues(alpha: 0.12),
+                            child:
+                                Icon(Icons.image_outlined, color: accent, size: 22),
+                          )
+                        : Image.network(
+                            item.imageUrl,
+                            fit: BoxFit.cover,
+                            cacheWidth: 96,
+                            cacheHeight: 96,
+                            filterQuality: FilterQuality.low,
+                            errorBuilder: (_, __, ___) => ColoredBox(
+                              color: accent.withValues(alpha: 0.12),
+                              child: Icon(Icons.image_outlined,
+                                  color: accent, size: 22),
+                            ),
+                          ),
                   ),
                 ),
-                const SizedBox(height: 2),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        statusLabel,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: healthy
+                              ? _kBrandGreen
+                              : const Color(0xFFCA8A04),
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
                 Text(
-                  item.status,
-                  style: theme.textTheme.bodySmall?.copyWith(
+                  timeLabel,
+                  style: theme.textTheme.labelMedium?.copyWith(
                     color: theme.colorScheme.onSurfaceVariant,
                   ),
                 ),
               ],
             ),
           ),
-          Text(
-            item.time,
-            style: theme.textTheme.labelMedium?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }

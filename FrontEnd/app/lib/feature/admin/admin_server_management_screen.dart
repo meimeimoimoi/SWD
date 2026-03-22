@@ -135,7 +135,7 @@ class _AdminServerManagementScreenState
                 ),
               ),
       ),
-      bottomNavigationBar: const AdminBottomNav(currentIndex: 3),
+      bottomNavigationBar: const AdminBottomNav(selected: AdminShellTab.server),
       ),
     );
   }

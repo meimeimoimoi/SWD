@@ -1,5 +1,7 @@
 import 'package:app/feature/admin/feedback/admin_feebackList_sceern.dart';
 import 'package:flutter/material.dart';
+
+import '../share/services/storage_service.dart';
 import '../feature/admin/admin_illness_management_screen.dart';
 import '../feature/admin/admin_model_management_screen.dart';
 import '../feature/admin/admin_model_upload_screen.dart';
@@ -16,6 +18,7 @@ import '../feature/scan/scan_screen.dart';
 import '../feature/profile/profile_screen.dart';
 import '../feature/profile/update_profile_screen.dart';
 import '../feature/history/hisstory_screen.dart';
+import '../feature/prediction/assign_scan_to_tree_screen.dart';
 import '../feature/prediction/prediction_screen.dart';
 import '../feature/trees/tree_detail_screen.dart';
 import '../feature/trees/trees_screen.dart';
@@ -45,6 +48,7 @@ class AppRouter {
   static const String profile = '/profile';
   static const String updateProfile = '/profile/update';
   static const String prediction = '/prediction';
+  static const String predictionAssignTree = '/prediction/assign-tree';
   static const String feedback = '/feedback';
   static const String history = '/history';
   static const String trees = '/trees';
@@ -59,7 +63,9 @@ class AppRouter {
       case adminDashboard:
         return MaterialPageRoute(builder: (_) => const AdminDashboardScreen());
       case adminUsers:
-        return MaterialPageRoute(builder: (_) => const AdminUserScreen());
+        return MaterialPageRoute(
+          builder: (_) => const _AdminUsersAccessScreen(),
+        );
       case adminModels:
         return MaterialPageRoute(
           builder: (_) => const AdminModelManagementScreen(),
@@ -101,6 +107,16 @@ class AppRouter {
         return MaterialPageRoute(
           builder: (_) => PredictionScreen(result: result),
         );
+      case predictionAssignTree:
+        final assignResult = settings.arguments;
+        if (assignResult is! PredictionResult) {
+          return MaterialPageRoute(
+            builder: (_) => const PredictionScreen(),
+          );
+        }
+        return MaterialPageRoute(
+          builder: (_) => AssignScanToTreeScreen(result: assignResult),
+        );
 
       case history:
         return MaterialPageRoute(builder: (_) => const HistoryScreen());
@@ -138,5 +154,37 @@ class AppRouter {
       default:
         return MaterialPageRoute(builder: (_) => const LoginScreen());
     }
+  }
+}
+
+class _AdminUsersAccessScreen extends StatefulWidget {
+  const _AdminUsersAccessScreen();
+
+  @override
+  State<_AdminUsersAccessScreen> createState() => _AdminUsersAccessScreenState();
+}
+
+class _AdminUsersAccessScreenState extends State<_AdminUsersAccessScreen> {
+  Widget? _child;
+
+  @override
+  void initState() {
+    super.initState();
+    StorageService.canManageUsers().then((ok) {
+      if (!mounted) return;
+      setState(() {
+        _child = ok ? const AdminUserScreen() : const AdminDashboardScreen();
+      });
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _child ??
+        const Scaffold(
+          body: Center(
+            child: CircularProgressIndicator(color: Color(0xFF2D7B31)),
+          ),
+        );
   }
 }

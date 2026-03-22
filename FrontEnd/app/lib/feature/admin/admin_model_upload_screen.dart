@@ -429,7 +429,7 @@ class _AdminModelUploadScreenState extends State<AdminModelUploadScreen> {
             ],
           ),
         ),
-        bottomNavigationBar: const AdminBottomNav(currentIndex: 2),
+        bottomNavigationBar: const AdminBottomNav(selected: AdminShellTab.models),
       ),
     );
   }

@@ -78,8 +78,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     setState(() {
       _loading = true;
     });
-    final role = (await StorageService.getRole())?.toLowerCase() ?? '';
-    final isAdmin = role == 'admin';
+    final role = (await StorageService.getRole())?.toLowerCase().trim() ?? '';
+    final isAdmin = role == 'admin' || role == 'technician';
 
     List<_UiNotification> next;
     if (isAdmin) {

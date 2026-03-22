@@ -31,9 +31,6 @@ class UserBottomNavBar extends StatelessWidget {
 
     return NavigationBar(
       selectedIndex: idx,
-      height: 64,
-      labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
-      indicatorColor: const Color(0xFF2D7B31).withValues(alpha: 0.12),
       onDestinationSelected: (i) {
         switch (i) {
           case 0:
@@ -67,7 +64,7 @@ class UserBottomNavBar extends StatelessWidget {
         NavigationDestination(
           icon: Icon(Icons.park_outlined),
           selectedIcon: Icon(Icons.park),
-          label: 'Trees',
+          label: 'Plants',
         ),
         NavigationDestination(
           icon: Icon(Icons.account_circle_outlined),

@@ -20,8 +20,9 @@ class ProfileScreen extends StatelessWidget {
             ),
           );
         }
-        final role = snap.data?.toLowerCase() ?? '';
-        return UnifiedAccountScreen(isAdminShell: role == 'admin');
+        final role = snap.data?.toLowerCase().trim() ?? '';
+        final staffConsole = role == 'admin' || role == 'technician';
+        return UnifiedAccountScreen(isAdminShell: staffConsole);
       },
     );
   }

@@ -471,7 +471,7 @@ class _UserIllnessDetailScreenState extends State<UserIllnessDetailScreen> {
                 Padding(
                   padding: const EdgeInsets.only(top: 8),
                   child: Text(
-                    'Tree stage: ${r.treeStageName}',
+                    'Plant stage: ${r.treeStageName}',
                     style: GoogleFonts.spaceGrotesk(
                       fontSize: 12,
                       color: Color(0xFF64748B),

@@ -8,7 +8,7 @@ namespace MyApp.Api.Controllers
 {
     [Route("api/admin/data")]
     [ApiController]
-    [Authorize(Roles = RolePolicy.Admin)]
+    [Authorize(Roles = RolePolicy.AdminOrTechnician)]
     public class DataManagementController : ControllerBase
     {
         private readonly IDataManagementService _dataService;

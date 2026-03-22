@@ -1940,6 +1940,72 @@
             }
           }
         }
+      },
+      "/api/User/trees": {
+        "get": {
+          "tags": [
+            "User"
+          ],
+          "summary": "Trees linked from the user's past scans (picker for assign-to-tree).",
+          "responses": {
+            "200": {
+              "description": "OK"
+            }
+          }
+        },
+        "post": {
+          "tags": [
+            "User"
+          ],
+          "summary": "Create a tree record to attach scans to.",
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateUserTreeDto"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "OK"
+            }
+          }
+        }
+      },
+      "/api/predictions/history/{id}/tree": {
+        "patch": {
+          "tags": [
+            "UserTreatment"
+          ],
+          "summary": "Assign a prediction (scan) to a tree; sets prediction.TreeId and may add illness–tree relationship.",
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "integer",
+                "format": "int32"
+              }
+            }
+          ],
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssignPredictionToTreeDto"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "OK"
+            }
+          }
+        }
       }
     },
     "components": {
@@ -1955,6 +2021,44 @@
               "minimum": 1,
               "type": "integer",
               "format": "int32"
+            }
+          },
+          "additionalProperties": false
+        },
+        "AssignPredictionToTreeDto": {
+          "required": [
+            "treeId"
+          ],
+          "type": "object",
+          "properties": {
+            "treeId": {
+              "maximum": 2147483647,
+              "minimum": 1,
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          "additionalProperties": false
+        },
+        "CreateUserTreeDto": {
+          "required": [
+            "treeName"
+          ],
+          "type": "object",
+          "properties": {
+            "treeName": {
+              "maxLength": 255,
+              "minLength": 1,
+              "type": "string"
+            },
+            "scientificName": {
+              "maxLength": 255,
+              "type": "string",
+              "nullable": true
+            },
+            "description": {
+              "type": "string",
+              "nullable": true
             }
           },
           "additionalProperties": false

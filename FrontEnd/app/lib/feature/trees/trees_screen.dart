@@ -89,10 +89,8 @@ class _TreesScreenState extends State<TreesScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             _TreesAppBar(
-              title: 'My trees',
+              title: 'My plant',
               onSurface: onSurface,
-              onSettings: () =>
-                  Navigator.pushNamed(context, AppRouter.appSettings),
             ),
             Expanded(
               child: _loading
@@ -238,12 +236,10 @@ class _TreesAppBar extends StatelessWidget {
   const _TreesAppBar({
     required this.title,
     required this.onSurface,
-    required this.onSettings,
   });
 
   final String title;
   final Color onSurface;
-  final VoidCallback onSettings;
 
   @override
   Widget build(BuildContext context) {
@@ -270,14 +266,6 @@ class _TreesAppBar extends StatelessWidget {
               ),
             ),
           ),
-          IconButton(
-            style: IconButton.styleFrom(
-              backgroundColor: _kPrimary.withValues(alpha: 0.1),
-            ),
-            onPressed: onSettings,
-            icon: const Icon(Icons.settings_outlined, color: _kPrimary),
-            tooltip: 'Settings',
-          ),
         ],
       ),
     );
@@ -302,7 +290,7 @@ class _SearchField extends StatelessWidget {
         color: isDark ? AppColors.textPrimaryDark : const Color(0xFF0F172A),
       ),
       decoration: InputDecoration(
-        hintText: 'Search tree or disease name…',
+        hintText: 'Search plant or disease name…',
         hintStyle: GoogleFonts.spaceGrotesk(
           fontSize: 14,
           color: isDark ? Colors.white38 : Colors.grey.shade500,
@@ -401,8 +389,8 @@ class _EmptyBody extends StatelessWidget {
         const SizedBox(height: 16),
         Text(
           hasNoTrees
-              ? 'No trees yet. Scan leaves to start tracking on ${AppBrand.name}.'
-              : 'No trees match this filter.',
+              ? 'No plants yet. Scan leaves to start tracking on ${AppBrand.name}.'
+              : 'No plants match this filter.',
           textAlign: TextAlign.center,
           style: GoogleFonts.spaceGrotesk(
             fontSize: 15,

@@ -314,7 +314,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   ),
                 ),
               ),
-        bottomNavigationBar: const AdminBottomNav(currentIndex: 0),
+        bottomNavigationBar:
+            const AdminBottomNav(selected: AdminShellTab.dashboard),
       ),
     );
   }

@@ -50,7 +50,7 @@ class UserTreeSummary {
     final treeId = latest.treeId;
     String name = latest.treeName?.trim() ?? '';
     if (name.isEmpty) {
-      name = treeId == null ? 'Unassigned tree' : 'Tree #$treeId';
+      name = treeId == null ? 'Unassigned plant' : 'Plant #$treeId';
     }
     final sci = latest.treeScientificName?.trim().isNotEmpty == true
         ? latest.treeScientificName

@@ -7,7 +7,7 @@ namespace MyApp.Api.Controllers
 {
     [Route("api/admin")]
     [ApiController]
-    [Authorize(Roles = RolePolicy.Admin)]
+    [Authorize(Roles = RolePolicy.AdminOrTechnician)]
     public class DashboardController : ControllerBase
     {
         private readonly IMonitoringService _monitoringService;

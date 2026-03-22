@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../../routes/app_router.dart';
 import '../../share/services/history_service.dart';
 import '../../share/services/prediction_service.dart';
@@ -159,8 +160,9 @@ class _PredictionScreenState extends State<PredictionScreen> {
     super.initState();
     StorageService.getRole().then((r) {
       if (!mounted) return;
-      final admin = r?.trim().toLowerCase() == 'admin';
-      setState(() => _showAiConfidence = admin);
+      final role = r?.trim().toLowerCase() ?? '';
+      final staff = role == 'admin' || role == 'technician';
+      setState(() => _showAiConfidence = staff);
     });
   }
 
@@ -211,7 +213,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
                     const SizedBox(height: 20),
                     _buildTreatmentSection(context, data, isDark),
                     const SizedBox(height: 16),
-                    _buildActionButtons(context, isDark),
+                    _buildActionButtons(context, data, isDark),
                     const SizedBox(height: 24),
                   ],
                 ),
@@ -917,25 +919,84 @@ class _PredictionScreenState extends State<PredictionScreen> {
     );
   }
 
-  Widget _buildActionButtons(BuildContext context, bool isDark) {
-    return Row(
+  Widget _buildActionButtons(
+    BuildContext context,
+    PredictionResult data,
+    bool isDark,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Expanded(
-          child: _buildActionButton(
-            icon: Icons.save,
-            label: 'Save',
-            onTap: () => _onSave(context),
-            isDark: isDark,
+        if (data.predictionId > 0) ...[
+          Material(
+            color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
+            borderRadius: BorderRadius.circular(12),
+            child: InkWell(
+              onTap: () async {
+                final ok = await Navigator.pushNamed(
+                  context,
+                  AppRouter.predictionAssignTree,
+                  arguments: data,
+                );
+                if (!context.mounted) return;
+                if (ok == true) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Scan linked to plant.')),
+                  );
+                }
+              },
+              borderRadius: BorderRadius.circular(12),
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: const Color(0xFF2D7B31).withValues(alpha: 0.45),
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.park_outlined, color: Color(0xFF2D7B31)),
+                    const SizedBox(width: 8),
+                    Text(
+                      'ASSIGN TO PLANT',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.6,
+                        color: isDark
+                            ? const Color(0xFFA4F69C)
+                            : const Color(0xFF2D7B31),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: _buildActionButton(
-            icon: Icons.feedback,
-            label: 'Feedback',
-            onTap: () => _onFeedback(context),
-            isDark: isDark,
-          ),
+          const SizedBox(height: 12),
+        ],
+        Row(
+          children: [
+            Expanded(
+              child: _buildActionButton(
+                icon: Icons.save,
+                label: 'Save',
+                onTap: () => _onSave(context),
+                isDark: isDark,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: _buildActionButton(
+                icon: Icons.feedback,
+                label: 'Feedback',
+                onTap: () => _onFeedback(context),
+                isDark: isDark,
+              ),
+            ),
+          ],
         ),
       ],
     );

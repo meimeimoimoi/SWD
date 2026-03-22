@@ -67,21 +67,22 @@ class _LoginScreenState extends State<LoginScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Welcome back, ${username ?? "User"}!'),
-              backgroundColor: Colors.green,
+              backgroundColor: Theme.of(context).colorScheme.primary,
             ),
           );
 
-          final roleLower = role?.toLowerCase() ?? '';
-          final isAdmin = roleLower == 'admin';
+          final roleLower = role?.toLowerCase().trim() ?? '';
+          final useStaffConsole =
+              roleLower == 'admin' || roleLower == 'technician';
           Navigator.pushReplacementNamed(
             context,
-            isAdmin ? AppRouter.adminDashboard : AppRouter.dashboard,
+            useStaffConsole ? AppRouter.adminDashboard : AppRouter.dashboard,
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Login failed: No token received'),
-              backgroundColor: Colors.red,
+            SnackBar(
+              content: const Text('Login failed: No token received'),
+              backgroundColor: Theme.of(context).colorScheme.error,
             ),
           );
         }
@@ -97,13 +98,19 @@ class _LoginScreenState extends State<LoginScreen> {
         }
 
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(errorMessage), backgroundColor: Colors.red),
+          SnackBar(
+            content: Text(errorMessage),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
         );
       }
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+        SnackBar(
+          content: Text('Error: $e'),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
       );
     } finally {
       if (mounted) {

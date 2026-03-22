@@ -24,6 +24,9 @@ abstract final class ApiPaths {
   static const userProfile = '/api/User/profile';
   static const userNotifications = '/api/User/notifications';
   static const userActivities = '/api/User/activities';
+  static const userTrees = '/api/User/trees';
+  static String predictionsHistoryAssignTree(int predictionId) =>
+      '/api/predictions/history/$predictionId/tree';
 
   static const adminUsersRoot = '/api/Admin/users';
 

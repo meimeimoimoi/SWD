@@ -7,7 +7,7 @@ namespace MyApp.Api.Controllers
 {
     [Route("api/admin/settings")]
     [ApiController]
-    [Authorize(Roles = RolePolicy.Admin)]
+    [Authorize(Roles = RolePolicy.AdminOrTechnician)]
     public class SettingsController : ControllerBase
     {
         private readonly ISystemSettingService _settingService;

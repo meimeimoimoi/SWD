@@ -376,7 +376,7 @@ class _AdminModelManagementScreenState
                   ),
                 ),
         ),
-        bottomNavigationBar: const AdminBottomNav(currentIndex: 2),
+        bottomNavigationBar: const AdminBottomNav(selected: AdminShellTab.models),
       ),
     );
   }

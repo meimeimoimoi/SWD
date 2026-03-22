@@ -13,11 +13,16 @@ namespace MyApp.Api.Controllers
     public class UserController : ControllerBase
     {
         private readonly IUserService _userService;
+        private readonly IUserTreeService _userTreeService;
         private readonly ILogger<UserController> _logger;
 
-        public UserController(IUserService userService, ILogger<UserController> logger)
+        public UserController(
+            IUserService userService,
+            IUserTreeService userTreeService,
+            ILogger<UserController> logger)
         {
             _userService = userService;
+            _userTreeService = userTreeService;
             _logger = logger;
         }
 
@@ -158,6 +163,64 @@ namespace MyApp.Api.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error fetching activities for user.");
+                return StatusCode(500, new { success = false, message = "Internal server error." });
+            }
+        }
+
+        /// <summary>
+        /// Trees the current user has already linked to at least one scan (for assign-to-tree picker).
+        /// </summary>
+        [HttpGet("trees")]
+        public async Task<IActionResult> GetMyTrees()
+        {
+            try
+            {
+                var userId = GetCurrentUserId();
+                if (userId == null)
+                    return Unauthorized(new { success = false, message = "Invalid user authentication" });
+
+                var trees = await _userTreeService.GetTreesForUserAsync(userId.Value);
+                return Ok(new { success = true, data = trees });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error listing user trees.");
+                return StatusCode(500, new { success = false, message = "Internal server error." });
+            }
+        }
+
+        /// <summary>
+        /// Create a plant/tree record to attach scans to.
+        /// </summary>
+        [HttpPost("trees")]
+        public async Task<IActionResult> CreateTree([FromBody] CreateUserTreeDto dto)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(new
+                    {
+                        success = false,
+                        message = "Invalid input",
+                        errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage)
+                    });
+                }
+
+                if (GetCurrentUserId() == null)
+                    return Unauthorized(new { success = false, message = "Invalid user authentication" });
+
+                var created = await _userTreeService.CreateTreeAsync(dto);
+                return Ok(new
+                {
+                    success = true,
+                    message = "Tree created successfully.",
+                    data = created
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error creating user tree.");
                 return StatusCode(500, new { success = false, message = "Internal server error." });
             }
         }

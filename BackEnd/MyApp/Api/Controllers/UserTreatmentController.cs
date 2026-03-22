@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using MyApp.Application.Features.Prediction;
 using MyApp.Application.Interfaces;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -13,15 +14,18 @@ namespace MyApp.Api.Controllers
     {
         private readonly ITreatmentService _treatmentService;
         private readonly IPredictionHistoryService _historyService;
+        private readonly IUserTreeService _userTreeService;
         private readonly ILogger<UserTreatmentController> _logger;
 
         public UserTreatmentController(
             ITreatmentService treatmentService,
             IPredictionHistoryService historyService,
+            IUserTreeService userTreeService,
             ILogger<UserTreatmentController> logger)
         {
             _treatmentService = treatmentService;
             _historyService = historyService;
+            _userTreeService = userTreeService;
             _logger = logger;
         }
 
@@ -133,6 +137,45 @@ namespace MyApp.Api.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error getting prediction detail id={Id}", id);
+                return StatusCode(500, new { success = false, message = "Internal server error." });
+            }
+        }
+
+        /// <summary>
+        /// Link a completed scan to a tree (updates prediction.TreeId; may add illness–tree relationship).
+        /// </summary>
+        [HttpPatch("predictions/history/{id:int}/tree")]
+        public async Task<IActionResult> AssignPredictionToTree(int id, [FromBody] AssignPredictionToTreeDto dto)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(new
+                    {
+                        success = false,
+                        message = "Invalid input",
+                        errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage)
+                    });
+                }
+
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                                  ?? User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+
+                if (!int.TryParse(userIdClaim, out var userId))
+                    return Unauthorized(new { success = false, message = "Unable to identify the current user." });
+
+                var (success, message) = await _userTreeService.AssignPredictionToTreeAsync(
+                    userId, id, dto.TreeId);
+
+                if (!success)
+                    return BadRequest(new { success = false, message });
+
+                return Ok(new { success = true, message });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error assigning prediction {Id} to tree.", id);
                 return StatusCode(500, new { success = false, message = "Internal server error." });
             }
         }

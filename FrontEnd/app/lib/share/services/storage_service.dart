@@ -79,6 +79,17 @@ class StorageService {
     }
   }
 
+  /// Admin or Technician — same console, except user management (Admin only).
+  static Future<bool> hasElevatedStaffRole() async {
+    final r = (await getRole())?.toLowerCase().trim() ?? '';
+    return r == 'admin' || r == 'technician';
+  }
+
+  static Future<bool> canManageUsers() async {
+    final r = (await getRole())?.toLowerCase().trim() ?? '';
+    return r == 'admin';
+  }
+
   static Future<String?> getExpiresAt() async {
     try {
       final prefs = await SharedPreferences.getInstance();

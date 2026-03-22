@@ -313,46 +313,54 @@ class _UnifiedAccountScreenState extends State<UnifiedAccountScreen> {
                         SliverPadding(
                           padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
                           sliver: SliverToBoxAdapter(
-                            child: _SectionCard(
-                              title: 'CONTROL CENTER',
-                              icon: Icons.dashboard_outlined,
-                              isDark: isDark,
-                              child: Column(
-                                children: [
-                                  _QuickLink(
-                                    icon: Icons.groups_outlined,
-                                    title: 'Users',
-                                    subtitle: 'Manage accounts',
-                                    isDark: isDark,
-                                    onTap: () => Navigator.pushNamed(
-                                      context,
-                                      AppRouter.adminUsers,
-                                    ),
+                            child: FutureBuilder<bool>(
+                              future: StorageService.canManageUsers(),
+                              builder: (context, snap) {
+                                final canUsers = snap.data == true;
+                                return _SectionCard(
+                                  title: 'CONTROL CENTER',
+                                  icon: Icons.dashboard_outlined,
+                                  isDark: isDark,
+                                  child: Column(
+                                    children: [
+                                      if (canUsers) ...[
+                                        _QuickLink(
+                                          icon: Icons.groups_outlined,
+                                          title: 'Users',
+                                          subtitle: 'Manage accounts',
+                                          isDark: isDark,
+                                          onTap: () => Navigator.pushNamed(
+                                            context,
+                                            AppRouter.adminUsers,
+                                          ),
+                                        ),
+                                        _div(isDark),
+                                      ],
+                                      _QuickLink(
+                                        icon: Icons.psychology_outlined,
+                                        title: 'AI models',
+                                        subtitle: 'ONNX & accuracy',
+                                        isDark: isDark,
+                                        onTap: () => Navigator.pushNamed(
+                                          context,
+                                          AppRouter.adminModels,
+                                        ),
+                                      ),
+                                      _div(isDark),
+                                      _QuickLink(
+                                        icon: Icons.coronavirus_outlined,
+                                        title: 'Diseases',
+                                        subtitle: 'Disease library',
+                                        isDark: isDark,
+                                        onTap: () => Navigator.pushNamed(
+                                          context,
+                                          AppRouter.adminIllnesses,
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                  _div(isDark),
-                                  _QuickLink(
-                                    icon: Icons.psychology_outlined,
-                                    title: 'AI models',
-                                    subtitle: 'ONNX & accuracy',
-                                    isDark: isDark,
-                                    onTap: () => Navigator.pushNamed(
-                                      context,
-                                      AppRouter.adminModels,
-                                    ),
-                                  ),
-                                  _div(isDark),
-                                  _QuickLink(
-                                    icon: Icons.coronavirus_outlined,
-                                    title: 'Diseases',
-                                    subtitle: 'Disease library',
-                                    isDark: isDark,
-                                    onTap: () => Navigator.pushNamed(
-                                      context,
-                                      AppRouter.adminIllnesses,
-                                    ),
-                                  ),
-                                ],
-                              ),
+                                );
+                              },
                             ),
                           ),
                         ),
@@ -492,6 +500,7 @@ class _UnifiedAccountScreenState extends State<UnifiedAccountScreen> {
                                 icon: Icons.tune_outlined,
                                 isDark: isDark,
                                 child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.stretch,
                                   children: [
                                     ListTile(
                                       contentPadding:
@@ -504,6 +513,9 @@ class _UnifiedAccountScreenState extends State<UnifiedAccountScreen> {
                                         'Language',
                                         style: GoogleFonts.spaceGrotesk(
                                           fontWeight: FontWeight.w600,
+                                          color: isDark
+                                              ? AppColors.textPrimaryDark
+                                              : AppColors.textPrimaryLight,
                                         ),
                                       ),
                                       trailing: Container(
@@ -534,80 +546,78 @@ class _UnifiedAccountScreenState extends State<UnifiedAccountScreen> {
                                       },
                                     ),
                                     _div(isDark),
-                                    SwitchListTile.adaptive(
-                                      contentPadding:
-                                          const EdgeInsets.symmetric(horizontal: 12),
-                                      secondary: Icon(
-                                        isDark
-                                            ? Icons.dark_mode_outlined
-                                            : Icons.light_mode_outlined,
-                                        color: _kPrimary,
+                                    Padding(
+                                      padding: const EdgeInsets.fromLTRB(
+                                        16,
+                                        12,
+                                        16,
+                                        6,
                                       ),
-                                      title: Text(
-                                        'Dark mode',
-                                        style: GoogleFonts.spaceGrotesk(
-                                          fontWeight: FontWeight.w600,
-                                        ),
+                                      child: Row(
+                                        children: [
+                                          Icon(
+                                            Icons.palette_outlined,
+                                            color: _kPrimary,
+                                            size: 20,
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Text(
+                                            'APPEARANCE',
+                                            style: GoogleFonts.spaceGrotesk(
+                                              fontSize: 11,
+                                              letterSpacing: 1.1,
+                                              fontWeight: FontWeight.w800,
+                                              color: _kPrimary,
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                      subtitle: Text(
-                                        'Use dark theme for easier viewing',
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.fromLTRB(
+                                        16,
+                                        0,
+                                        16,
+                                        8,
+                                      ),
+                                      child: Text(
+                                        'Follow system, or choose light or dark theme.',
                                         style: GoogleFonts.spaceGrotesk(
                                           fontSize: 12,
+                                          height: 1.35,
                                           color: isDark
                                               ? AppColors.textSecondaryDark
-                                              : const Color(0xFF64748B),
+                                              : AppColors.textSecondaryLight,
                                         ),
                                       ),
-                                      value: isDark,
-                                      onChanged: (v) {
-                                        tm.setThemeMode(
-                                          v ? ThemeMode.dark : ThemeMode.light,
-                                        );
-                                      },
+                                    ),
+                                    _ThemePick(
+                                      title: 'System default',
+                                      selected: tm.themeMode == ThemeMode.system,
+                                      isDark: isDark,
+                                      onTap: () =>
+                                          tm.setThemeMode(ThemeMode.system),
+                                    ),
+                                    _div(isDark),
+                                    _ThemePick(
+                                      title: 'Light',
+                                      selected: tm.themeMode == ThemeMode.light,
+                                      isDark: isDark,
+                                      onTap: () =>
+                                          tm.setThemeMode(ThemeMode.light),
+                                    ),
+                                    _div(isDark),
+                                    _ThemePick(
+                                      title: 'Dark',
+                                      selected: tm.themeMode == ThemeMode.dark,
+                                      isDark: isDark,
+                                      onTap: () =>
+                                          tm.setThemeMode(ThemeMode.dark),
                                     ),
                                   ],
                                 ),
                               );
                             },
-                          ),
-                        ),
-                      ),
-                      SliverPadding(
-                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-                        sliver: SliverToBoxAdapter(
-                          child: _SectionCard(
-                            title: 'ADVANCED APPEARANCE',
-                            icon: Icons.palette_outlined,
-                            isDark: isDark,
-                            child: Consumer<ThemeModeProvider>(
-                              builder: (context, tm, _) => Column(
-                                children: [
-                                  _ThemePick(
-                                    title: 'System default',
-                                    selected: tm.themeMode == ThemeMode.system,
-                                    isDark: isDark,
-                                    onTap: () =>
-                                        tm.setThemeMode(ThemeMode.system),
-                                  ),
-                                  _div(isDark),
-                                  _ThemePick(
-                                    title: 'Light',
-                                    selected: tm.themeMode == ThemeMode.light,
-                                    isDark: isDark,
-                                    onTap: () =>
-                                        tm.setThemeMode(ThemeMode.light),
-                                  ),
-                                  _div(isDark),
-                                  _ThemePick(
-                                    title: 'Dark',
-                                    selected: tm.themeMode == ThemeMode.dark,
-                                    isDark: isDark,
-                                    onTap: () =>
-                                        tm.setThemeMode(ThemeMode.dark),
-                                  ),
-                                ],
-                              ),
-                            ),
                           ),
                         ),
                       ),
@@ -733,7 +743,7 @@ class _UnifiedAccountScreenState extends State<UnifiedAccountScreen> {
               ),
       ),
       bottomNavigationBar: widget.isAdminShell
-          ? const AdminBottomNav(currentIndex: 5)
+          ? const AdminBottomNav(selected: AdminShellTab.profile)
           : const UserBottomNavBar(selectedIndexOverride: 3),
     );
   }
@@ -1269,6 +1279,9 @@ class _ThemePick extends StatelessWidget {
                 style: GoogleFonts.spaceGrotesk(
                   fontWeight: FontWeight.w600,
                   fontSize: 14,
+                  color: isDark
+                      ? AppColors.textPrimaryDark
+                      : AppColors.textPrimaryLight,
                 ),
               ),
             ),

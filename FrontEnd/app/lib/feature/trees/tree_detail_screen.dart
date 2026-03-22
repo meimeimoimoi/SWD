@@ -78,7 +78,7 @@ class _TreeDetailScreenState extends State<TreeDetailScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Tree details',
+          'Plant details',
           style: GoogleFonts.spaceGrotesk(fontWeight: FontWeight.w700),
         ),
       ),
@@ -112,6 +112,9 @@ class _TreeDetailScreenState extends State<TreeDetailScreen> {
               s.displayName,
               style: theme.textTheme.headlineSmall?.copyWith(
                 fontWeight: FontWeight.w800,
+                color: theme.brightness == Brightness.dark
+                    ? AppColors.textPrimaryDark
+                    : AppColors.textPrimaryLight,
               ),
             ),
             if (s.scientificName != null && s.scientificName!.isNotEmpty) ...[
@@ -119,7 +122,7 @@ class _TreeDetailScreenState extends State<TreeDetailScreen> {
               Text(
                 s.scientificName!,
                 style: theme.textTheme.bodyMedium?.copyWith(
-                  color: _primary,
+                  color: AppColors.primary,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -130,7 +133,9 @@ class _TreeDetailScreenState extends State<TreeDetailScreen> {
               Text(
                 s.predictions.first.treeDescription!.trim(),
                 style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
+                  color: theme.brightness == Brightness.dark
+                      ? AppColors.textSecondaryDark
+                      : AppColors.textSecondaryLight,
                   height: 1.4,
                 ),
               ),
@@ -213,12 +218,16 @@ class _TreeDetailScreenState extends State<TreeDetailScreen> {
   }
 
   Widget _sectionTitle(BuildContext context, String t) {
+    final theme = Theme.of(context);
+    final muted = theme.brightness == Brightness.dark
+        ? AppColors.textSecondaryDark
+        : AppColors.textSecondaryLight;
     return Text(
       t.toUpperCase(),
-      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+      style: theme.textTheme.labelSmall?.copyWith(
             letterSpacing: 1.1,
             fontWeight: FontWeight.w800,
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
+            color: muted,
           ),
     );
   }
@@ -363,7 +372,7 @@ class _IllnessSolutionCard extends StatelessWidget {
                                 ),
                               if (r.treeStageName != null)
                                 Text(
-                                  'Tree stage: ${r.treeStageName}',
+                                  'Plant stage: ${r.treeStageName}',
                                   style: theme.textTheme.labelSmall?.copyWith(
                                     color: theme.colorScheme.outline,
                                   ),
@@ -389,12 +398,30 @@ class _TimelineTile extends StatelessWidget {
 
   final HistoryItem item;
 
+  static String _treeLabel(HistoryItem item) {
+    final n = item.treeName?.trim();
+    if (n != null && n.isNotEmpty) return n;
+    if (item.treeId != null) return 'Plant #${item.treeId}';
+    return '';
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final titleColor =
+        isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
+    final bodyColor =
+        isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
+
     final d = item.createdAt;
     final date =
         '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year} ${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}';
+
+    final diseaseLabel = DiseaseMapper.toDisplayName(
+      item.diseaseName.trim().isEmpty ? 'Unknown' : item.diseaseName,
+    );
+    final treeLine = _treeLabel(item);
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
@@ -422,20 +449,43 @@ class _TimelineTile extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  item.diseaseName,
+                  diseaseLabel,
                   style: theme.textTheme.titleSmall?.copyWith(
                     fontWeight: FontWeight.w700,
+                    color: titleColor,
                   ),
                 ),
+                Padding(
+                  padding: const EdgeInsets.only(top: 2),
+                  child: Text(
+                    treeLine.isNotEmpty ? treeLine : 'No plant linked',
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: treeLine.isNotEmpty
+                          ? AppColors.primary
+                          : bodyColor,
+                      fontWeight: treeLine.isNotEmpty
+                          ? FontWeight.w600
+                          : FontWeight.w500,
+                      fontStyle: treeLine.isEmpty
+                          ? FontStyle.italic
+                          : FontStyle.normal,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 2),
                 Text(
                   date,
                   style: theme.textTheme.labelSmall?.copyWith(
-                    color: theme.colorScheme.outline,
+                    color: bodyColor,
                   ),
                 ),
+                const SizedBox(height: 2),
                 Text(
                   'Confidence: ${(item.confidence * 100).toStringAsFixed(1)}%',
-                  style: theme.textTheme.bodySmall,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: bodyColor,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ],
             ),

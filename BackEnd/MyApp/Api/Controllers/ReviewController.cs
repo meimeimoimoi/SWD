@@ -8,7 +8,7 @@ namespace MyApp.Api.Controllers
 {
     [Route("api/admin/review")]
     [ApiController]
-    [Authorize(Roles = RolePolicy.Admin)]
+    [Authorize(Roles = RolePolicy.AdminOrTechnician)]
     public class ReviewController : ControllerBase
     {
         private readonly IReviewService _reviewService;

@@ -17,6 +17,8 @@ public static class RolePolicy
     public const string Technician = nameof(UserRole.Technician);
     public const string Staff = nameof(UserRole.Staff);
     public const string TechnicianOrAdmin = nameof(UserRole.Technician) + "," + nameof(UserRole.Admin);
+    /// <summary>Same role set as <see cref="TechnicianOrAdmin"/>; use for admin-console APIs shared with technicians.</summary>
+    public const string AdminOrTechnician = nameof(UserRole.Admin) + "," + nameof(UserRole.Technician);
 }
 
 public static class UserRoles

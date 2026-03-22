@@ -49,7 +49,7 @@ namespace MyApp.Api.Controllers
         }
 
         [HttpGet("all")]
-        [Authorize(Roles = RolePolicy.Admin)]
+        [Authorize(Roles = RolePolicy.AdminOrTechnician)]
         public async Task<IActionResult> GetAllRatings()
         {
             try

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../theme/app_colors.dart';
 
 class AppButton extends StatelessWidget {
   const AppButton({
@@ -56,12 +55,13 @@ class AppButton extends StatelessWidget {
         child: child,
       );
     } else if (variant == AppButtonVariant.outlined) {
+      final outline = Theme.of(context).colorScheme.outline;
       button = OutlinedButton(
         onPressed: onPressed,
         style: OutlinedButton.styleFrom(
           minimumSize: Size.fromHeight(minimumHeight ?? 52),
           foregroundColor: Theme.of(context).colorScheme.primary,
-          side: const BorderSide(color: AppColors.borderLight),
+          side: BorderSide(color: outline),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),

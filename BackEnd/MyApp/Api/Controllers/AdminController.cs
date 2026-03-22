@@ -9,7 +9,7 @@ namespace MyApp.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = RolePolicy.Admin)]
+    [Authorize]
     public class AdminController : ControllerBase
     {
         private readonly IAdminService _adminService;
@@ -27,6 +27,7 @@ namespace MyApp.Api.Controllers
         }
 
         [HttpGet("users")]
+        [Authorize(Roles = RolePolicy.Admin)]
         public async Task<IActionResult> GetAllUsers(
             [FromQuery] string? search = null,
             [FromQuery] string? role = null,
@@ -56,6 +57,7 @@ namespace MyApp.Api.Controllers
         }
 
         [HttpGet("users/{userId}")]
+        [Authorize(Roles = RolePolicy.Admin)]
         public async Task<IActionResult> GetUserById(int userId)
         {
             try
@@ -91,6 +93,7 @@ namespace MyApp.Api.Controllers
         }
 
         [HttpPut("users/{userId}")]
+        [Authorize(Roles = RolePolicy.Admin)]
         public async Task<IActionResult> UpdateUser(int userId, [FromBody] UpdateUserDto updateDto)
         {
             try
@@ -143,6 +146,7 @@ namespace MyApp.Api.Controllers
         }
 
         [HttpPatch("users/{userId}/status")]
+        [Authorize(Roles = RolePolicy.Admin)]
         public async Task<IActionResult> UpdateUserStatus(int userId, [FromBody] UpdateStatusRequest request)
         {
             try
@@ -193,6 +197,7 @@ namespace MyApp.Api.Controllers
         }
 
         [HttpPost("users/staff")]
+        [Authorize(Roles = RolePolicy.Admin)]
         public async Task<IActionResult> CreateStaffUser([FromBody] CreateTechnicianStaffDto createDto)
         {
             try
@@ -248,6 +253,7 @@ namespace MyApp.Api.Controllers
         }
 
         [HttpPost("users")]
+        [Authorize(Roles = RolePolicy.Admin)]
         public async Task<IActionResult> CreateUser([FromBody] CreateUserDto createDto)
         {
             try
@@ -291,6 +297,7 @@ namespace MyApp.Api.Controllers
         }
 
         [HttpDelete("users/{userId}")]
+        [Authorize(Roles = RolePolicy.Admin)]
         public async Task<IActionResult> DeleteUser(int userId)
         {
             try
@@ -333,6 +340,7 @@ namespace MyApp.Api.Controllers
         }
 
         [HttpGet("predictions")]
+        [Authorize(Roles = RolePolicy.AdminOrTechnician)]
         public async Task<IActionResult> GetAllPredictions()
         {
             try
