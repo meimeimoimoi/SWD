@@ -6,6 +6,7 @@ import '../../routes/app_router.dart';
 import '../../share/constants/app_brand.dart';
 import '../../share/services/dashboard_service.dart';
 import '../../share/services/storage_service.dart';
+import '../../share/theme/app_colors.dart';
 import '../../share/widgets/user_bottom_nav_bar.dart';
 
 class NotificationsScreen extends StatefulWidget {
@@ -204,7 +205,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                       style: GoogleFonts.spaceGrotesk(
                         fontSize: 22,
                         fontWeight: FontWeight.w700,
-                        color: isDark ? Colors.white : const Color(0xFF181D17),
+                        color: isDark
+                            ? AppColors.textPrimaryDark
+                            : const Color(0xFF181D17),
                       ),
                     ),
                   ],
@@ -274,7 +277,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     );
 
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF141E15) : _kBg,
+      backgroundColor: isDark ? AppColors.darkBackground : _kBg,
       body: SafeArea(child: body),
       bottomNavigationBar:
           _isAdmin ? null : const UserBottomNavBar(selectedIndexOverride: 0),
@@ -392,7 +395,9 @@ class _GuideHeader extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: isDark ? Colors.black.withValues(alpha: 0.2) : Colors.white.withValues(alpha: 0.92),
+        color: isDark
+            ? Colors.black.withValues(alpha: 0.2)
+            : AppColors.scrimLight(0.92),
         border: Border(
           bottom: BorderSide(color: _kPrimary.withValues(alpha: 0.08)),
         ),
@@ -599,7 +604,8 @@ _CardScheme _cardScheme(_UiVisualKind kind, bool isDark) {
       icon = Icons.coronavirus_outlined;
       break;
   }
-  final titleColor = isDark ? Colors.white : const Color(0xFF181D17);
+  final titleColor =
+      isDark ? AppColors.textPrimaryDark : const Color(0xFF181D17);
   final bodyColor = isDark ? Colors.white70 : const Color(0xFF40493D);
   final muted = isDark ? Colors.white54 : Colors.grey.shade600;
   return _CardScheme(
@@ -638,7 +644,9 @@ class _AdminOptimizationBanner extends StatelessWidget {
                 style: GoogleFonts.spaceGrotesk(
                   fontWeight: FontWeight.w700,
                   fontSize: 15,
-                  color: isDark ? Colors.white : const Color(0xFF181D17),
+                  color: isDark
+                      ? AppColors.textPrimaryDark
+                      : const Color(0xFF181D17),
                 ),
               ),
             ],
@@ -661,7 +669,7 @@ class _AdminOptimizationBanner extends StatelessWidget {
               },
               style: FilledButton.styleFrom(
                 backgroundColor: _kPrimary,
-                foregroundColor: Colors.white,
+                foregroundColor: AppColors.onPrimary,
                 padding: const EdgeInsets.symmetric(vertical: 12),
               ),
               child: Text(

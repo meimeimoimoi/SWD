@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 
 import '../../providers/dashboard_provider.dart';
 import '../../share/services/dashboard_service.dart' show DashboardService;
+import '../../share/theme/app_colors.dart';
 import '../../share/widgets/admin_bottom_nav.dart';
 import '../../share/widgets/admin_pop_scope.dart';
 
@@ -17,7 +18,6 @@ class AdminModelUploadScreen extends StatefulWidget {
 
 const Color _kPrimary = Color(0xFF2D7B31);
 const Color _kBgLight = Color(0xFFF6F8F6);
-const Color _kBgDark = Color(0xFF141E15);
 
 class _ModelTypeOption {
   const _ModelTypeOption({required this.apiValue, required this.label});
@@ -112,9 +112,9 @@ class _AdminModelUploadScreenState extends State<AdminModelUploadScreen> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bg = isDark ? _kBgDark : _kBgLight;
-    final surface = isDark ? const Color(0xFF1E293B) : Colors.white;
-    final fill = isDark ? const Color(0xFF334155) : _kPrimary.withValues(alpha: 0.05);
+    final bg = isDark ? AppColors.darkBackground : _kBgLight;
+    final surface = isDark ? AppColors.surfaceDark : AppColors.surfaceLight;
+    final fill = isDark ? AppColors.borderDark : _kPrimary.withValues(alpha: 0.05);
     final border = _kPrimary.withValues(alpha: 0.2);
 
     return AdminPopScope(
@@ -138,7 +138,9 @@ class _AdminModelUploadScreenState extends State<AdminModelUploadScreen> {
                         style: GoogleFonts.spaceGrotesk(
                           fontSize: 20,
                           fontWeight: FontWeight.w700,
-                          color: isDark ? Colors.white : const Color(0xFF0F172A),
+                          color: isDark
+                              ? AppColors.textPrimaryDark
+                              : const Color(0xFF0F172A),
                         ),
                       ),
                     ),
@@ -232,7 +234,7 @@ class _AdminModelUploadScreenState extends State<AdminModelUploadScreen> {
                                             style: GoogleFonts.spaceGrotesk(
                                               fontSize: 15,
                                               color: isDark
-                                                  ? Colors.white
+                                                  ? AppColors.textPrimaryDark
                                                   : const Color(0xFF0F172A),
                                             ),
                                           ),
@@ -316,7 +318,7 @@ class _AdminModelUploadScreenState extends State<AdminModelUploadScreen> {
                                         fontSize: 17,
                                         fontWeight: FontWeight.w700,
                                         color: isDark
-                                            ? Colors.white
+                                            ? AppColors.textPrimaryDark
                                             : const Color(0xFF1E293B),
                                       ),
                                     ),
@@ -327,7 +329,7 @@ class _AdminModelUploadScreenState extends State<AdminModelUploadScreen> {
                                       style: GoogleFonts.spaceGrotesk(
                                         fontSize: 13,
                                         color: isDark
-                                            ? const Color(0xFF94A3B8)
+                                            ? AppColors.textSecondaryDark
                                             : const Color(0xFF64748B),
                                       ),
                                     ),
@@ -351,8 +353,8 @@ class _AdminModelUploadScreenState extends State<AdminModelUploadScreen> {
                                       ),
                                       decoration: BoxDecoration(
                                         color: isDark
-                                            ? const Color(0xFF0F172A)
-                                            : Colors.white,
+                                            ? AppColors.darkControlFill
+                                            : AppColors.surfaceLight,
                                         borderRadius: BorderRadius.circular(20),
                                         border: Border.all(
                                           color: _kPrimary.withValues(alpha: 0.2),
@@ -374,7 +376,7 @@ class _AdminModelUploadScreenState extends State<AdminModelUploadScreen> {
                                                 fontSize: 11,
                                                 fontWeight: FontWeight.w600,
                                                 color: isDark
-                                                    ? const Color(0xFF94A3B8)
+                                                    ? AppColors.textSecondaryDark
                                                     : const Color(0xFF475569),
                                               ),
                                             ),
@@ -395,7 +397,7 @@ class _AdminModelUploadScreenState extends State<AdminModelUploadScreen> {
                             onPressed: _submitting ? null : _submit,
                             style: FilledButton.styleFrom(
                               backgroundColor: _kPrimary,
-                              foregroundColor: Colors.white,
+                              foregroundColor: AppColors.onPrimary,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(14),
                               ),
@@ -406,7 +408,7 @@ class _AdminModelUploadScreenState extends State<AdminModelUploadScreen> {
                                     width: 22,
                                     child: CircularProgressIndicator(
                                       strokeWidth: 2,
-                                      color: Colors.white,
+                                      color: AppColors.onPrimary,
                                     ),
                                   )
                                 : Text(
@@ -435,7 +437,7 @@ class _AdminModelUploadScreenState extends State<AdminModelUploadScreen> {
   static TextStyle _inputStyle(bool isDark) {
     return GoogleFonts.spaceGrotesk(
       fontSize: 15,
-      color: isDark ? Colors.white : const Color(0xFF0F172A),
+      color: isDark ? AppColors.textPrimaryDark : const Color(0xFF0F172A),
     );
   }
 
@@ -489,7 +491,7 @@ class _LabeledField extends StatelessWidget {
             style: GoogleFonts.spaceGrotesk(
               fontSize: 14,
               fontWeight: FontWeight.w600,
-              color: isDark ? const Color(0xFFCBD5E1) : const Color(0xFF334155),
+              color: isDark ? AppColors.textSecondaryDark : const Color(0xFF334155),
             ),
           ),
         ),

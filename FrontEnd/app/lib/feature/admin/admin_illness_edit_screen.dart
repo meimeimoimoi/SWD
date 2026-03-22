@@ -149,14 +149,16 @@ class _AdminIllnessEditScreenState extends State<AdminIllnessEditScreen> {
         ? AppColors.textPrimaryDark
         : AppColors.textPrimaryLight;
     final surfaceCard =
-        isDark ? const Color(0xFF1E2320).withValues(alpha: 0.9) : Colors.white;
+        isDark
+            ? const Color(0xFF1E2320).withValues(alpha: 0.9)
+            : AppColors.surfaceLight;
     final borderColor = _kPrimary.withValues(alpha: 0.12);
 
     if (_loadExisting) {
       return Scaffold(
-        backgroundColor: isDark ? const Color(0xFF141E15) : _kBg,
+        backgroundColor: isDark ? AppColors.darkBackground : _kBg,
         appBar: AppBar(
-          backgroundColor: isDark ? const Color(0xFF141E15) : _kBg,
+          backgroundColor: isDark ? AppColors.darkBackground : _kBg,
           title: Text(
             'Loading…',
             style: GoogleFonts.spaceGrotesk(color: textPrimary),
@@ -172,14 +174,14 @@ class _AdminIllnessEditScreenState extends State<AdminIllnessEditScreen> {
         widget.illnessId == null ? 'Add new disease' : 'Edit disease';
 
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF141E15) : _kBg,
+      backgroundColor: isDark ? AppColors.darkBackground : _kBg,
       appBar: AppBar(
         elevation: 0,
         scrolledUnderElevation: 0.5,
         surfaceTintColor: _kPrimary.withValues(alpha: 0.08),
         backgroundColor: isDark
             ? Colors.black.withValues(alpha: 0.2)
-            : Colors.white.withValues(alpha: 0.92),
+            : AppColors.scrimLight(0.92),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
           color: textPrimary,
@@ -315,8 +317,8 @@ class _AdminIllnessEditScreenState extends State<AdminIllnessEditScreen> {
           Material(
             elevation: 8,
             color: isDark
-                ? const Color(0xFF141E15).withValues(alpha: 0.95)
-                : Colors.white.withValues(alpha: 0.95),
+                ? AppColors.darkBackground.withValues(alpha: 0.95)
+                : AppColors.scrimLight(0.95),
             child: SafeArea(
               top: false,
               child: Padding(
@@ -328,7 +330,7 @@ class _AdminIllnessEditScreenState extends State<AdminIllnessEditScreen> {
                     onPressed: _saving ? null : _save,
                     style: FilledButton.styleFrom(
                       backgroundColor: _kPrimary,
-                      foregroundColor: Colors.white,
+                      foregroundColor: AppColors.onPrimary,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14),
                       ),
@@ -339,7 +341,7 @@ class _AdminIllnessEditScreenState extends State<AdminIllnessEditScreen> {
                             width: 22,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              color: Colors.white,
+                              color: AppColors.onPrimary,
                             ),
                           )
                         : Text(
@@ -436,7 +438,7 @@ class _GuideTextField extends StatelessWidget {
       style: style ??
           GoogleFonts.spaceGrotesk(
             fontSize: 15,
-            color: isDark ? Colors.white : const Color(0xFF181D17),
+            color: isDark ? AppColors.textPrimaryDark : const Color(0xFF181D17),
           ),
       decoration: InputDecoration(
         hintText: hint,
@@ -488,7 +490,7 @@ class _SeverityDropdown extends StatelessWidget {
       icon: const Icon(Icons.expand_more_rounded, color: _kPrimary),
       style: GoogleFonts.spaceGrotesk(
         fontSize: 15,
-        color: isDark ? Colors.white : const Color(0xFF181D17),
+        color: isDark ? AppColors.textPrimaryDark : const Color(0xFF181D17),
       ),
       decoration: InputDecoration(
         filled: true,
@@ -619,7 +621,7 @@ class _ThumbTile extends StatelessWidget {
               child: IconButton(
                 constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
                 padding: EdgeInsets.zero,
-                icon: const Icon(Icons.close, size: 16, color: Colors.white),
+                icon: const Icon(Icons.close, size: 16, color: AppColors.onPrimary),
                 onPressed: onRemove,
               ),
             ),

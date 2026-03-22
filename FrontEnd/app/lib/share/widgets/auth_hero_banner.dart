@@ -44,7 +44,7 @@ class AuthHeroBanner extends StatelessWidget {
                 child: Text(
                   title,
                   style: theme.textTheme.titleLarge?.copyWith(
-                    color: Colors.white,
+                    color: AppColors.onPrimary,
                     fontWeight: FontWeight.w700,
                     height: 1.2,
                   ),
@@ -54,10 +54,10 @@ class AuthHeroBanner extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(6),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.15),
+                  color: AppColors.onPrimary.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(Icons.eco, color: Colors.white, size: 20),
+                child: const Icon(Icons.eco, color: AppColors.onPrimary, size: 20),
               ),
             ],
           ),
@@ -65,7 +65,7 @@ class AuthHeroBanner extends StatelessWidget {
           Text(
             subtitle,
             style: theme.textTheme.bodySmall?.copyWith(
-              color: Colors.white.withValues(alpha: 0.85),
+              color: AppColors.onPrimary.withValues(alpha: 0.85),
               height: 1.35,
             ),
             softWrap: true,
@@ -96,13 +96,13 @@ class _HeroChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.18),
+        color: AppColors.onPrimary.withValues(alpha: 0.18),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Text(
         text,
         style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: Colors.white,
+              color: AppColors.onPrimary,
               fontWeight: FontWeight.w500,
             ),
       ),

@@ -19,7 +19,6 @@ class AdminModelManagementScreen extends StatefulWidget {
 
 const Color _kGuidePrimary = Color(0xFF2D7B31);
 const Color _kGuideBgLight = Color(0xFFF6F8F6);
-const Color _kGuideBgDark = Color(0xFF141E15);
 
 class _AdminModelManagementScreenState
     extends State<AdminModelManagementScreen> {
@@ -189,11 +188,11 @@ class _AdminModelManagementScreenState
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bg = isDark ? _kGuideBgDark : _kGuideBgLight;
+    final bg = isDark ? AppColors.darkBackground : _kGuideBgLight;
     final textPrimary =
         isDark ? AppColors.textPrimaryDark : const Color(0xFF0F172A);
     final textMuted =
-        isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
+        isDark ? AppColors.textSecondaryDark : const Color(0xFF64748B);
 
     return AdminPopScope(
       child: Scaffold(
@@ -465,7 +464,7 @@ class _SearchField extends StatelessWidget {
       controller: controller,
       style: GoogleFonts.spaceGrotesk(
         fontSize: 14,
-        color: isDark ? Colors.white : const Color(0xFF0F172A),
+        color: isDark ? AppColors.textPrimaryDark : const Color(0xFF0F172A),
       ),
       decoration: InputDecoration(
         hintText: 'Search models…',
@@ -478,7 +477,7 @@ class _SearchField extends StatelessWidget {
           color: _kGuidePrimary.withValues(alpha: 0.65),
         ),
         filled: true,
-        fillColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+        fillColor: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
           borderSide: BorderSide.none,
@@ -519,12 +518,12 @@ class _UploadBannerButton extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.upload_file_rounded, color: Colors.white),
+              const Icon(Icons.upload_file_rounded, color: AppColors.onPrimary),
               const SizedBox(width: 10),
               Text(
                 'Upload new model (.onnx)',
                 style: GoogleFonts.spaceGrotesk(
-                  color: Colors.white,
+                  color: AppColors.onPrimary,
                   fontWeight: FontWeight.w700,
                   fontSize: 15,
                 ),
@@ -564,14 +563,14 @@ class _GuideModelCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cardBg = isDark ? const Color(0xFF1E293B) : Colors.white;
+    final cardBg = isDark ? AppColors.surfaceDark : AppColors.surfaceLight;
     final borderC = isActive
         ? _kGuidePrimary.withValues(alpha: 0.12)
-        : (isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0));
+        : (isDark ? AppColors.borderDark : const Color(0xFFE2E8F0));
 
     final metricBgActive = _kGuidePrimary.withValues(alpha: isDark ? 0.14 : 0.06);
     final metricBgIdle = isDark
-        ? const Color(0xFF334155).withValues(alpha: 0.45)
+        ? AppColors.borderDark.withValues(alpha: 0.45)
         : const Color(0xFFF8FAFC);
 
     final titleColor =
@@ -749,7 +748,7 @@ class _MetricBox extends StatelessWidget {
               letterSpacing: 0.5,
               color: labelMuted
                   ? textMutedConst(isDark)
-                  : (isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B)),
+                  : (isDark ? AppColors.textSecondaryDark : const Color(0xFF64748B)),
             ),
           ),
           const SizedBox(height: 4),
@@ -767,5 +766,5 @@ class _MetricBox extends StatelessWidget {
   }
 
   Color textMutedConst(bool isDark) =>
-      isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8);
+      isDark ? AppColors.darkMuted : const Color(0xFF94A3B8);
 }

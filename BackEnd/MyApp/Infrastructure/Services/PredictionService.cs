@@ -44,39 +44,72 @@ public class PredictionService : IPredictionService, IDisposable
         _env = env;
     }
 
-    private async Task EnsureModelLoadedAsync()
+    private async Task EnsureModelLoadedAsync(int? modelVersionId, CancellationToken cancellationToken = default)
     {
-        var defaultModel = await _modelRepository.GetDefaultModelAsync();
+        ModelVersion model;
+        if (modelVersionId is > 0)
+        {
+            var byId = await _modelRepository.GetActiveByIdForPredictionAsync(
+                modelVersionId.Value,
+                cancellationToken);
+            if (byId == null)
+                throw new InvalidOperationException(
+                    $"No active model with id {modelVersionId} is available for prediction.");
+            model = byId;
+        }
+        else
+        {
+            var defaultModel = await _modelRepository.GetDefaultModelAsync();
+            if (defaultModel == null)
+                throw new InvalidOperationException("No active default model in the database.");
+            model = defaultModel;
+        }
 
-        if (defaultModel == null)
-            throw new InvalidOperationException("No active default model in the database.");
-
-        if (_session != null && _loadedModelVersionId == defaultModel.ModelVersionId)
+        if (_session != null && _loadedModelVersionId == model.ModelVersionId)
             return;
 
         _session?.Dispose();
         _session = null;
         _classNames = null;
 
-        if (string.IsNullOrWhiteSpace(defaultModel.FilePath))
-            throw new InvalidOperationException($"Model Id={defaultModel.ModelVersionId} has no FilePath.");
+        if (string.IsNullOrWhiteSpace(model.FilePath))
+            throw new InvalidOperationException($"Model Id={model.ModelVersionId} has no FilePath.");
 
-        var modelPath = Path.Combine(_env.ContentRootPath, defaultModel.FilePath);
+        var modelPath = Path.Combine(_env.ContentRootPath, model.FilePath);
         if (!File.Exists(modelPath))
             throw new InvalidOperationException($"Model file not found: {modelPath}");
 
         var session = new InferenceSession(modelPath);
         _classNames = OnnxModelLabels.Read(session, modelPath);
         _session = session;
-        _loadedModelVersionId = defaultModel.ModelVersionId;
+        _loadedModelVersionId = model.ModelVersionId;
 
         _logger.LogInformation("Loaded ONNX id={Id} path={Path} classes={N}",
-            defaultModel.ModelVersionId, modelPath, _classNames.Length);
+            model.ModelVersionId, modelPath, _classNames.Length);
     }
 
-    public async Task<PredictionResponseDto> PredictAsync(int userId, IFormFile imageFile)
+    public async Task<IReadOnlyList<PredictionModelListItemDto>> ListAvailablePredictionModelsAsync(
+        CancellationToken cancellationToken = default)
     {
-        await EnsureModelLoadedAsync();
+        var list = await _modelRepository.GetActiveForPredictionAsync(cancellationToken);
+        return list
+            .Select(m => new PredictionModelListItemDto
+            {
+                ModelVersionId = m.ModelVersionId,
+                ModelName = m.ModelName,
+                Version = m.Version,
+                IsDefault = m.IsDefault == true,
+                Description = m.Description,
+            })
+            .ToList();
+    }
+
+    public async Task<PredictionResponseDto> PredictAsync(
+        int userId,
+        IFormFile imageFile,
+        int? modelVersionId = null)
+    {
+        await EnsureModelLoadedAsync(modelVersionId);
         var names = _classNames!;
 
         var sw = Stopwatch.StartNew();
@@ -168,7 +201,7 @@ public class PredictionService : IPredictionService, IDisposable
     {
         try
         {
-            await EnsureModelLoadedAsync();
+            await EnsureModelLoadedAsync(null);
             return _session != null;
         }
         catch

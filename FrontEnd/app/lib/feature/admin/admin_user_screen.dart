@@ -162,7 +162,8 @@ class _AdminUserScreenState extends State<AdminUserScreen> {
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
-                    foregroundColor: isDark ? Colors.black : Colors.white,
+                    foregroundColor:
+                        isDark ? Colors.black : AppColors.onPrimary,
                   ),
                   child: const Text('Add'),
                 ),
@@ -308,12 +309,12 @@ class _AdminUserScreenState extends State<AdminUserScreen> {
         backgroundColor: AppColors.primary,
         icon: Icon(
           Icons.person_add_outlined,
-          color: isDark ? Colors.black : Colors.white,
+          color: isDark ? Colors.black : AppColors.surfaceLight,
         ),
         label: Text(
           'Add account',
           style: TextStyle(
-            color: isDark ? Colors.black : Colors.white,
+            color: isDark ? Colors.black : AppColors.surfaceLight,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -535,7 +536,7 @@ class _UserCard extends StatelessWidget {
                             backgroundColor: AppColors.primary,
                             foregroundColor: isDark
                                 ? AppColors.darkBackground
-                                : Colors.white,
+                                : AppColors.onPrimary,
                             textStyle: theme.textTheme.labelLarge,
                             padding: const EdgeInsets.symmetric(vertical: 10),
                             shape: RoundedRectangleBorder(
@@ -712,7 +713,7 @@ class _FilterChip extends StatelessWidget {
         ? (isDark ? AppColors.surfaceLight : AppColors.primary)
         : (isDark ? AppColors.surfaceDark : AppColors.surfaceLight);
     final foreground = isActive
-        ? (isDark ? AppColors.darkBackground : Colors.white)
+        ? (isDark ? AppColors.darkBackground : AppColors.onPrimary)
         : textSecondary;
 
     return Container(

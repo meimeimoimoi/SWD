@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.OpenApi.Models;
+using System.Text.Json;
 using MyApp.Api;
 using MyApp.Application.Interfaces;
 using MyApp.Configuration;
@@ -19,19 +20,20 @@ namespace MyApp
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            builder.Services.AddControllers();
             builder.Services.AddSwaggerDocumentation();
             builder.Services.AddApplicationSerivce();
             builder.Services.AddInfrastructureService();
             builder.Services.AddPersitenceService();
-            
-// Cấu hình JSON để không escape ký tự Unicode (để hiển thị tiếng Việt đúng)
+
+            // Single AddControllers: JSON camelCase for clients + relaxed Unicode escaping.
             builder.Services.AddControllers()
-    .AddJsonOptions(options =>
-    {
-        options.JsonSerializerOptions.Encoder = 
-        System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping;
-    });
+                .AddJsonOptions(options =>
+                {
+                    options.JsonSerializerOptions.PropertyNamingPolicy =
+                        JsonNamingPolicy.CamelCase;
+                    options.JsonSerializerOptions.Encoder =
+                        System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping;
+                });
 
             // Add DbContext
             builder.Services.AddDbContext<AppDbContext>(options =>

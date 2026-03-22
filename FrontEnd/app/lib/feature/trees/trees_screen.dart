@@ -4,12 +4,12 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../routes/app_router.dart';
 import '../../share/constants/app_brand.dart';
 import '../../share/services/history_service.dart';
+import '../../share/theme/app_colors.dart';
 import '../../share/widgets/user_bottom_nav_bar.dart';
 import 'user_tree_models.dart';
 
 const Color _kPrimary = Color(0xFF2D7B31);
 const Color _kBgLight = Color(0xFFF6F8F6);
-const Color _kBgDark = Color(0xFF141E15);
 
 class TreesScreen extends StatefulWidget {
   const TreesScreen({super.key});
@@ -78,8 +78,9 @@ class _TreesScreenState extends State<TreesScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final bg = isDark ? _kBgDark : _kBgLight;
-    final onSurface = isDark ? Colors.white : const Color(0xFF0F172A);
+    final bg = isDark ? AppColors.darkBackground : _kBgLight;
+    final onSurface =
+        isDark ? AppColors.textPrimaryDark : const Color(0xFF0F172A);
 
     return Scaffold(
       backgroundColor: bg,
@@ -132,7 +133,7 @@ class _TreesScreenState extends State<TreesScreen> {
                                           fontSize: 13,
                                           fontWeight: FontWeight.w600,
                                           color: selected
-                                              ? Colors.white
+                                              ? AppColors.textPrimaryDark
                                               : (isDark
                                                   ? const Color(0xFFCBD5E1)
                                                   : const Color(0xFF475569)),
@@ -143,8 +144,8 @@ class _TreesScreenState extends State<TreesScreen> {
                                           setState(() => _filter = f),
                                       selectedColor: _kPrimary,
                                       backgroundColor: isDark
-                                          ? const Color(0xFF1E293B)
-                                          : Colors.white,
+                                          ? AppColors.surfaceDark
+                                          : AppColors.surfaceLight,
                                       side: BorderSide(
                                         color: selected
                                             ? _kPrimary
@@ -215,7 +216,7 @@ class _TreesScreenState extends State<TreesScreen> {
         onPressed: () => Navigator.pushNamed(context, AppRouter.scan),
         backgroundColor: _kPrimary,
         elevation: 4,
-        child: const Icon(Icons.add, color: Colors.white, size: 28),
+        child: const Icon(Icons.add, color: AppColors.onPrimary, size: 28),
       ),
       bottomNavigationBar: const UserBottomNavBar(selectedIndexOverride: 2),
     );
@@ -298,7 +299,7 @@ class _SearchField extends StatelessWidget {
       controller: controller,
       style: GoogleFonts.spaceGrotesk(
         fontSize: 15,
-        color: isDark ? Colors.white : const Color(0xFF0F172A),
+        color: isDark ? AppColors.textPrimaryDark : const Color(0xFF0F172A),
       ),
       decoration: InputDecoration(
         hintText: 'Search tree or disease name…',
@@ -308,7 +309,7 @@ class _SearchField extends StatelessWidget {
         ),
         prefixIcon: Icon(Icons.search_rounded, color: _kPrimary.withValues(alpha: 0.85)),
         filled: true,
-        fillColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+        fillColor: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
           borderSide: BorderSide.none,
@@ -360,7 +361,7 @@ class _ErrorBody extends StatelessWidget {
               onPressed: onRetry,
               style: FilledButton.styleFrom(
                 backgroundColor: _kPrimary,
-                foregroundColor: Colors.white,
+                foregroundColor: AppColors.onPrimary,
               ),
               child: Text(
                 'Retry',
@@ -406,7 +407,7 @@ class _EmptyBody extends StatelessWidget {
           style: GoogleFonts.spaceGrotesk(
             fontSize: 15,
             height: 1.4,
-            color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+            color: isDark ? AppColors.textSecondaryDark : const Color(0xFF64748B),
           ),
         ),
         if (hasNoTrees) ...[
@@ -415,7 +416,7 @@ class _EmptyBody extends StatelessWidget {
             onPressed: onScan,
             style: FilledButton.styleFrom(
               backgroundColor: _kPrimary,
-              foregroundColor: Colors.white,
+              foregroundColor: AppColors.onPrimary,
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
             ),
             icon: const Icon(Icons.document_scanner_outlined),
@@ -454,7 +455,7 @@ class _TreeCard extends StatelessWidget {
         ? '${summary.scanCount} scans · updated ${_fmtDate(summary.latestScan)}'
         : (desc.length > 120 ? '${desc.substring(0, 117)}…' : desc);
 
-    final cardBg = isDark ? const Color(0xFF1E293B) : Colors.white;
+    final cardBg = isDark ? AppColors.surfaceDark : AppColors.surfaceLight;
     final border = _kPrimary.withValues(alpha: 0.06);
 
     return Material(
@@ -481,7 +482,7 @@ class _TreeCard extends StatelessWidget {
                     child: summary.heroImageUrl.isEmpty
                         ? Container(
                             color: isDark
-                                ? const Color(0xFF334155)
+                                ? AppColors.borderDark
                                 : Colors.grey.shade300,
                             child: Icon(
                               Icons.park_rounded,
@@ -519,7 +520,9 @@ class _TreeCard extends StatelessWidget {
                             style: GoogleFonts.spaceGrotesk(
                               fontSize: 18,
                               fontWeight: FontWeight.w700,
-                              color: isDark ? Colors.white : const Color(0xFF0F172A),
+                              color: isDark
+                                  ? AppColors.textPrimaryDark
+                                  : const Color(0xFF0F172A),
                               height: 1.2,
                             ),
                           ),
@@ -528,7 +531,7 @@ class _TreeCard extends StatelessWidget {
                           icon: Icon(
                             Icons.more_vert_rounded,
                             color: isDark
-                                ? const Color(0xFF94A3B8)
+                                ? AppColors.textSecondaryDark
                                 : Colors.grey.shade400,
                           ),
                           onSelected: (v) {
@@ -585,7 +588,7 @@ class _TreeCard extends StatelessWidget {
                         fontSize: 13,
                         height: 1.4,
                         color: isDark
-                            ? const Color(0xFF94A3B8)
+                            ? AppColors.textSecondaryDark
                             : const Color(0xFF64748B),
                       ),
                     ),
@@ -600,7 +603,7 @@ class _TreeCard extends StatelessWidget {
                                 ? const Color(0xFFCBD5E1)
                                 : const Color(0xFF475569),
                             backgroundColor: isDark
-                                ? const Color(0xFF334155)
+                                ? AppColors.borderDark
                                 : const Color(0xFFF1F5F9),
                             padding: const EdgeInsets.symmetric(
                               horizontal: 16,

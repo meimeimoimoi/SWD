@@ -7,6 +7,8 @@ import 'package:image_picker/image_picker.dart';
 import '../../routes/app_router.dart';
 import '../../share/services/image_upload_service.dart';
 import '../../share/services/prediction_service.dart';
+import '../../share/services/storage_service.dart';
+import '../../share/theme/app_colors.dart';
 import '../../share/widgets/app_button.dart';
 import '../../share/widgets/app_scaffold.dart';
 import '../prediction/prediction_screen.dart';
@@ -29,6 +31,11 @@ class _ScanScreenState extends State<ScanScreen> {
   final ImageUploadService _uploadService = ImageUploadService();
   final PredictionService _predictionService = PredictionService();
 
+  List<PredictionModelOption> _predictionModels = [];
+  int? _selectedModelId;
+  bool _modelsLoading = true;
+  String? _modelsError;
+
   final List<_ScanItem> _uploads = [
     _ScanItem(name: 'Oak_leaf.png', status: 'Completed', time: '2m ago'),
     _ScanItem(name: 'Pine_branch.jpg', status: 'Processing', time: '8m ago'),
@@ -40,6 +47,51 @@ class _ScanScreenState extends State<ScanScreen> {
   _UploadStatus _uploadStatus = _UploadStatus.idle;
 
   bool get _isUploading => _uploadStatus == _UploadStatus.uploading;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPredictionModels();
+  }
+
+  Future<void> _loadPredictionModels() async {
+    setState(() {
+      _modelsLoading = true;
+      _modelsError = null;
+    });
+    final token = await StorageService.getAccessToken();
+    final result = await _predictionService.fetchAvailableModels();
+    final list = result.models;
+    if (!mounted) return;
+    int? pick;
+    if (list.isNotEmpty) {
+      PredictionModelOption? def;
+      for (final m in list) {
+        if (m.isDefault) {
+          def = m;
+          break;
+        }
+      }
+      pick = (def ?? list.first).modelVersionId;
+    }
+    final loggedIn = token != null && token.isNotEmpty;
+    setState(() {
+      _predictionModels = list;
+      _modelsLoading = false;
+      _selectedModelId = pick;
+      if (list.isNotEmpty) {
+        _modelsError = null;
+      } else if (!loggedIn) {
+        _modelsError = null;
+      } else if (result.errorMessage != null &&
+          result.errorMessage!.isNotEmpty) {
+        _modelsError = result.errorMessage;
+      } else {
+        _modelsError =
+            'No AI models available. An admin must upload and activate a model.';
+      }
+    });
+  }
 
   Future<void> _pickFromCameraFlow() async {
     if (_isUploading) return;
@@ -328,13 +380,23 @@ class _ScanScreenState extends State<ScanScreen> {
       return;
     }
 
+    if (_predictionModels.isNotEmpty && _selectedModelId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select an AI model.')),
+      );
+      return;
+    }
+
     setState(() {
       _uploadStatus = _UploadStatus.uploading;
       _statusMessage = 'Analyzing image...';
     });
 
     try {
-      final response = await _predictionService.predict(_selectedImage!.path);
+      final response = await _predictionService.predict(
+        _selectedImage!.path,
+        modelVersionId: _selectedModelId,
+      );
 
       if (!mounted) return;
 
@@ -430,6 +492,12 @@ class _ScanScreenState extends State<ScanScreen> {
             onClearImage: _clearImage,
             onUpload: _uploadSelectedImage,
             onPredict: _predictImage,
+            predictionModels: _predictionModels,
+            selectedModelId: _selectedModelId,
+            onModelChanged: (id) => setState(() => _selectedModelId = id),
+            modelsLoading: _modelsLoading,
+            modelsError: _modelsError,
+            onRetryLoadModels: _loadPredictionModels,
           );
           const tips = _ScanPageTipsCard();
           final recent = _RecentActivityCard(uploads: _uploads);
@@ -490,6 +558,12 @@ class _ScanWorkbenchCard extends StatelessWidget {
     required this.onClearImage,
     required this.onUpload,
     this.onPredict,
+    required this.predictionModels,
+    required this.selectedModelId,
+    required this.onModelChanged,
+    required this.modelsLoading,
+    this.modelsError,
+    this.onRetryLoadModels,
   });
 
   final XFile? selectedImage;
@@ -502,6 +576,12 @@ class _ScanWorkbenchCard extends StatelessWidget {
   final VoidCallback onClearImage;
   final VoidCallback onUpload;
   final VoidCallback? onPredict;
+  final List<PredictionModelOption> predictionModels;
+  final int? selectedModelId;
+  final ValueChanged<int?> onModelChanged;
+  final bool modelsLoading;
+  final String? modelsError;
+  final VoidCallback? onRetryLoadModels;
 
   Color _statusColor() {
     switch (uploadStatus) {
@@ -519,9 +599,9 @@ class _ScanWorkbenchCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isLight = Theme.of(context).brightness == Brightness.light;
-    final cardBg = isLight ? _kDarkCard : const Color(0xFF2C3430);
+    final cardBg = isLight ? _kDarkCard : AppColors.surfaceDark;
     final innerSurface =
-        isLight ? const Color(0xFFF0F4F1) : const Color(0xFF1E2521);
+        isLight ? const Color(0xFFF0F4F1) : AppColors.darkControlFill;
     final muted = Colors.grey.shade400;
 
     return Material(
@@ -536,7 +616,7 @@ class _ScanWorkbenchCard extends StatelessWidget {
             child: Icon(
               Icons.document_scanner_outlined,
               size: 150,
-              color: Colors.white.withValues(alpha: 0.06),
+              color: AppColors.onPrimary.withValues(alpha: 0.06),
             ),
           ),
           Padding(
@@ -568,10 +648,10 @@ class _ScanWorkbenchCard extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 14),
-                const Text(
+                Text(
                   'Analyze a sample',
                   style: TextStyle(
-                    color: Colors.white,
+                    color: AppColors.onPrimary,
                     fontSize: 22,
                     fontWeight: FontWeight.w800,
                     height: 1.15,
@@ -683,7 +763,7 @@ class _ScanWorkbenchCard extends StatelessWidget {
                             shape: BoxShape.circle,
                             color: hasImage
                                 ? const Color(0xFFC94C4C)
-                                : Colors.white.withValues(alpha: 0.65),
+                                : AppColors.surfaceLight.withValues(alpha: 0.65),
                             boxShadow: [
                               BoxShadow(
                                 color: Colors.black.withValues(alpha: 0.12),
@@ -694,7 +774,8 @@ class _ScanWorkbenchCard extends StatelessWidget {
                           child: Center(
                             child: Icon(
                               Icons.close,
-                              color: hasImage ? Colors.white : Colors.black45,
+                              color:
+                                  hasImage ? AppColors.onPrimary : Colors.black45,
                               size: 20,
                             ),
                           ),
@@ -724,10 +805,97 @@ class _ScanWorkbenchCard extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 14),
+                if (modelsLoading)
+                  const Padding(
+                    padding: EdgeInsets.only(bottom: 12),
+                    child: Center(
+                      child: SizedBox(
+                        width: 28,
+                        height: 28,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.5,
+                          color: _kBrandGreen,
+                        ),
+                      ),
+                    ),
+                  )
+                else ...[
+                  if (modelsError != null)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 10),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Text(
+                            modelsError!,
+                            style: TextStyle(
+                              color: Colors.orange.shade200,
+                              fontSize: 12,
+                              height: 1.35,
+                            ),
+                          ),
+                          if (onRetryLoadModels != null) ...[
+                            const SizedBox(height: 6),
+                            TextButton(
+                              onPressed: onRetryLoadModels,
+                              child: const Text('Retry'),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  if (predictionModels.isNotEmpty)
+                    DropdownButtonFormField<int>(
+                      value: selectedModelId,
+                      isExpanded: true,
+                      decoration: InputDecoration(
+                        labelText: 'AI model',
+                        labelStyle: TextStyle(color: muted, fontSize: 13),
+                        filled: true,
+                        fillColor: innerSurface,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(
+                            color: Colors.black.withValues(alpha: 0.08),
+                          ),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 12,
+                        ),
+                      ),
+                      dropdownColor: innerSurface,
+                      iconEnabledColor: const Color(0xFF1B2D20),
+                      style: const TextStyle(
+                        color: Color(0xFF1B2D20),
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                      ),
+                      items: predictionModels
+                          .map(
+                            (m) => DropdownMenuItem<int>(
+                              value: m.modelVersionId,
+                              child: Text(
+                                m.label,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          )
+                          .toList(),
+                      onChanged: isUploading
+                          ? null
+                          : (v) => onModelChanged(v),
+                    ),
+                  if (predictionModels.isNotEmpty)
+                    const SizedBox(height: 12),
+                ],
                 SizedBox(
                   width: double.infinity,
                   child: FilledButton.icon(
-                    onPressed: hasImage && !isUploading
+                    onPressed: hasImage && !isUploading && !modelsLoading
                         ? (onPredict ?? onUpload)
                         : null,
                     icon: const Icon(Icons.biotech_outlined, size: 22),
@@ -742,9 +910,9 @@ class _ScanWorkbenchCard extends StatelessWidget {
                       backgroundColor: _kPrimaryFixed,
                       foregroundColor: _kOnPrimaryFixed,
                       disabledBackgroundColor:
-                          Colors.white.withValues(alpha: 0.12),
+                          AppColors.surfaceLight.withValues(alpha: 0.12),
                       disabledForegroundColor:
-                          Colors.white.withValues(alpha: 0.35),
+                          AppColors.surfaceLight.withValues(alpha: 0.35),
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14),
@@ -796,8 +964,10 @@ class _WorkbenchOutlineButton extends StatelessWidget {
       ),
       style: OutlinedButton.styleFrom(
         minimumSize: const Size.fromHeight(52),
-        foregroundColor: Colors.white,
-        side: BorderSide(color: Colors.white.withValues(alpha: 0.38)),
+        foregroundColor: AppColors.onPrimary,
+        side: BorderSide(
+          color: AppColors.onPrimary.withValues(alpha: 0.38),
+        ),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
         ),
@@ -833,7 +1003,7 @@ class _ScanPageTipsCard extends StatelessWidget {
         Container(
           decoration: BoxDecoration(
             color: Theme.of(context).brightness == Brightness.light
-                ? Colors.white
+                ? AppColors.surfaceLight
                 : Theme.of(context).colorScheme.surfaceContainerHighest,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: line),
@@ -917,7 +1087,7 @@ class _RecentActivityCard extends StatelessWidget {
         Container(
           decoration: BoxDecoration(
             color: Theme.of(context).brightness == Brightness.light
-                ? Colors.white
+                ? AppColors.surfaceLight
                 : Theme.of(context).colorScheme.surfaceContainerHighest,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: line),

@@ -269,7 +269,7 @@ class _FilterPill extends StatelessWidget {
         ? AppColors.primary
         : (isDark ? AppColors.surfaceDark : AppColors.surfaceLight);
     final foreground = isActive
-        ? (isDark ? AppColors.darkBackground : Colors.white)
+        ? (isDark ? AppColors.darkBackground : AppColors.surfaceLight)
         : textSecondary;
 
     return Container(
@@ -453,7 +453,7 @@ class _FeedbackCard extends StatelessWidget {
                             backgroundColor: AppColors.primary,
                             foregroundColor: isDark
                                 ? AppColors.darkBackground
-                                : Colors.white,
+                                : AppColors.onPrimary,
                             padding: const EdgeInsets.symmetric(vertical: 10),
                             textStyle: theme.textTheme.labelLarge,
                             shape: RoundedRectangleBorder(

@@ -5,6 +5,7 @@ import '../../routes/app_router.dart';
 import '../../share/constants/app_brand.dart';
 import '../../share/services/history_service.dart';
 import '../../share/services/treatment_api_service.dart';
+import '../../share/theme/app_colors.dart';
 import '../../share/utils/disease_mapper.dart';
 import 'user_illness_detail_screen.dart';
 import 'user_tree_models.dart';
@@ -471,7 +472,7 @@ class _HealingStepCard extends StatelessWidget {
             child: Text(
               '$index',
               style: const TextStyle(
-                color: Colors.white,
+                color: AppColors.onPrimary,
                 fontSize: 13,
                 fontWeight: FontWeight.w800,
               ),

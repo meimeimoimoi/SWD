@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../routes/app_router.dart';
 import '../../share/constants/app_brand.dart';
+import '../../share/theme/app_colors.dart';
 import '../../share/services/history_service.dart';
 import '../../share/services/storage_service.dart';
 import '../../share/utils/disease_mapper.dart';
@@ -18,7 +19,6 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   static const Color _primary = Color(0xFF2D7B31);
-  static const Color _bg = Color(0xFFF6F8F6);
   static const Color _darkCard = Color(0xFF2D322B);
   static const Color _primaryFixed = Color(0xFFA4F69C);
   static const Color _secondaryContainer = Color(0xFFC9ECC1);
@@ -126,7 +126,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: _bg,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: _ArgivisionAppBar(
         username: _username,
         onOpenProfile: () => Navigator.pushNamed(context, AppRouter.profile),
@@ -414,9 +414,13 @@ class _TreeIllnessOverviewCard extends StatelessWidget {
       return Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.black.withValues(alpha: 0.06)),
+          border: Border.all(
+            color: Theme.of(context).brightness == Brightness.dark
+                ? const Color(0xFF2A2A2A)
+                : Colors.black.withValues(alpha: 0.06),
+          ),
         ),
         child: Row(
           children: [
@@ -470,16 +474,22 @@ class _TreeIllnessOverviewCard extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.black.withValues(alpha: 0.06)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
-          ),
-        ],
+        border: Border.all(
+          color: Theme.of(context).brightness == Brightness.dark
+              ? const Color(0xFF2A2A2A)
+              : Colors.black.withValues(alpha: 0.06),
+        ),
+        boxShadow: Theme.of(context).brightness == Brightness.dark
+            ? const []
+            : [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.03),
+                  blurRadius: 10,
+                  offset: const Offset(0, 3),
+                ),
+              ],
       ),
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
       child: Column(
@@ -607,7 +617,7 @@ class _TreeProgressRowTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: _DashboardScreenState._bg,
+      color: Theme.of(context).scaffoldBackgroundColor,
       borderRadius: BorderRadius.circular(12),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
@@ -664,7 +674,9 @@ class _TreeProgressRowTile extends StatelessWidget {
                 child: LinearProgressIndicator(
                   value: row.progress01,
                   minHeight: 6,
-                  backgroundColor: Colors.grey.shade200,
+                  backgroundColor: Theme.of(context).brightness == Brightness.dark
+                      ? const Color(0xFF2A2A2A)
+                      : Colors.grey.shade200,
                   color: row.statusColor,
                 ),
               ),
@@ -904,7 +916,7 @@ class _RecentScanTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final label = item.diseaseName.trim().isEmpty ? 'Unknown' : item.diseaseName;
     return Material(
-      color: Colors.white,
+      color: Theme.of(context).colorScheme.surface,
       borderRadius: BorderRadius.circular(14),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
@@ -913,7 +925,11 @@ class _RecentScanTile extends StatelessWidget {
           width: 236,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: Colors.black.withValues(alpha: 0.06)),
+            border: Border.all(
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? const Color(0xFF2A2A2A)
+                  : Colors.black.withValues(alpha: 0.06),
+            ),
           ),
           padding: const EdgeInsets.all(10),
           child: Row(
@@ -925,7 +941,9 @@ class _RecentScanTile extends StatelessWidget {
                   height: 72,
                   child: item.imageUrl.isEmpty
                       ? ColoredBox(
-                          color: Colors.grey.shade200,
+                          color: Theme.of(context).brightness == Brightness.dark
+                              ? const Color(0xFF2A2A2A)
+                              : Colors.grey.shade200,
                           child: Icon(Icons.image_outlined,
                               color: Colors.grey.shade500),
                         )
@@ -936,7 +954,9 @@ class _RecentScanTile extends StatelessWidget {
                           cacheHeight: 160,
                           filterQuality: FilterQuality.low,
                           errorBuilder: (_, __, ___) => ColoredBox(
-                            color: Colors.grey.shade200,
+                            color: Theme.of(context).brightness == Brightness.dark
+                                ? const Color(0xFF2A2A2A)
+                                : Colors.grey.shade200,
                             child: Icon(Icons.broken_image_outlined,
                                 color: Colors.grey.shade500),
                           ),
@@ -1000,9 +1020,13 @@ class _RecentScansEmpty extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.black.withValues(alpha: 0.06)),
+        border: Border.all(
+          color: Theme.of(context).brightness == Brightness.dark
+              ? const Color(0xFF2A2A2A)
+              : Colors.black.withValues(alpha: 0.06),
+        ),
       ),
       child: Row(
         children: [
@@ -1171,9 +1195,13 @@ class _UrgentAllClearCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.black.withValues(alpha: 0.06)),
+        border: Border.all(
+          color: Theme.of(context).brightness == Brightness.dark
+              ? const Color(0xFF2A2A2A)
+              : Colors.black.withValues(alpha: 0.06),
+        ),
       ),
       child: Row(
         children: [
@@ -1249,7 +1277,9 @@ class _ArgivisionAppBar extends StatelessWidget implements PreferredSizeWidget {
       automaticallyImplyLeading: false,
       elevation: 0,
       scrolledUnderElevation: 0.5,
-      backgroundColor: Colors.white.withValues(alpha: 0.92),
+      backgroundColor: Theme.of(context).brightness == Brightness.dark
+          ? Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.92)
+          : AppColors.scrimLight(0.92),
       surfaceTintColor: _DashboardScreenState._primary.withValues(alpha: 0.08),
       title: Row(
         children: [
@@ -1322,7 +1352,7 @@ class _OwnerScanHero extends StatelessWidget {
               child: Icon(
                 Icons.document_scanner_outlined,
                 size: 140,
-                color: Colors.white.withValues(alpha: 0.06),
+                color: AppColors.onPrimary.withValues(alpha: 0.06),
               ),
             ),
             Padding(
@@ -1358,7 +1388,7 @@ class _OwnerScanHero extends StatelessWidget {
                   const Text(
                     'Scan for disease',
                     style: TextStyle(
-                      color: Colors.white,
+                      color: AppColors.onPrimary,
                       fontSize: 22,
                       fontWeight: FontWeight.w800,
                       height: 1.15,
@@ -1419,9 +1449,13 @@ class _ScanTipsCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.black.withValues(alpha: 0.06)),
+        border: Border.all(
+          color: Theme.of(context).brightness == Brightness.dark
+              ? const Color(0xFF2A2A2A)
+              : Colors.black.withValues(alpha: 0.06),
+        ),
       ),
       padding: const EdgeInsets.fromLTRB(18, 16, 18, 18),
       child: Column(
@@ -1509,28 +1543,40 @@ class _PopularDiseasesCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.black.withValues(alpha: 0.06)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        border: Border.all(
+          color: Theme.of(context).brightness == Brightness.dark
+              ? const Color(0xFF2A2A2A)
+              : Colors.black.withValues(alpha: 0.06),
+        ),
+        boxShadow: Theme.of(context).brightness == Brightness.dark
+            ? const []
+            : [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.04),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
       ),
       clipBehavior: Clip.antiAlias,
       child: Column(
         children: [
           for (var i = 0; i < _items.length; i++) ...[
-            if (i > 0) Divider(height: 1, color: Colors.grey.shade100),
+            if (i > 0)
+              Divider(
+                height: 1,
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? const Color(0xFF2A2A2A)
+                    : Colors.grey.shade100,
+              ),
             _DiseaseTile(item: _items[i], onTap: onDiseaseTap),
           ],
           Container(
             width: double.infinity,
             padding: const EdgeInsets.symmetric(vertical: 12),
-            color: _DashboardScreenState._bg,
+            color: Theme.of(context).colorScheme.surfaceContainerHighest,
             child: TextButton(
               onPressed: onSeeAll,
               child: const Text(
@@ -1569,7 +1615,7 @@ class _DiseaseTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Colors.white,
+      color: Theme.of(context).colorScheme.surface,
       child: InkWell(
         onTap: onTap,
         child: Padding(
@@ -1588,7 +1634,9 @@ class _DiseaseTile extends StatelessWidget {
                     cacheHeight: 112,
                     filterQuality: FilterQuality.low,
                     errorBuilder: (_, __, ___) => Container(
-                      color: Colors.grey.shade200,
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? const Color(0xFF2A2A2A)
+                          : Colors.grey.shade200,
                       child: const Icon(Icons.spa, color: Colors.grey),
                     ),
                   ),

@@ -102,7 +102,7 @@ class _HeroSection extends StatelessWidget {
                 child: Text(
                   'High Alert',
                   style: theme.textTheme.labelSmall?.copyWith(
-                    color: Colors.white,
+                    color: AppColors.onPrimary,
                     fontWeight: FontWeight.w700,
                     letterSpacing: 0.6,
                   ),

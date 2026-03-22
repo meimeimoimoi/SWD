@@ -22,7 +22,7 @@ class AppTheme {
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: Colors.white,
+        fillColor: AppColors.surfaceLight,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
           vertical: 14,
@@ -42,7 +42,7 @@ class AppTheme {
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          foregroundColor: Colors.white,
+          foregroundColor: AppColors.onPrimary,
           backgroundColor: AppColors.primary,
           minimumSize: const Size.fromHeight(52),
           shape: RoundedRectangleBorder(
@@ -58,11 +58,19 @@ class AppTheme {
     final base = ThemeData.dark(useMaterial3: true);
     return base.copyWith(
       scaffoldBackgroundColor: AppColors.darkBackground,
+      canvasColor: AppColors.darkBackground,
+      cardColor: AppColors.surfaceDark,
+      dividerColor: AppColors.borderDark,
       colorScheme: base.colorScheme.copyWith(
         primary: AppColors.primary,
         secondary: AppColors.accent,
         surface: AppColors.surfaceDark,
         onSurface: AppColors.textPrimaryDark,
+        onSurfaceVariant: AppColors.textSecondaryDark,
+        surfaceContainerHighest: AppColors.darkControlFill,
+        surfaceContainerHigh: const Color(0xFF1A1A1A),
+        outline: AppColors.borderDark,
+        outlineVariant: AppColors.borderDark,
       ),
       textTheme: AppTextStyles.darkTextTheme,
       appBarTheme: const AppBarTheme(
@@ -93,7 +101,7 @@ class AppTheme {
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          foregroundColor: Colors.white,
+          foregroundColor: AppColors.onPrimary,
           backgroundColor: AppColors.primary,
           minimumSize: const Size.fromHeight(52),
           shape: RoundedRectangleBorder(

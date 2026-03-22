@@ -179,7 +179,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
     final displayName = DiseaseMapper.toDisplayName(item.diseaseName);
 
     return Material(
-      color: isDark ? AppColors.surfaceDark : Colors.white,
+      color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
       borderRadius: BorderRadius.circular(16),
       child: InkWell(
         onTap: () => _openDetail(item),
@@ -215,7 +215,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                             if (progress == null) return child;
                             return Container(
                               color: isDark
-                                  ? const Color(0xFF1F2937)
+                                  ? AppColors.borderDark
                                   : const Color(0xFFE5E7EB),
                               child: Center(
                                 child: CircularProgressIndicator(
@@ -313,7 +313,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
   Widget _placeholderThumb(bool isDark) {
     return Container(
-      color: isDark ? const Color(0xFF1F2937) : const Color(0xFFE5E7EB),
+      color: isDark ? AppColors.borderDark : const Color(0xFFE5E7EB),
       child: Icon(
         Icons.grass,
         size: 36,
@@ -475,7 +475,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
               label: const Text('Retry'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
+                foregroundColor: AppColors.onPrimary,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 24,
                   vertical: 12,

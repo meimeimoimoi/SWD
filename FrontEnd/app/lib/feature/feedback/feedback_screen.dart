@@ -349,14 +349,15 @@ class _SubmitSection extends StatelessWidget {
                   height: 20,
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
-                    color: Colors.white,
+                    color: AppColors.onPrimary,
                   ),
                 )
                 : const Icon(Icons.send),
             label: Text(isSubmitting ? 'Sending...' : 'Submit feedback'),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,
-              foregroundColor: isDark ? AppColors.darkBackground : Colors.white,
+              foregroundColor:
+                  isDark ? AppColors.darkBackground : AppColors.onPrimary,
               padding: const EdgeInsets.symmetric(vertical: 16),
               textStyle: theme.textTheme.labelLarge?.copyWith(
                 fontWeight: FontWeight.w700,

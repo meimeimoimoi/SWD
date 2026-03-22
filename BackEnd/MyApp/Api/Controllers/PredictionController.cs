@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using MyApp.Application.Interfaces;
@@ -25,14 +25,16 @@ namespace MyApp.Api.Controllers
 /// <summary>
 /// Dự đoán bệnh trên lá lúa từ hình ảnh được tải lên. Trả về treatment - thuốc(medicine)
 /// </summary>
-/// <param name="image"></param>
-/// <returns></returns>
+/// <param name="image">Uploaded image file.</param>
+/// <param name="modelVersionId">Optional active model id; default model is used when omitted.</param>
         [HttpPost("predict")]
         [Consumes("multipart/form-data")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [Authorize]
-        public async Task<IActionResult> Predict(IFormFile image)
+        public async Task<IActionResult> Predict(
+            IFormFile image,
+            [FromForm] int? modelVersionId = null)
         {
             try
             {
@@ -68,7 +70,7 @@ namespace MyApp.Api.Controllers
 
                 try
                 {
-                    var result = await _predictionService.PredictAsync(userId, image);
+                    var result = await _predictionService.PredictAsync(userId, image, modelVersionId);
                     result.ImageUrl = BuildImageUrl(result.ImageUrl);
                     return Ok(new
                     {
@@ -113,6 +115,28 @@ namespace MyApp.Api.Controllers
                 });
             }
            
+        }
+
+        [HttpGet("models")]
+        [Authorize]
+        public async Task<IActionResult> ListPredictionModels(CancellationToken cancellationToken)
+        {
+            try
+            {
+                var models =
+                    await _predictionService.ListAvailablePredictionModelsAsync(cancellationToken);
+                return Ok(new
+                {
+                    success = true,
+                    total = models.Count,
+                    data = models,
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error listing prediction models");
+                return StatusCode(500, new { success = false, message = "Error loading models" });
+            }
         }
 
         [HttpGet("classes")]

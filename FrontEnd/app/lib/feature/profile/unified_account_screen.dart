@@ -11,12 +11,12 @@ import '../../share/constants/app_version.dart';
 import '../../share/services/auth_api_service.dart';
 import '../../share/services/dashboard_service.dart';
 import '../../share/services/storage_service.dart';
+import '../../share/theme/app_colors.dart';
 import '../../share/widgets/admin_bottom_nav.dart';
 import '../../share/widgets/user_bottom_nav_bar.dart';
 
 const Color _kPrimary = Color(0xFF2D7B31);
 const Color _kBgLight = Color(0xFFF6F8F6);
-const Color _kBgDark = Color(0xFF141E15);
 
 class UnifiedAccountScreen extends StatefulWidget {
   const UnifiedAccountScreen({
@@ -192,7 +192,7 @@ class _UnifiedAccountScreenState extends State<UnifiedAccountScreen> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bg = isDark ? _kBgDark : _kBgLight;
+    final bg = isDark ? AppColors.darkBackground : _kBgLight;
     final u = _user();
 
     final displayName = _t(u, ['fullName', 'name', 'username']) ?? '—';
@@ -208,21 +208,6 @@ class _UnifiedAccountScreenState extends State<UnifiedAccountScreen> {
     }
 
     final roleLabel = role.toUpperCase();
-    final double? aiPctDisplay;
-    final double aiProgress;
-    if (widget.isAdminShell) {
-      if (_adminAvgConfidence != null) {
-        final pct = (_adminAvgConfidence! * 100).clamp(0.0, 100.0);
-        aiPctDisplay = pct;
-        aiProgress = (pct / 100).clamp(0.0, 1.0);
-      } else {
-        aiPctDisplay = null;
-        aiProgress = 0;
-      }
-    } else {
-      aiPctDisplay = 98.5;
-      aiProgress = 0.985;
-    }
 
     final showBack =
         widget.showLeadingBack && Navigator.of(context).canPop();
@@ -263,7 +248,9 @@ class _UnifiedAccountScreenState extends State<UnifiedAccountScreen> {
                               style: GoogleFonts.spaceGrotesk(
                                 fontSize: 24,
                                 fontWeight: FontWeight.w700,
-                                color: isDark ? Colors.white : const Color(0xFF181D17),
+                                color: isDark
+                                    ? AppColors.textPrimaryDark
+                                    : const Color(0xFF181D17),
                               ),
                             ),
                             const SizedBox(height: 6),
@@ -273,7 +260,7 @@ class _UnifiedAccountScreenState extends State<UnifiedAccountScreen> {
                                 fontSize: 13,
                                 height: 1.35,
                                 color: isDark
-                                    ? const Color(0xFF94A3B8)
+                                    ? AppColors.textSecondaryDark
                                     : const Color(0xFF40493D),
                               ),
                             ),
@@ -303,17 +290,25 @@ class _UnifiedAccountScreenState extends State<UnifiedAccountScreen> {
                           ),
                         ),
                       ),
-                      SliverPadding(
-                        padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-                        sliver: SliverToBoxAdapter(
-                          child: _AiStatusCard(
-                            isDark: isDark,
-                            percent: aiPctDisplay,
-                            progress: aiProgress,
-                            isAdmin: widget.isAdminShell,
+                      if (widget.isAdminShell)
+                        SliverPadding(
+                          padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                          sliver: SliverToBoxAdapter(
+                            child: _AiStatusCard(
+                              isDark: isDark,
+                              percent: _adminAvgConfidence != null
+                                  ? (_adminAvgConfidence! * 100)
+                                      .clamp(0.0, 100.0)
+                                  : null,
+                              progress: _adminAvgConfidence != null
+                                  ? ((_adminAvgConfidence! * 100)
+                                          .clamp(0.0, 100.0) /
+                                      100)
+                                      .clamp(0.0, 1.0)
+                                  : 0.0,
+                            ),
                           ),
                         ),
-                      ),
                       if (widget.isAdminShell)
                         SliverPadding(
                           padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
@@ -466,7 +461,7 @@ class _UnifiedAccountScreenState extends State<UnifiedAccountScreen> {
                                   leading: Icon(
                                     Icons.notifications_outlined,
                                     color: isDark
-                                        ? const Color(0xFF94A3B8)
+                                        ? AppColors.textSecondaryDark
                                         : const Color(0xFF64748B),
                                   ),
                                   title: Text(
@@ -559,7 +554,7 @@ class _UnifiedAccountScreenState extends State<UnifiedAccountScreen> {
                                         style: GoogleFonts.spaceGrotesk(
                                           fontSize: 12,
                                           color: isDark
-                                              ? const Color(0xFF94A3B8)
+                                              ? AppColors.textSecondaryDark
                                               : const Color(0xFF64748B),
                                         ),
                                       ),
@@ -745,7 +740,7 @@ class _UnifiedAccountScreenState extends State<UnifiedAccountScreen> {
 
   static Widget _div(bool isDark) => Divider(
         height: 1,
-        color: isDark ? const Color(0xFF334155) : const Color(0xFFE8EDE3),
+        color: isDark ? AppColors.borderDark : const Color(0xFFE8EDE3),
       );
 }
 
@@ -834,7 +829,7 @@ class _ProfileHeroCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final surface = isDark ? const Color(0xFF1E293B) : Colors.white;
+    final surface = isDark ? AppColors.surfaceDark : AppColors.surfaceLight;
     final hasImg = avatarUrl != null && avatarUrl!.startsWith('http');
     final initials = displayName.isNotEmpty
         ? displayName
@@ -852,7 +847,7 @@ class _ProfileHeroCard extends StatelessWidget {
         color: surface,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: isDark ? const Color(0xFF334155) : const Color(0xFFE0E4DA),
+          color: isDark ? AppColors.borderDark : const Color(0xFFE0E4DA),
         ),
         boxShadow: isDark
             ? null
@@ -906,7 +901,11 @@ class _ProfileHeroCard extends StatelessWidget {
                     customBorder: const CircleBorder(),
                     child: const Padding(
                       padding: EdgeInsets.all(8),
-                      child: Icon(Icons.edit_rounded, color: Colors.white, size: 18),
+                      child: Icon(
+                        Icons.edit_rounded,
+                        color: AppColors.onPrimary,
+                        size: 18,
+                      ),
                     ),
                   ),
                 ),
@@ -919,7 +918,9 @@ class _ProfileHeroCard extends StatelessWidget {
             style: GoogleFonts.spaceGrotesk(
               fontSize: 18,
               fontWeight: FontWeight.w700,
-              color: isDark ? Colors.white : const Color(0xFF181D17),
+              color: isDark
+                  ? AppColors.textPrimaryDark
+                  : const Color(0xFF181D17),
             ),
             textAlign: TextAlign.center,
           ),
@@ -930,7 +931,7 @@ class _ProfileHeroCard extends StatelessWidget {
               fontSize: 10,
               fontWeight: FontWeight.w700,
               letterSpacing: 1.1,
-              color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+              color: isDark ? AppColors.textSecondaryDark : const Color(0xFF64748B),
             ),
             textAlign: TextAlign.center,
           ),
@@ -939,7 +940,7 @@ class _ProfileHeroCard extends StatelessWidget {
             'Last sign-in: $lastLoginLabel',
             style: TextStyle(
               fontSize: 10,
-              color: isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
+              color: isDark ? AppColors.darkMuted : const Color(0xFF94A3B8),
             ),
           ),
           const SizedBox(height: 16),
@@ -949,7 +950,7 @@ class _ProfileHeroCard extends StatelessWidget {
               onPressed: onEditProfile,
               style: FilledButton.styleFrom(
                 backgroundColor: _kPrimary,
-                foregroundColor: Colors.white,
+                foregroundColor: AppColors.onPrimary,
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14),
@@ -976,13 +977,11 @@ class _AiStatusCard extends StatelessWidget {
     required this.isDark,
     required this.percent,
     required this.progress,
-    required this.isAdmin,
   });
 
   final bool isDark;
   final double? percent;
   final double progress;
-  final bool isAdmin;
 
   @override
   Widget build(BuildContext context) {
@@ -1029,7 +1028,7 @@ class _AiStatusCard extends StatelessWidget {
                 'Model accuracy',
                 style: TextStyle(
                   fontSize: 12,
-                  color: Colors.white.withValues(alpha: 0.7),
+                  color: AppColors.onPrimary.withValues(alpha: 0.7),
                 ),
               ),
               Text(
@@ -1048,20 +1047,10 @@ class _AiStatusCard extends StatelessWidget {
             child: LinearProgressIndicator(
               value: progress.clamp(0.0, 1.0),
               minHeight: 6,
-              backgroundColor: Colors.white.withValues(alpha: 0.12),
+              backgroundColor: AppColors.onPrimary.withValues(alpha: 0.12),
               color: const Color(0xFFA4F69C),
             ),
           ),
-          if (!isAdmin) ...[
-            const SizedBox(height: 8),
-            Text(
-              'Estimated from models serving users.',
-              style: TextStyle(
-                fontSize: 10,
-                color: Colors.white.withValues(alpha: 0.45),
-              ),
-            ),
-          ],
         ],
       ),
     );
@@ -1083,13 +1072,13 @@ class _SectionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bg = isDark ? const Color(0xFF1E293B) : Colors.white;
+    final bg = isDark ? AppColors.surfaceDark : AppColors.surfaceLight;
     return Container(
       decoration: BoxDecoration(
         color: bg,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isDark ? const Color(0xFF334155) : const Color(0xFFE0E4DA),
+          color: isDark ? AppColors.borderDark : const Color(0xFFE0E4DA),
         ),
         boxShadow: isDark
             ? null
@@ -1118,14 +1107,16 @@ class _SectionCard extends StatelessWidget {
                       fontSize: 12,
                       fontWeight: FontWeight.w800,
                       letterSpacing: 0.8,
-                      color: isDark ? Colors.white : const Color(0xFF181D17),
+                      color: isDark
+                          ? AppColors.textPrimaryDark
+                          : const Color(0xFF181D17),
                     ),
                   ),
                 ),
               ],
             ),
           ),
-          Divider(height: 1, color: isDark ? const Color(0xFF334155) : const Color(0xFFE8EDE3)),
+          Divider(height: 1, color: isDark ? AppColors.borderDark : const Color(0xFFE8EDE3)),
           child,
         ],
       ),
@@ -1158,7 +1149,7 @@ class _SecurityRow extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
         child: Row(
           children: [
-            Icon(icon, color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B)),
+            Icon(icon, color: isDark ? AppColors.textSecondaryDark : const Color(0xFF64748B)),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -1176,7 +1167,7 @@ class _SecurityRow extends StatelessWidget {
                     subtitle,
                     style: GoogleFonts.spaceGrotesk(
                       fontSize: 11,
-                      color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                      color: isDark ? AppColors.textSecondaryDark : const Color(0xFF64748B),
                     ),
                   ),
                 ],
@@ -1185,7 +1176,7 @@ class _SecurityRow extends StatelessWidget {
             trailing ??
                 Icon(
                   Icons.chevron_right_rounded,
-                  color: isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
+                  color: isDark ? AppColors.darkMuted : const Color(0xFF94A3B8),
                 ),
           ],
         ),
@@ -1217,7 +1208,7 @@ class _ToggleRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       child: Row(
         children: [
-          Icon(icon, color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B)),
+          Icon(icon, color: isDark ? AppColors.textSecondaryDark : const Color(0xFF64748B)),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -1234,7 +1225,7 @@ class _ToggleRow extends StatelessWidget {
                   subtitle,
                   style: GoogleFonts.spaceGrotesk(
                     fontSize: 11,
-                    color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                    color: isDark ? AppColors.textSecondaryDark : const Color(0xFF64748B),
                   ),
                 ),
               ],
@@ -1286,7 +1277,7 @@ class _ThemePick extends StatelessWidget {
             else
               Icon(
                 Icons.circle_outlined,
-                color: isDark ? const Color(0xFF64748B) : const Color(0xFFCBD5E1),
+                color: isDark ? AppColors.darkMuted : const Color(0xFFCBD5E1),
                 size: 22,
               ),
           ],
@@ -1320,7 +1311,7 @@ class _QuickLink extends StatelessWidget {
         subtitle,
         style: GoogleFonts.spaceGrotesk(
           fontSize: 12,
-          color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                      color: isDark ? AppColors.textSecondaryDark : const Color(0xFF64748B),
         ),
       ),
       trailing: const Icon(Icons.chevron_right_rounded),

@@ -61,6 +61,69 @@ class PredictionData {
   }
 }
 
+class PredictionModelOption {
+  const PredictionModelOption({
+    required this.modelVersionId,
+    required this.modelName,
+    required this.version,
+    required this.isDefault,
+    this.description,
+  });
+
+  final int modelVersionId;
+  final String modelName;
+  final String version;
+  final bool isDefault;
+  final String? description;
+
+  String get label {
+    final v = version.trim();
+    if (v.isEmpty) return modelName;
+    return '$modelName ($v)';
+  }
+
+  factory PredictionModelOption.fromJson(Map<String, dynamic> json) {
+    int readInt(Object? a, Object? b) {
+      final v = a ?? b;
+      if (v == null) return 0;
+      if (v is num) return v.toInt();
+      return int.tryParse(v.toString()) ?? 0;
+    }
+
+    String readStr(Object? a, Object? b) {
+      final v = a ?? b;
+      if (v == null) return '';
+      final s = v.toString().trim();
+      return s;
+    }
+
+    final id = readInt(json['modelVersionId'], json['ModelVersionId']);
+    var name = readStr(json['modelName'], json['ModelName']);
+    final ver = readStr(json['version'], json['Version']);
+    if (name.isEmpty && ver.isNotEmpty) name = ver;
+    if (name.isEmpty && id > 0) name = 'Model #$id';
+
+    return PredictionModelOption(
+      modelVersionId: id,
+      modelName: name,
+      version: ver,
+      isDefault: json['isDefault'] == true || json['IsDefault'] == true,
+      description: json['description']?.toString() ?? json['Description']?.toString(),
+    );
+  }
+}
+
+/// Result of [PredictionService.fetchAvailableModels] (list + optional error for UI).
+class PredictionModelsFetchResult {
+  const PredictionModelsFetchResult({
+    required this.models,
+    this.errorMessage,
+  });
+
+  final List<PredictionModelOption> models;
+  final String? errorMessage;
+}
+
 class PredictionService {
   final Dio _dio;
 
@@ -77,12 +140,111 @@ class PredictionService {
             ),
           );
 
-  Future<PredictionResponse> predict(String imagePath) async {
-    return _predictInternal(imagePath, retryOnUnauthorized: true);
+  Future<PredictionModelsFetchResult> fetchAvailableModels({
+    bool retryOnUnauthorized = true,
+  }) async {
+    try {
+      final accessToken = await StorageService.getAccessToken();
+      if (accessToken == null || accessToken.isEmpty) {
+        return const PredictionModelsFetchResult(models: []);
+      }
+      final response = await _dio.get<Map<String, dynamic>>(
+        ApiPaths.predictionModels,
+        options: Options(
+          headers: {'Authorization': _formatBearerToken(accessToken)},
+        ),
+      );
+      return _parseModelsPayload(response.data);
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 401 && retryOnUnauthorized) {
+        final refreshToken = await StorageService.getRefreshToken();
+        if (refreshToken != null && refreshToken.isNotEmpty) {
+          final refresh = await AuthApiService.refreshToken(refreshToken);
+          if (refresh['success'] == true) {
+            return fetchAvailableModels(retryOnUnauthorized: false);
+          }
+        }
+        await StorageService.clearAuth();
+        AuthApiService.onSessionExpired?.call();
+        return const PredictionModelsFetchResult(
+          models: [],
+          errorMessage:
+              'Session expired. Please sign in again to load AI models.',
+        );
+      }
+      return PredictionModelsFetchResult(
+        models: [],
+        errorMessage: _modelsLoadErrorMessage(e),
+      );
+    } catch (e) {
+      return PredictionModelsFetchResult(
+        models: [],
+        errorMessage: 'Could not load models: $e',
+      );
+    }
+  }
+
+  PredictionModelsFetchResult _parseModelsPayload(Map<String, dynamic>? data) {
+    if (data == null) {
+      return const PredictionModelsFetchResult(
+        models: [],
+        errorMessage: 'Empty response from server.',
+      );
+    }
+    if (data['success'] != true) {
+      final msg = data['message']?.toString();
+      return PredictionModelsFetchResult(
+        models: [],
+        errorMessage: (msg != null && msg.isNotEmpty)
+            ? msg
+            : 'Could not load models (success=false).',
+      );
+    }
+    final raw = data['data'];
+    if (raw is! List) {
+      return const PredictionModelsFetchResult(
+        models: [],
+        errorMessage: 'Invalid models payload (expected a list).',
+      );
+    }
+    final models = raw
+        .map(
+          (e) => PredictionModelOption.fromJson(
+            Map<String, dynamic>.from(e as Map),
+          ),
+        )
+        .where((m) => m.modelVersionId > 0)
+        .toList();
+    return PredictionModelsFetchResult(models: models);
+  }
+
+  String _modelsLoadErrorMessage(DioException e) {
+    final body = e.response?.data;
+    if (body is Map) {
+      final m = body['message']?.toString();
+      if (m != null && m.isNotEmpty) return m;
+    }
+    final code = e.response?.statusCode;
+    if (code != null) {
+      return 'Could not load models (HTTP $code). ${e.message ?? ''}'.trim();
+    }
+    return e.message ?? 'Network error loading models.';
+  }
+
+  Future<PredictionResponse> predict(
+    String imagePath, {
+    int? modelVersionId,
+  }) async {
+    return _predictInternal(
+      imagePath,
+      modelVersionId: modelVersionId,
+      retryOnUnauthorized: true,
+    );
   }
 
   Future<PredictionResponse> _predictInternal(
     String imagePath, {
+    int? modelVersionId,
     required bool retryOnUnauthorized,
   }) async {
     try {
@@ -95,9 +257,13 @@ class PredictionService {
         );
       }
 
-      final formData = FormData.fromMap({
+      final fields = <String, dynamic>{
         'image': await MultipartFile.fromFile(imagePath),
-      });
+      };
+      if (modelVersionId != null) {
+        fields['modelVersionId'] = modelVersionId;
+      }
+      final formData = FormData.fromMap(fields);
 
       final response = await _dio.post(
         ApiPaths.predictionPredict,
@@ -114,7 +280,11 @@ class PredictionService {
         if (refreshToken != null && refreshToken.isNotEmpty) {
           final refresh = await AuthApiService.refreshToken(refreshToken);
           if (refresh['success'] == true) {
-            return _predictInternal(imagePath, retryOnUnauthorized: false);
+            return _predictInternal(
+              imagePath,
+              modelVersionId: modelVersionId,
+              retryOnUnauthorized: false,
+            );
           }
         }
         await StorageService.clearAuth();

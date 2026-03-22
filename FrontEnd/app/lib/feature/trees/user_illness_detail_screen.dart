@@ -5,11 +5,11 @@ import '../../share/services/dashboard_service.dart';
 import '../../share/services/history_service.dart';
 import '../../share/services/treatment_api_service.dart';
 import '../../share/utils/disease_mapper.dart';
+import '../../share/theme/app_colors.dart';
 import '../../share/widgets/user_bottom_nav_bar.dart';
 
 const Color _kPrimary = Color(0xFF2D7B31);
 const Color _kBgLight = Color(0xFFF6F8F6);
-const Color _kBgDark = Color(0xFF141E15);
 
 class UserIllnessDetailArgs {
   const UserIllnessDetailArgs({
@@ -98,7 +98,7 @@ class _UserIllnessDetailScreenState extends State<UserIllnessDetailScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final bg = isDark ? _kBgDark : _kBgLight;
+    final bg = isDark ? AppColors.darkBackground : _kBgLight;
     final u = widget.item;
     final row = _illnessRow;
 
@@ -153,7 +153,7 @@ class _UserIllnessDetailScreenState extends State<UserIllnessDetailScreen> {
           style: GoogleFonts.spaceGrotesk(
             fontWeight: FontWeight.w700,
             fontSize: 18,
-            color: isDark ? Colors.white : const Color(0xFF0F172A),
+            color: isDark ? AppColors.textPrimaryDark : const Color(0xFF0F172A),
           ),
         ),
         centerTitle: true,
@@ -191,7 +191,7 @@ class _UserIllnessDetailScreenState extends State<UserIllnessDetailScreen> {
                             fontSize: 14,
                             height: 1.45,
                             color: isDark
-                                ? const Color(0xFF94A3B8)
+                                ? AppColors.textSecondaryDark
                                 : const Color(0xFF475569),
                           ),
                         ),
@@ -212,7 +212,7 @@ class _UserIllnessDetailScreenState extends State<UserIllnessDetailScreen> {
                         style: GoogleFonts.spaceGrotesk(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
-                          color: isDark ? Colors.white : const Color(0xFF0F172A),
+                          color: isDark ? AppColors.textPrimaryDark : const Color(0xFF0F172A),
                         ),
                       ),
                     ],
@@ -241,7 +241,7 @@ class _UserIllnessDetailScreenState extends State<UserIllnessDetailScreen> {
                         style: GoogleFonts.spaceGrotesk(
                           fontSize: 13,
                           color: isDark
-                              ? const Color(0xFF94A3B8)
+                              ? AppColors.textSecondaryDark
                               : const Color(0xFF64748B),
                         ),
                       ),
@@ -265,7 +265,7 @@ class _UserIllnessDetailScreenState extends State<UserIllnessDetailScreen> {
                             Divider(
                               height: 20,
                               color: isDark
-                                  ? const Color(0xFF334155)
+                                  ? AppColors.borderDark
                                   : const Color(0xFFE2E8F0),
                             ),
                           if (updatedApi != null)
@@ -296,7 +296,7 @@ class _UserIllnessDetailScreenState extends State<UserIllnessDetailScreen> {
                         fontSize: 13,
                         height: 1.4,
                         color: isDark
-                            ? const Color(0xFF94A3B8)
+                            ? AppColors.textSecondaryDark
                             : const Color(0xFF64748B),
                       ),
                     )
@@ -369,7 +369,7 @@ class _UserIllnessDetailScreenState extends State<UserIllnessDetailScreen> {
         style: GoogleFonts.spaceGrotesk(
           fontSize: 16,
           fontWeight: FontWeight.w700,
-          color: isDark ? Colors.white : const Color(0xFF0F172A),
+          color: isDark ? AppColors.textPrimaryDark : const Color(0xFF0F172A),
         ),
       ),
     );
@@ -390,7 +390,7 @@ class _UserIllnessDetailScreenState extends State<UserIllnessDetailScreen> {
                 fontWeight: FontWeight.w700,
                 letterSpacing: 0.6,
                 color: isDark
-                    ? const Color(0xFF94A3B8)
+                    ? AppColors.textSecondaryDark
                     : const Color(0xFF64748B),
               ),
             ),
@@ -401,7 +401,7 @@ class _UserIllnessDetailScreenState extends State<UserIllnessDetailScreen> {
                 fontSize: 14,
                 height: 1.45,
                 color: isDark
-                    ? const Color(0xFF94A3B8)
+                    ? AppColors.textSecondaryDark
                     : const Color(0xFF475569),
               ),
             ),
@@ -419,7 +419,7 @@ class _UserIllnessDetailScreenState extends State<UserIllnessDetailScreen> {
           '$k:',
           style: GoogleFonts.spaceGrotesk(
             fontSize: 12,
-            color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+            color: isDark ? AppColors.textSecondaryDark : const Color(0xFF64748B),
           ),
         ),
         const SizedBox(width: 8),
@@ -430,7 +430,7 @@ class _UserIllnessDetailScreenState extends State<UserIllnessDetailScreen> {
             style: GoogleFonts.spaceGrotesk(
               fontSize: 12,
               fontWeight: FontWeight.w600,
-              color: isDark ? Colors.white : const Color(0xFF0F172A),
+              color: isDark ? AppColors.textPrimaryDark : const Color(0xFF0F172A),
             ),
           ),
         ),
@@ -501,7 +501,7 @@ class _SciSubtitle extends StatelessWidget {
     final base = GoogleFonts.spaceGrotesk(
       fontSize: 14,
       height: 1.35,
-      color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+      color: isDark ? AppColors.textSecondaryDark : const Color(0xFF64748B),
     );
     final idx = line.indexOf(' | ');
     if (idx < 0) {
@@ -553,7 +553,7 @@ class _HeroCard extends StatelessWidget {
     );
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E293B) : Colors.white,
+        color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
         borderRadius: BorderRadius.circular(16),
         border: border,
         boxShadow: isDark
@@ -574,7 +574,7 @@ class _HeroCard extends StatelessWidget {
             height: 192,
             child: heroUrl.isEmpty
                 ? Container(
-                    color: isDark ? const Color(0xFF334155) : const Color(0xFFE8EDE3),
+                    color: isDark ? AppColors.borderDark : const Color(0xFFE8EDE3),
                     child: Icon(
                       Icons.coronavirus_outlined,
                       size: 56,
@@ -641,7 +641,7 @@ class _HeroCard extends StatelessWidget {
                   style: GoogleFonts.spaceGrotesk(
                     fontSize: 22,
                     fontWeight: FontWeight.w700,
-                    color: isDark ? Colors.white : const Color(0xFF0F172A),
+                    color: isDark ? AppColors.textPrimaryDark : const Color(0xFF0F172A),
                   ),
                 ),
                 const SizedBox(height: 6),
@@ -649,7 +649,7 @@ class _HeroCard extends StatelessWidget {
                 const SizedBox(height: 16),
                 Divider(
                   height: 1,
-                  color: isDark ? const Color(0xFF334155) : const Color(0xFFF1F5F9),
+                  color: isDark ? AppColors.borderDark : const Color(0xFFF1F5F9),
                 ),
                 const SizedBox(height: 16),
                 Row(
@@ -690,7 +690,7 @@ class _HeroCard extends StatelessWidget {
             fontSize: 10,
             fontWeight: FontWeight.w700,
             letterSpacing: 0.5,
-            color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+            color: isDark ? AppColors.textSecondaryDark : const Color(0xFF64748B),
           ),
         ),
         const SizedBox(height: 4),
@@ -699,7 +699,7 @@ class _HeroCard extends StatelessWidget {
           style: GoogleFonts.spaceGrotesk(
             fontSize: 14,
             fontWeight: FontWeight.w600,
-            color: isDark ? Colors.white : const Color(0xFF0F172A),
+            color: isDark ? AppColors.textPrimaryDark : const Color(0xFF0F172A),
           ),
         ),
       ],
@@ -717,7 +717,7 @@ class _CardShell extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E293B) : Colors.white,
+        color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: _kPrimary.withValues(alpha: 0.06),
@@ -778,13 +778,13 @@ class _SolutionTile extends StatelessWidget {
                   style: GoogleFonts.spaceGrotesk(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    color: isDark ? Colors.white : const Color(0xFF0F172A),
+                    color: isDark ? AppColors.textPrimaryDark : const Color(0xFF0F172A),
                   ),
                 ),
               ),
               Icon(
                 Icons.chevron_right_rounded,
-                color: isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
+                color: isDark ? AppColors.darkMuted : const Color(0xFF94A3B8),
               ),
             ],
           ),

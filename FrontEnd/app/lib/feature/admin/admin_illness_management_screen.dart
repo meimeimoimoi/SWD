@@ -125,8 +125,9 @@ class _AdminIllnessManagementScreenState
     final textSecondary = isDark
         ? AppColors.textSecondaryDark
         : AppColors.textSecondaryLight;
-    final bg = isDark ? const Color(0xFF141E15) : _kBg;
-    final cardBg = isDark ? const Color(0xFF1E2320) : Colors.white;
+    final bg = isDark ? AppColors.darkBackground : _kBg;
+    final cardBg =
+        isDark ? const Color(0xFF1E2320) : AppColors.surfaceLight;
 
     return AdminPopScope(
       child: Scaffold(
@@ -298,7 +299,7 @@ class _AdminIllnessManagementScreenState
         floatingActionButton: FloatingActionButton.extended(
           onPressed: () => _openEditor(),
           backgroundColor: _kPrimary,
-          foregroundColor: Colors.white,
+          foregroundColor: AppColors.onPrimary,
           elevation: 3,
           icon: const Icon(Icons.add_rounded),
           label: Text(

@@ -80,6 +80,7 @@ abstract final class ApiPaths {
   static const imageUploadMyImages = '/api/ImageUpload/my-images';
 
   static const predictionPredict = '/api/Prediction/predict';
+  static const predictionModels = '/api/Prediction/models';
   static const predictionClasses = '/api/Prediction/classes';
   static const predictionHealth = '/api/Prediction/health';
 

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../../routes/app_router.dart';
 import '../../share/services/history_service.dart';
 import '../../share/services/prediction_service.dart';
+import '../../share/services/storage_service.dart';
+import '../../share/theme/app_colors.dart';
 import '../../share/utils/disease_mapper.dart';
 import '../../share/widgets/user_bottom_nav_bar.dart';
 
@@ -150,6 +152,17 @@ class PredictionScreen extends StatefulWidget {
 
 class _PredictionScreenState extends State<PredictionScreen> {
   int _selectedTab = 0;
+  bool _showAiConfidence = false;
+
+  @override
+  void initState() {
+    super.initState();
+    StorageService.getRole().then((r) {
+      if (!mounted) return;
+      final admin = r?.trim().toLowerCase() == 'admin';
+      setState(() => _showAiConfidence = admin);
+    });
+  }
 
   static const _sampleResult = PredictionResult(
     predictionId: 0,
@@ -176,7 +189,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
 
     return Scaffold(
       backgroundColor: isDark
-          ? const Color(0xFF18181b)
+          ? AppColors.darkBackground
           : const Color(0xFFF4F4F5),
       body: SafeArea(
         child: Column(
@@ -190,8 +203,10 @@ class _PredictionScreenState extends State<PredictionScreen> {
                   children: [
                     _buildHeroImage(context, data, isDark),
                     const SizedBox(height: 20),
-                    _buildConfidenceCard(context, data, isDark),
-                    const SizedBox(height: 20),
+                    if (_showAiConfidence) ...[
+                      _buildConfidenceCard(context, data, isDark),
+                      const SizedBox(height: 20),
+                    ],
                     _buildDescriptionSection(context, data, isDark),
                     const SizedBox(height: 20),
                     _buildTreatmentSection(context, data, isDark),
@@ -214,10 +229,10 @@ class _PredictionScreenState extends State<PredictionScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF27272a) : Colors.white,
+        color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
         border: Border(
           bottom: BorderSide(
-            color: isDark ? const Color(0xFF374151) : const Color(0xFFE5E7EB),
+            color: isDark ? AppColors.borderDark : const Color(0xFFE5E7EB),
           ),
         ),
         boxShadow: [
@@ -241,7 +256,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: isDark ? Colors.white : const Color(0xFF111827),
+              color: isDark ? AppColors.textPrimaryDark : const Color(0xFF111827),
             ),
           ),
           _buildCircleButton(
@@ -260,7 +275,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
     required bool isDark,
   }) {
     return Material(
-      color: isDark ? const Color(0xFF3F3F46) : const Color(0xFFF3F4F6),
+      color: isDark ? AppColors.darkControlFill : const Color(0xFFF3F4F6),
       borderRadius: BorderRadius.circular(20),
       child: InkWell(
         onTap: onTap,
@@ -330,7 +345,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
                 if (loadingProgress == null) return child;
                 return Container(
                   color: isDark
-                      ? const Color(0xFF3F3F46)
+                      ? AppColors.darkControlFill
                       : const Color(0xFFE5E7EB),
                   child: Center(
                     child: CircularProgressIndicator(
@@ -346,7 +361,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
               errorBuilder: (context, error, stackTrace) {
                 return Container(
                   color: isDark
-                      ? const Color(0xFF3F3F46)
+                      ? AppColors.darkControlFill
                       : const Color(0xFFE5E7EB),
                   child: Icon(
                     Icons.image_not_supported,
@@ -381,10 +396,10 @@ class _PredictionScreenState extends State<PredictionScreen> {
               children: [
                 Text(
                   data.displayName,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: AppColors.onPrimary,
                     height: 1.2,
                   ),
                 ),
@@ -394,7 +409,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
                   style: TextStyle(
                     fontSize: 14,
                     fontStyle: FontStyle.italic,
-                    color: Colors.white.withOpacity(0.75),
+                    color: AppColors.onPrimary.withOpacity(0.75),
                   ),
                 ),
               ],
@@ -415,10 +430,10 @@ class _PredictionScreenState extends State<PredictionScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF27272a) : Colors.white,
+        color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isDark ? const Color(0xFF3F3F46) : const Color(0xFFE5E7EB),
+          color: isDark ? AppColors.darkControlFill : const Color(0xFFE5E7EB),
         ),
         boxShadow: [
           BoxShadow(
@@ -442,7 +457,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.white : const Color(0xFF111827),
+                  color: isDark ? AppColors.textPrimaryDark : const Color(0xFF111827),
                 ),
               ),
             ],
@@ -451,7 +466,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
           Container(
             height: 10,
             decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF3F3F46) : const Color(0xFFE5E7EB),
+              color: isDark ? AppColors.darkControlFill : const Color(0xFFE5E7EB),
               borderRadius: BorderRadius.circular(5),
             ),
             child: FractionallySizedBox(
@@ -484,7 +499,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
                   style: TextStyle(
                     fontSize: 12,
                     color: isDark
-                        ? const Color(0xFF9CA3AF)
+                        ? AppColors.textSecondaryDark
                         : const Color(0xFF6B7280),
                   ),
                 ),
@@ -517,7 +532,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: isDark ? Colors.white : const Color(0xFF111827),
+                color: isDark ? AppColors.textPrimaryDark : const Color(0xFF111827),
               ),
             ),
           ],
@@ -565,12 +580,12 @@ class _PredictionScreenState extends State<PredictionScreen> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: isDark
-            ? const Color(0xFF27272a).withOpacity(0.5)
+            ? AppColors.surfaceDark.withOpacity(0.5)
             : const Color(0xFFF3F4F6),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: isDark
-              ? const Color(0xFF3F3F46).withOpacity(0.5)
+                            ? AppColors.darkControlFill.withOpacity(0.5)
               : const Color(0xFFE5E7EB),
         ),
       ),
@@ -583,7 +598,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
               fontSize: 10,
               fontWeight: FontWeight.bold,
               letterSpacing: 0.5,
-              color: isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280),
+              color: isDark ? AppColors.textSecondaryDark : const Color(0xFF6B7280),
             ),
           ),
           const SizedBox(height: 6),
@@ -621,7 +636,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: isDark ? Colors.white : const Color(0xFF111827),
+                color: isDark ? AppColors.textPrimaryDark : const Color(0xFF111827),
               ),
             ),
           ],
@@ -631,7 +646,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
           padding: const EdgeInsets.all(4),
           decoration: BoxDecoration(
             color: isDark
-                ? const Color(0xFF0F1724).withOpacity(0.15)
+                ? Colors.black.withOpacity(0.25)
                 : const Color(0xFFF3F4F6).withOpacity(0.6),
             borderRadius: BorderRadius.circular(999),
           ),
@@ -652,11 +667,11 @@ class _PredictionScreenState extends State<PredictionScreen> {
               return Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF27272a) : Colors.white,
+                  color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                     color: isDark
-                        ? const Color(0xFF3F3F46)
+                        ? AppColors.darkControlFill
                         : const Color(0xFFE5E7EB),
                   ),
                 ),
@@ -707,7 +722,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
           padding: const EdgeInsets.symmetric(vertical: 10),
           decoration: BoxDecoration(
             color: isSelected
-                ? (isDark ? const Color(0xFFE4E4E7) : Colors.white)
+                ? (isDark ? const Color(0xFFE4E4E7) : AppColors.surfaceLight)
                 : Colors.transparent,
             borderRadius: BorderRadius.circular(999),
           ),
@@ -737,7 +752,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
                 color: isSelected
                     ? (isDark ? Colors.black : const Color(0xFF111827))
                     : (isDark
-                          ? const Color(0xFF9CA3AF)
+                          ? AppColors.textSecondaryDark
                           : const Color(0xFF6B7280)),
               ),
             ),
@@ -755,10 +770,10 @@ class _PredictionScreenState extends State<PredictionScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF27272a) : Colors.white,
+        color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isDark ? const Color(0xFF3F3F46) : const Color(0xFFE5E7EB),
+          color: isDark ? AppColors.darkControlFill : const Color(0xFFE5E7EB),
         ),
         boxShadow: [
           BoxShadow(
@@ -775,7 +790,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
             width: 80,
             height: 80,
             decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF3F3F46) : const Color(0xFFF3F4F6),
+              color: isDark ? AppColors.darkControlFill : const Color(0xFFF3F4F6),
               borderRadius: BorderRadius.circular(12),
             ),
             clipBehavior: Clip.antiAlias,
@@ -827,7 +842,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
-                    color: isDark ? Colors.white : const Color(0xFF111827),
+                    color: isDark ? AppColors.textPrimaryDark : const Color(0xFF111827),
                   ),
                 ),
                 const SizedBox(height: 2),
@@ -841,7 +856,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
                     fontSize: 12,
                     fontStyle: FontStyle.italic,
                     color: isDark
-                        ? const Color(0xFF9CA3AF)
+                        ? AppColors.textSecondaryDark
                         : const Color(0xFF6B7280),
                   ),
                 ),
@@ -854,7 +869,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
-                        color: isDark ? Colors.white : const Color(0xFF111827),
+                        color: isDark ? AppColors.textPrimaryDark : const Color(0xFF111827),
                       ),
                     ),
                     _buildDetailButton(
@@ -880,7 +895,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
     return Material(
       color: isPrimary
           ? (isDark ? const Color(0xFFE4E4E7) : const Color(0xFF27272A))
-          : (isDark ? const Color(0xFF3F3F46) : const Color(0xFFE5E7EB)),
+          : (isDark ? AppColors.darkControlFill : const Color(0xFFE5E7EB)),
       borderRadius: BorderRadius.circular(8),
       child: InkWell(
         onTap: onTap,
@@ -893,8 +908,8 @@ class _PredictionScreenState extends State<PredictionScreen> {
               fontSize: 12,
               fontWeight: FontWeight.bold,
               color: isPrimary
-                  ? (isDark ? Colors.black : Colors.white)
-                  : (isDark ? Colors.white : const Color(0xFF1F2937)),
+                  ? (isDark ? Colors.black : AppColors.onPrimary)
+                  : (isDark ? AppColors.textPrimaryDark : const Color(0xFF1F2937)),
             ),
           ),
         ),
@@ -933,7 +948,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
     required bool isDark,
   }) {
     return Material(
-      color: isDark ? const Color(0xFF27272a) : Colors.white,
+      color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
       borderRadius: BorderRadius.circular(12),
       child: InkWell(
         onTap: onTap,
@@ -943,7 +958,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: isDark ? const Color(0xFF3F3F46) : const Color(0xFFE5E7EB),
+              color: isDark ? AppColors.darkControlFill : const Color(0xFFE5E7EB),
             ),
           ),
           child: Column(
@@ -1019,7 +1034,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
         return Container(
           height: MediaQuery.of(context).size.height * 0.75,
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF27272a) : Colors.white,
+            color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
             borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
           ),
           child: SafeArea(
@@ -1033,7 +1048,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
                       height: 4,
                       decoration: BoxDecoration(
                         color: isDark
-                            ? const Color(0xFF3F3F46)
+                            ? AppColors.darkControlFill
                             : const Color(0xFFE5E7EB),
                         borderRadius: BorderRadius.circular(2),
                       ),
@@ -1053,7 +1068,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
                               fontSize: 22,
                               fontWeight: FontWeight.bold,
                               color: isDark
-                                  ? Colors.white
+                                  ? AppColors.textPrimaryDark
                                   : const Color(0xFF111827),
                             ),
                           ),
@@ -1073,7 +1088,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
                                           ).withOpacity(0.3)
                                         : const Color(0xFFDCFCE7))
                                   : (isDark
-                                        ? const Color(0xFF3F3F46)
+                                        ? AppColors.darkControlFill
                                         : const Color(0xFFF3F4F6)),
                               borderRadius: BorderRadius.circular(6),
                             ),
@@ -1087,7 +1102,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
                                           ? const Color(0xFF4ADE80)
                                           : const Color(0xFF16A34A))
                                     : (isDark
-                                          ? const Color(0xFF9CA3AF)
+                                          ? AppColors.textSecondaryDark
                                           : const Color(0xFF6B7280)),
                               ),
                             ),
@@ -1101,7 +1116,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
                               color: isDark
-                                  ? Colors.white
+                                  ? AppColors.textPrimaryDark
                                   : const Color(0xFF111827),
                             ),
                           ),
@@ -1128,7 +1143,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
                                 color: isDark
-                                    ? Colors.white
+                                    ? AppColors.textPrimaryDark
                                     : const Color(0xFF111827),
                               ),
                             ),
@@ -1161,7 +1176,8 @@ class _PredictionScreenState extends State<PredictionScreen> {
                         backgroundColor: isDark
                             ? const Color(0xFFE4E4E7)
                             : const Color(0xFF27272A),
-                        foregroundColor: isDark ? Colors.black : Colors.white,
+                        foregroundColor:
+                            isDark ? Colors.black : AppColors.onPrimary,
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
