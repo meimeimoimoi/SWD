@@ -1,24 +1,103 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../../../providers/dashboard_provider.dart';
+import '../../../providers/theme_mode_provider.dart';
+import '../../../share/constants/api_config.dart';
 import '../../../share/theme/app_colors.dart';
 import '../../../share/widgets/app_card.dart';
-import '../../../providers/dashboard_provider.dart';
 
 class AdminFeedbackListScreen extends StatefulWidget {
   const AdminFeedbackListScreen({super.key});
 
   @override
-  State<AdminFeedbackListScreen> createState() => _AdminFeedbackListScreenState();
+  State<AdminFeedbackListScreen> createState() =>
+      _AdminFeedbackListScreenState();
 }
 
+enum _FeedbackFilter { all, critical, negative }
+
 class _AdminFeedbackListScreenState extends State<AdminFeedbackListScreen> {
+  _FeedbackFilter _filter = _FeedbackFilter.all;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<DashboardProvider>().fetchFeedbackList();
     });
+  }
+
+  static int _score(Map<String, dynamic> data) {
+    final s = data['score'];
+    if (s is int) return s;
+    if (s is num) return s.round();
+    return int.tryParse('$s') ?? 0;
+  }
+
+  static String _resolvedImageUrl(Map<String, dynamic> data) {
+    final raw = data['imageUrl'] as String?;
+    if (raw == null || raw.isEmpty) {
+      return '';
+    }
+    if (raw.startsWith('http://') || raw.startsWith('https://')) {
+      return raw;
+    }
+    final base = Uri.parse(ApiConfig.baseUrl);
+    final path = raw.startsWith('/') ? raw : '/$raw';
+    return base.resolveUri(Uri.parse(path)).toString();
+  }
+
+  static String _timeAgo(dynamic createdAt) {
+    if (createdAt == null) return 'Just now';
+    try {
+      final date = DateTime.parse(createdAt.toString());
+      final diff = DateTime.now().difference(date);
+      if (diff.inDays > 0) return '${diff.inDays}d ago';
+      if (diff.inHours > 0) return '${diff.inHours}h ago';
+      if (diff.inMinutes > 0) return '${diff.inMinutes}m ago';
+    } catch (_) {}
+    return 'Just now';
+  }
+
+  static (String?, String?) _actionsFor(int score, String comment) {
+    final c = comment.toLowerCase();
+    if (c.contains('payment') ||
+        c.contains('charge') ||
+        c.contains('charged') ||
+        c.contains('refund') ||
+        c.contains('billed') ||
+        c.contains('billing')) {
+      return ('Contact User', 'Refund');
+    }
+    if (score <= 2 &&
+        (c.contains('diagnos') ||
+            c.contains('incorrect') ||
+            c.contains('wrong') ||
+            c.contains('not ') ||
+            c.contains('clearly'))) {
+      return ('Review Diagnosis', 'Dismiss');
+    }
+    return (null, null);
+  }
+
+  List<Map<String, dynamic>> _filtered(
+    List<dynamic> raw,
+    _FeedbackFilter f,
+  ) {
+    final list = raw.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+    switch (f) {
+      case _FeedbackFilter.all:
+        return list;
+      case _FeedbackFilter.critical:
+        return list.where((m) {
+          final s = _score(m);
+          return s >= 1 && s <= 2;
+        }).toList();
+      case _FeedbackFilter.negative:
+        return list.where((m) => _score(m) == 3).toList();
+    }
   }
 
   @override
@@ -31,33 +110,80 @@ class _AdminFeedbackListScreenState extends State<AdminFeedbackListScreen> {
     final textSecondary = isDark
         ? AppColors.textSecondaryDark
         : AppColors.textSecondaryLight;
-    final appBarBackground = isDark
-        ? Colors.transparent
-        : AppColors.surfaceLight;
+    final appBarBackground =
+        isDark ? Colors.transparent : AppColors.surfaceLight;
     final appBarShadow = isDark ? Colors.transparent : Colors.black12;
 
     final provider = context.watch<DashboardProvider>();
     final feedbackList = provider.feedbackList;
+    final filtered = _filtered(feedbackList, _filter);
 
-    int totalCount = feedbackList.length;
+    final totalCount = feedbackList.length;
     double avgRating = 0;
     if (totalCount > 0) {
-      double sum = feedbackList.fold(0.0, (prev, curr) => prev + (curr['score'] ?? 0.0).toDouble());
+      final sum = feedbackList.fold<double>(
+        0,
+        (p, curr) => p + _score(Map<String, dynamic>.from(curr as Map)),
+      );
       avgRating = sum / totalCount;
     }
+
+    final pending = feedbackList.where((e) {
+      final m = Map<String, dynamic>.from(e as Map);
+      return _score(m) <= 2;
+    }).length;
+
+    double? prevAvg;
+    if (totalCount > 1) {
+      final mid = totalCount ~/ 2;
+      final older = feedbackList.sublist(mid);
+      if (older.isNotEmpty) {
+        final os = older.fold<double>(
+          0,
+          (p, curr) => p + _score(Map<String, dynamic>.from(curr as Map)),
+        );
+        prevAvg = os / older.length;
+      }
+    }
+    final deltaAvg = prevAvg != null ? (avgRating - prevAvg) : null;
+
+    var recent7d = 0;
+    final weekAgo = DateTime.now().subtract(const Duration(days: 7));
+    for (final e in feedbackList) {
+      final m = Map<String, dynamic>.from(e as Map);
+      final ca = m['createdAt'];
+      if (ca == null) continue;
+      try {
+        if (DateTime.parse(ca.toString()).isAfter(weekAgo)) recent7d++;
+      } catch (_) {}
+    }
+    final recentPct = totalCount > 0
+        ? ((recent7d / totalCount) * 100).round()
+        : 0;
+
+    final nf = NumberFormat.decimalPattern();
+    final valueStr = nf.format(totalCount);
 
     final stats = <_FeedbackStatItem>[
       _FeedbackStatItem(
         title: 'Total Feedback',
-        value: totalCount.toString(),
-        delta: '',
+        value: valueStr,
+        delta: totalCount > 0 ? '$recentPct% last 7d' : '—',
         deltaColor: AppColors.primary,
       ),
       _FeedbackStatItem(
         title: 'Average Rating',
         value: avgRating.toStringAsFixed(1),
-        delta: '★',
+        delta: deltaAvg != null
+            ? '${deltaAvg >= 0 ? '+' : ''}${deltaAvg.toStringAsFixed(1)}'
+            : '★',
         deltaColor: AppColors.primary,
+      ),
+      _FeedbackStatItem(
+        title: 'Pending',
+        value: pending.toString(),
+        delta: pending > 0 ? 'Urgent' : '—',
+        deltaColor: pending > 0 ? Colors.orange.shade800 : AppColors.primary,
       ),
     ];
 
@@ -76,6 +202,34 @@ class _AdminFeedbackListScreenState extends State<AdminFeedbackListScreen> {
           'Feedback',
           style: theme.textTheme.titleLarge?.copyWith(color: textPrimary),
         ),
+        actions: [
+          Consumer<ThemeModeProvider>(
+            builder: (context, tm, _) {
+              final light = tm.themeMode == ThemeMode.light;
+              return Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      light ? Icons.light_mode_outlined : Icons.dark_mode,
+                      size: 20,
+                      color: textSecondary,
+                    ),
+                    Switch(
+                      value: light,
+                      onChanged: (v) {
+                        tm.setThemeMode(
+                          v ? ThemeMode.light : ThemeMode.dark,
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ],
       ),
       body: SafeArea(
         child: RefreshIndicator(
@@ -86,25 +240,35 @@ class _AdminFeedbackListScreenState extends State<AdminFeedbackListScreen> {
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
                 children: [
-                  Wrap(
-                    spacing: 12,
-                    runSpacing: 12,
-                    children: stats
-                        .map(
-                          (item) =>
-                              SizedBox(width: 180, child: _StatCard(item: item)),
-                        )
-                        .toList(),
+                  ...stats.map(
+                    (item) => Padding(
+                      padding: const EdgeInsets.only(bottom: 10),
+                      child: _StatCard(item: item),
+                    ),
                   ),
-                  const SizedBox(height: 12),
                   SizedBox(
-                    height: 42,
+                    height: 44,
                     child: ListView(
                       scrollDirection: Axis.horizontal,
-                      children: const [
-                        _FilterPill(label: 'All Reviews', isActive: true),
-                        _FilterPill(label: 'Critical (1-2★)'),
-                        _FilterPill(label: 'Negative (3★)'),
+                      children: [
+                        _FilterPill(
+                          label: 'All Reviews',
+                          isActive: _filter == _FeedbackFilter.all,
+                          onTap: () =>
+                              setState(() => _filter = _FeedbackFilter.all),
+                        ),
+                        _FilterPill(
+                          label: 'Critical (1-2★)',
+                          isActive: _filter == _FeedbackFilter.critical,
+                          onTap: () =>
+                              setState(() => _filter = _FeedbackFilter.critical),
+                        ),
+                        _FilterPill(
+                          label: 'Negative (3★)',
+                          isActive: _filter == _FeedbackFilter.negative,
+                          onTap: () =>
+                              setState(() => _filter = _FeedbackFilter.negative),
+                        ),
                       ],
                     ),
                   ),
@@ -113,67 +277,70 @@ class _AdminFeedbackListScreenState extends State<AdminFeedbackListScreen> {
                     'Recent Feedback',
                     style: theme.textTheme.labelLarge?.copyWith(
                       letterSpacing: 1.4,
-                      color: textSecondary.withOpacity(0.7),
+                      color: textSecondary.withValues(alpha: 0.7),
                     ),
                   ),
                   const SizedBox(height: 12),
                   if (provider.isLoading && feedbackList.isEmpty)
                     const Center(
                       child: Padding(
-                        padding: EdgeInsets.only(top: 40.0),
+                        padding: EdgeInsets.only(top: 40),
                         child: CircularProgressIndicator(),
                       ),
                     )
-                  else if (feedbackList.isEmpty)
+                  else if (filtered.isEmpty)
                     Center(
                       child: Padding(
-                        padding: const EdgeInsets.only(top: 40.0),
+                        padding: const EdgeInsets.only(top: 40),
                         child: Text(
-                          'No feedback records found',
+                          'No feedback in this filter',
                           style: TextStyle(color: textSecondary),
                         ),
                       ),
                     )
                   else
-                    ...feedbackList.map((data) {
-                      final prediction = data['prediction'] ?? {};
-                      final upload = prediction['upload'] ?? {};
-                      final user = upload['user'] ?? {};
-                      final username = user['username'] ?? 'User';
-                      final illness = prediction['illness']?['name'] ?? 'Unknown';
-                      
-                      String timeAgo = 'Just now';
-                      if (data['createdAt'] != null) {
-                        try {
-                          final date = DateTime.parse(data['createdAt']);
-                          final diff = DateTime.now().difference(date);
-                          if (diff.inDays > 0) {
-                            timeAgo = '${diff.inDays}d ago';
-                          } else if (diff.inHours > 0) {
-                            timeAgo = '${diff.inHours}h ago';
-                          } else if (diff.inMinutes > 0) {
-                            timeAgo = '${diff.inMinutes}m ago';
-                          }
-                        } catch (_) {}
-                      }
+                    ...filtered.map((data) {
+                      final score = _score(data);
+                      final uid = data['userId'];
+                      final userLabel = uid != null
+                          ? 'User #$uid'
+                          : (data['userName']?.toString().trim().isNotEmpty ==
+                                  true)
+                              ? data['userName'].toString()
+                              : (data['userEmail']?.toString() ?? 'User');
+                      final timeAgo = _timeAgo(data['createdAt']);
+                      final userMeta = '$userLabel • $timeAgo';
+                      final comment =
+                          data['comment']?.toString().trim().isNotEmpty == true
+                              ? data['comment'].toString()
+                              : 'No comment provided.';
+                      final imageUrl = _resolvedImageUrl(data);
+                      final tone = score <= 2
+                          ? _FeedbackTone.critical
+                          : (score <= 3
+                              ? _FeedbackTone.warning
+                              : _FeedbackTone.positive);
+                      final badge =
+                          score <= 2 ? 'Needs Attention' : null;
+                      final actions = _actionsFor(score, comment);
 
                       final item = _FeedbackItem(
-                        rating: (data['score'] ?? 0).toInt(),
-                        score: (data['score'] ?? 0).toString(),
-                        userMeta: '$username • $timeAgo',
-                        message: data['comment'] ?? 'No comment provided.',
-                        imageUrl: upload['imageUrl'] ?? 'https://via.placeholder.com/150',
-                        tone: (data['score'] ?? 0) <= 2 
-                            ? _FeedbackTone.critical 
-                            : ((data['score'] ?? 0) <= 3 ? _FeedbackTone.warning : _FeedbackTone.positive),
-                        badge: illness,
+                        rating: score,
+                        score: score.toDouble().toStringAsFixed(1),
+                        userMeta: userMeta,
+                        message: comment,
+                        imageUrl: imageUrl,
+                        tone: tone,
+                        badge: badge,
+                        primaryAction: actions.$1,
+                        secondaryAction: actions.$2,
                       );
-                      
+
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 12),
                         child: _FeedbackCard(item: item),
                       );
-                    }).toList(),
+                    }),
                 ],
               ),
             ),
@@ -253,10 +420,15 @@ class _StatCard extends StatelessWidget {
 }
 
 class _FilterPill extends StatelessWidget {
-  const _FilterPill({required this.label, this.isActive = false});
+  const _FilterPill({
+    required this.label,
+    required this.isActive,
+    required this.onTap,
+  });
 
   final String label;
   final bool isActive;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -272,23 +444,32 @@ class _FilterPill extends StatelessWidget {
         ? (isDark ? AppColors.darkBackground : AppColors.surfaceLight)
         : textSecondary;
 
-    return Container(
-      margin: const EdgeInsets.only(right: 8),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      decoration: BoxDecoration(
+    return Padding(
+      padding: const EdgeInsets.only(right: 8),
+      child: Material(
         color: background,
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(
-          color: isActive
-              ? Colors.transparent
-              : theme.dividerColor.withOpacity(0.3),
-        ),
-      ),
-      child: Text(
-        label,
-        style: theme.textTheme.labelSmall?.copyWith(
-          color: foreground,
-          fontWeight: FontWeight.w700,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(999),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(999),
+              border: Border.all(
+                color: isActive
+                    ? Colors.transparent
+                    : theme.dividerColor.withValues(alpha: 0.3),
+              ),
+            ),
+            child: Text(
+              label,
+              style: theme.textTheme.labelSmall?.copyWith(
+                color: foreground,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
         ),
       ),
     );
@@ -308,7 +489,6 @@ class _FeedbackItem {
     this.badge,
     this.primaryAction,
     this.secondaryAction,
-    this.dimmed = false,
   });
 
   final int rating;
@@ -320,7 +500,6 @@ class _FeedbackItem {
   final String? badge;
   final String? primaryAction;
   final String? secondaryAction;
-  final bool dimmed;
 }
 
 class _FeedbackCard extends StatelessWidget {
@@ -350,12 +529,10 @@ class _FeedbackCard extends StatelessWidget {
         ? AppColors.textSecondaryDark
         : AppColors.textSecondaryLight;
     final toneColor = _toneColor(context);
-    final background = toneColor.withOpacity(isDark ? 0.12 : 0.08);
-    final borderColor = toneColor.withOpacity(isDark ? 0.35 : 0.25);
+    final background = toneColor.withValues(alpha: isDark ? 0.12 : 0.08);
+    final borderColor = toneColor.withValues(alpha: isDark ? 0.35 : 0.25);
 
-    return Opacity(
-      opacity: item.dimmed ? 0.8 : 1,
-      child: Container(
+    return Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
           color: background,
@@ -374,7 +551,7 @@ class _FeedbackCard extends StatelessWidget {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: toneColor.withOpacity(0.18),
+                    color: toneColor.withValues(alpha: 0.18),
                     borderRadius: BorderRadius.circular(999),
                     border: Border.all(color: borderColor),
                   ),
@@ -393,18 +570,26 @@ class _FeedbackCard extends StatelessWidget {
               children: [
                 ClipRRect(
                   borderRadius: BorderRadius.circular(12),
-                  child: Image.network(
-                    item.imageUrl,
-                    width: 76,
-                    height: 76,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) => Container(
-                      width: 76,
-                      height: 76,
-                      color: Colors.grey.withOpacity(0.2),
-                      child: const Icon(Icons.broken_image, size: 24),
-                    ),
-                  ),
+                  child: item.imageUrl.isNotEmpty
+                      ? Image.network(
+                          item.imageUrl,
+                          width: 76,
+                          height: 76,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) =>
+                              Container(
+                            width: 76,
+                            height: 76,
+                            color: Colors.grey.withValues(alpha: 0.2),
+                            child: const Icon(Icons.broken_image, size: 24),
+                          ),
+                        )
+                      : Container(
+                          width: 76,
+                          height: 76,
+                          color: Colors.grey.withValues(alpha: 0.2),
+                          child: Icon(Icons.image_outlined, color: textSecondary),
+                        ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -432,7 +617,7 @@ class _FeedbackCard extends StatelessWidget {
                           color: textPrimary,
                           fontWeight: FontWeight.w600,
                         ),
-                        maxLines: 2,
+                        maxLines: 4,
                         overflow: TextOverflow.ellipsis,
                       ),
                     ],
@@ -473,7 +658,7 @@ class _FeedbackCard extends StatelessWidget {
                           style: OutlinedButton.styleFrom(
                             foregroundColor: textPrimary,
                             side: BorderSide(
-                              color: theme.dividerColor.withOpacity(0.4),
+                              color: theme.dividerColor.withValues(alpha: 0.4),
                             ),
                             padding: const EdgeInsets.symmetric(vertical: 10),
                             textStyle: theme.textTheme.labelLarge,
@@ -489,7 +674,6 @@ class _FeedbackCard extends StatelessWidget {
               ),
           ],
         ),
-      ),
     );
   }
 }
@@ -528,7 +712,7 @@ class _StarRating extends StatelessWidget {
           score,
           style: theme.textTheme.labelSmall?.copyWith(
             fontWeight: FontWeight.w700,
-            color: textSecondary.withOpacity(0.8),
+            color: textSecondary.withValues(alpha: 0.8),
           ),
         ),
       ],

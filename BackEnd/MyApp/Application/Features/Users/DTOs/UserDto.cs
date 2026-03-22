@@ -1,4 +1,4 @@
-﻿namespace MyApp.Application.Features.Users.DTOs
+namespace MyApp.Application.Features.Users.DTOs
 {
     public class UserDto
     {
@@ -11,5 +11,6 @@
         public string? ProfileImagePath { get; set; }
         public DateTime? LastLoginAt { get; set; }
         public string? Role { get; set; }
+        public string? AccountStatus { get; set; }
     }
 }

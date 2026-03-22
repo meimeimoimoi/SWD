@@ -27,6 +27,37 @@ class DashboardProvider with ChangeNotifier {
   List<dynamic> _feedbackList = [];
   List<dynamic> get feedbackList => _feedbackList;
 
+  Map<String, dynamic>? _adminPredictionStats;
+  List<Map<String, dynamic>> _adminModelAccuracy = [];
+  int _criticalFeedbackCount = 0;
+
+  Map<String, dynamic>? get adminPredictionStats => _adminPredictionStats;
+  List<Map<String, dynamic>> get adminModelAccuracy => _adminModelAccuracy;
+  int get criticalFeedbackCount => _criticalFeedbackCount;
+
+  Future<void> fetchAdminDashboard() async {
+    _isLoading = true;
+    notifyListeners();
+
+    _adminStats = await _service.getAdminStats();
+    _adminPredictionStats = await _service.getAdminPredictionStats(days: 7);
+    _adminModelAccuracy = await _service.getModelAccuracy();
+    _adminLogs = await _service.getAdminActivityLogs(count: 25);
+    final feedback = await _service.getFeedbackList();
+    _criticalFeedbackCount = feedback.where((e) {
+      if (e is! Map) return false;
+      final m = Map<String, dynamic>.from(e);
+      final s = m['score'];
+      final n = s is int
+          ? s
+          : (s is num ? s.round() : int.tryParse('$s') ?? 99);
+      return n <= 2;
+    }).length;
+
+    _isLoading = false;
+    notifyListeners();
+  }
+
   Future<void> fetchFeedbackList() async {
     _isLoading = true;
     notifyListeners();
@@ -108,14 +139,13 @@ class DashboardProvider with ChangeNotifier {
     _isLoading = true;
     notifyListeners();
     final success = await _service.updateUserStatus(userId, status);
-    if (success) {
-      _adminUsers = await _service.getAdminUsers(
-        search: _adminUsersSearch,
-        role: _adminUsersRole,
-        sortBy: _adminUsersSortBy,
-        sortOrder: _adminUsersSortOrder,
-      );
-    }
+    // Always reload so UI matches server (PATCH may succeed even if client misread response).
+    _adminUsers = await _service.getAdminUsers(
+      search: _adminUsersSearch,
+      role: _adminUsersRole,
+      sortBy: _adminUsersSortBy,
+      sortOrder: _adminUsersSortOrder,
+    );
     _isLoading = false;
     notifyListeners();
     return success;

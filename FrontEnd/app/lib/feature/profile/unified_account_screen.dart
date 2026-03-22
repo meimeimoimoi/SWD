@@ -733,7 +733,7 @@ class _UnifiedAccountScreenState extends State<UnifiedAccountScreen> {
               ),
       ),
       bottomNavigationBar: widget.isAdminShell
-          ? const AdminBottomNav(currentIndex: 4)
+          ? const AdminBottomNav(currentIndex: 5)
           : const UserBottomNavBar(selectedIndexOverride: 3),
     );
   }

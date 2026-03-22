@@ -16,7 +16,7 @@ class AdminPopScope extends StatelessWidget {
         if (hasParentRoute && !didPop) {
           Navigator.pushNamedAndRemoveUntil(
             context,
-            AppRouter.adminUsers,
+            AppRouter.adminDashboard,
             (route) => false,
           );
         }

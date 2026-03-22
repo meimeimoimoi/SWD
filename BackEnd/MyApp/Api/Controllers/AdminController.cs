@@ -167,11 +167,18 @@ namespace MyApp.Api.Controllers
                     });
                 }
 
+                var updated = await _adminService.GetUserByIdAsync(userId);
+
                 return Ok(new
                 {
                     success = true,
-                    message = $"User status updated to '{request.Status}' successfully"
+                    message = $"User status updated to '{request.Status}' successfully",
+                    data = updated
                 });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { success = false, message = ex.Message });
             }
             catch (Exception ex)
             {

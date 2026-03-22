@@ -18,6 +18,11 @@ class AdminBottomNav extends StatelessWidget {
 
     final items = <_AdminNavItem>[
       const _AdminNavItem(
+        label: 'Home',
+        icon: Icons.dashboard_outlined,
+        route: AppRouter.adminDashboard,
+      ),
+      const _AdminNavItem(
         label: 'Users',
         icon: Icons.groups_outlined,
         route: AppRouter.adminUsers,

@@ -40,7 +40,8 @@ namespace MyApp.Infrastructure.Services
 					Phone = user.Phone,
 					ProfileImagePath = user.ProfileImagePath,
 					LastLoginAt = user.LastLoginAt,
-					Role = user.Role?.ToString()
+					Role = user.Role?.ToString(),
+					AccountStatus = user.AccountStatus
 				};
 			}
 			catch (Exception ex)

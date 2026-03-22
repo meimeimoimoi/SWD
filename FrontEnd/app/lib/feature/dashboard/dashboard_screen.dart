@@ -4,6 +4,7 @@ import '../../routes/app_router.dart';
 import '../../share/constants/app_brand.dart';
 import '../../share/theme/app_colors.dart';
 import '../../share/services/history_service.dart';
+import '../../share/services/prediction_service.dart';
 import '../../share/services/storage_service.dart';
 import '../../share/utils/disease_mapper.dart';
 import '../../share/widgets/user_bottom_nav_bar.dart';
@@ -26,8 +27,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
   static const Color _urgentBg = Color(0xFFFFF7ED);
 
   final HistoryService _historyService = HistoryService();
+  final PredictionService _predictionService = PredictionService();
 
   String? _username;
+  List<CommonThreatItem> _commonThreats = [];
   List<_RecentScanRowVm> _recentRows = [];
   List<_UrgentPlantRowVm> _urgentRows = [];
   _TreeOverviewVm? _treeOverview;
@@ -47,6 +50,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
     if (mounted) setState(() => _username = u);
   }
 
+  /// No trees, no urgent flags, no scans — show one compact card instead of three blocks.
+  bool get _dashboardFullyEmpty {
+    if (!_insightsReady) return false;
+    if (_insightsError != null) return false;
+    final o = _treeOverview;
+    final noPlantData = o == null || o.isEmpty;
+    return noPlantData && _urgentRows.isEmpty && _recentRows.isEmpty;
+  }
+
   Future<void> _loadInsights({required bool silentRefresh}) async {
     if (!silentRefresh) {
       setState(() {
@@ -55,8 +67,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
       });
     }
 
-    final response = await _historyService.getHistory();
+    final awaited = await Future.wait([
+      _historyService.getHistory(),
+      _predictionService.fetchCommonThreats(take: 5),
+    ]);
     if (!mounted) return;
+
+    final response = awaited[0] as HistoryListResponse;
+    final threats = awaited[1] as List<CommonThreatItem>;
 
     final hadCachedInsights = _recentRows.isNotEmpty ||
         _urgentRows.isNotEmpty ||
@@ -88,6 +106,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             .map((s) => _UrgentPlantRowVm.fromSummary(s, now))
             .toList();
         _treeOverview = _TreeOverviewVm.fromSummaries(trees, now);
+        _commonThreats = threats;
         _insightsLoading = false;
         _insightsReady = true;
         _insightsError = null;
@@ -99,6 +118,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           _urgentRows = [];
           _treeOverview = null;
         }
+        _commonThreats = threats;
         _insightsLoading = false;
         _insightsReady = true;
         _insightsError = response.message;
@@ -146,37 +166,58 @@ class _DashboardScreenState extends State<DashboardScreen> {
             _OwnerScanHero(
               onScan: () => Navigator.pushNamed(context, AppRouter.scan),
             ),
-            const SizedBox(height: 20),
-            if (!_insightsLoading || _insightsReady)
-              _TreeIllnessOverviewCard(
-                overview: _treeOverview,
-                onViewAllTrees: () =>
-                    Navigator.pushNamed(context, AppRouter.trees),
+            const SizedBox(height: 16),
+            if (_insightsLoading && !_insightsReady)
+              _InsightsPanel(
+                blockingLoader: true,
+                loading: true,
+                errorMessage: _insightsError,
+                recentRows: _recentRows,
+                urgentRows: _urgentRows,
+                onSeeAll: () => Navigator.pushNamed(context, AppRouter.history),
+                onOpenItem: _openPrediction,
+                onSeeTrees: () => Navigator.pushNamed(context, AppRouter.trees),
                 onOpenTree: (summary) => Navigator.pushNamed(
                   context,
                   AppRouter.treeDetail,
                   arguments: summary,
                 ),
-                onStartScan: () => Navigator.pushNamed(context, AppRouter.scan),
+              )
+            else if (_dashboardFullyEmpty)
+              _CompactDashboardEmpty(
+                onScan: () => Navigator.pushNamed(context, AppRouter.scan),
+                onTrees: () => Navigator.pushNamed(context, AppRouter.trees),
+              )
+            else ...[
+              if (!_insightsLoading || _insightsReady) ...[
+                _TreeIllnessOverviewCard(
+                  overview: _treeOverview,
+                  onViewAllTrees: () =>
+                      Navigator.pushNamed(context, AppRouter.trees),
+                  onOpenTree: (summary) => Navigator.pushNamed(
+                    context,
+                    AppRouter.treeDetail,
+                    arguments: summary,
+                  ),
+                ),
+                const SizedBox(height: 16),
+              ],
+              _InsightsPanel(
+                blockingLoader: false,
+                loading: _insightsLoading,
+                errorMessage: _insightsError,
+                recentRows: _recentRows,
+                urgentRows: _urgentRows,
+                onSeeAll: () => Navigator.pushNamed(context, AppRouter.history),
+                onOpenItem: _openPrediction,
+                onSeeTrees: () => Navigator.pushNamed(context, AppRouter.trees),
+                onOpenTree: (summary) => Navigator.pushNamed(
+                  context,
+                  AppRouter.treeDetail,
+                  arguments: summary,
+                ),
               ),
-            if (!_insightsLoading || _insightsReady)
-              const SizedBox(height: 20),
-            _InsightsPanel(
-              blockingLoader: _insightsLoading && !_insightsReady,
-              loading: _insightsLoading,
-              errorMessage: _insightsError,
-              recentRows: _recentRows,
-              urgentRows: _urgentRows,
-              onSeeAll: () => Navigator.pushNamed(context, AppRouter.history),
-              onOpenItem: _openPrediction,
-              onStartScan: () => Navigator.pushNamed(context, AppRouter.scan),
-              onSeeTrees: () => Navigator.pushNamed(context, AppRouter.trees),
-              onOpenTree: (summary) => Navigator.pushNamed(
-                context,
-                AppRouter.treeDetail,
-                arguments: summary,
-              ),
-            ),
+            ],
             const SizedBox(height: 28),
             Text(
               'GET A CLEAR SCAN',
@@ -193,20 +234,26 @@ class _DashboardScreenState extends State<DashboardScreen> {
               'COMMON THREATS',
               style: Theme.of(context).textTheme.labelSmall?.copyWith(
                     letterSpacing: 1.2,
-                    fontWeight: FontWeight.w700,
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    fontWeight: FontWeight.w800,
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? AppColors.textPrimaryDark
+                        : Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
             Text(
               'Spot symptoms early—scan a leaf if something looks off.',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? AppColors.textSecondaryDark
+                        : Theme.of(context).colorScheme.onSurfaceVariant,
                     height: 1.35,
                   ),
             ),
             const SizedBox(height: 12),
             _PopularDiseasesCard(
+              items: _commonThreats,
+              insightsReady: _insightsReady,
               onSeeAll: () => Navigator.pushNamed(context, AppRouter.trees),
               onDiseaseTap: () => Navigator.pushNamed(context, AppRouter.scan),
             ),
@@ -225,6 +272,15 @@ String _dashboardRelativeTime(DateTime dt, DateTime now) {
   if (diff.inHours < 24) return '${diff.inHours}h ago';
   if (diff.inDays < 7) return '${diff.inDays}d ago';
   return '${dt.day}/${dt.month}/${dt.year}';
+}
+
+String _formatCommonThreatSubtitle(CommonThreatItem it) {
+  final sci = it.scientificName?.trim();
+  final n = it.reportCount;
+  final rep =
+      n >= 1000 ? '${(n / 1000).toStringAsFixed(1)}k reports' : '$n reports';
+  if (sci != null && sci.isNotEmpty) return '$sci • $rep';
+  return rep;
 }
 
 int _predictionConcernScore(HistoryItem p) {
@@ -392,18 +448,95 @@ class _TreeProgressRowVm {
   }
 }
 
+class _CompactDashboardEmpty extends StatelessWidget {
+  const _CompactDashboardEmpty({
+    required this.onScan,
+    required this.onTrees,
+  });
+
+  final VoidCallback onScan;
+  final VoidCallback onTrees;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+      decoration: BoxDecoration(
+        color: cs.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: Theme.of(context).brightness == Brightness.dark
+              ? const Color(0xFF2A2A2A)
+              : Colors.black.withValues(alpha: 0.06),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.dashboard_outlined, color: _DashboardScreenState._primary, size: 22),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'Health & activity',
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w800,
+                      ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Scan a leaf to see plant insights, urgency alerts, and your history — all in one place.',
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: cs.onSurfaceVariant,
+                  height: 1.35,
+                ),
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              ElevatedButton(
+                onPressed: onScan,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _DashboardScreenState._primary,
+                  foregroundColor: AppColors.onPrimary,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  elevation: 0,
+                ),
+                child: const Text('Open scanner'),
+              ),
+              TextButton(
+                onPressed: onTrees,
+                style: TextButton.styleFrom(
+                  foregroundColor: _DashboardScreenState._primary,
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                ),
+                child: const Text('My trees'),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _TreeIllnessOverviewCard extends StatelessWidget {
   const _TreeIllnessOverviewCard({
     required this.overview,
     required this.onViewAllTrees,
     required this.onOpenTree,
-    required this.onStartScan,
   });
 
   final _TreeOverviewVm? overview;
   final VoidCallback onViewAllTrees;
   final void Function(UserTreeSummary summary) onOpenTree;
-  final VoidCallback onStartScan;
 
   static const _barRadius = BorderRadius.all(Radius.circular(8));
 
@@ -412,7 +545,7 @@ class _TreeIllnessOverviewCard extends StatelessWidget {
     final o = overview;
     if (o == null || o.isEmpty) {
       return Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(16),
@@ -425,18 +558,19 @@ class _TreeIllnessOverviewCard extends StatelessWidget {
         child: Row(
           children: [
             Container(
-              width: 48,
-              height: 48,
+              width: 40,
+              height: 40,
               decoration: BoxDecoration(
                 color: _DashboardScreenState._secondaryContainer,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(10),
               ),
               child: const Icon(
                 Icons.forest_outlined,
                 color: _DashboardScreenState._primary,
+                size: 22,
               ),
             ),
-            const SizedBox(width: 14),
+            const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -447,18 +581,17 @@ class _TreeIllnessOverviewCard extends StatelessWidget {
                           fontWeight: FontWeight.w800,
                         ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 2),
                   Text(
-                    'Scans grouped by plant will show illness status and progress here.',
+                    'Per-plant health appears after you scan and link trees.',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: Theme.of(context).colorScheme.onSurfaceVariant,
-                          height: 1.35,
+                          height: 1.25,
                         ),
                   ),
                 ],
               ),
             ),
-            TextButton(onPressed: onStartScan, child: const Text('Scan')),
           ],
         ),
       );
@@ -748,7 +881,6 @@ class _InsightsPanel extends StatelessWidget {
     required this.urgentRows,
     required this.onSeeAll,
     required this.onOpenItem,
-    required this.onStartScan,
     required this.onSeeTrees,
     required this.onOpenTree,
   });
@@ -760,7 +892,6 @@ class _InsightsPanel extends StatelessWidget {
   final List<_UrgentPlantRowVm> urgentRows;
   final VoidCallback onSeeAll;
   final void Function(HistoryItem item) onOpenItem;
-  final VoidCallback onStartScan;
   final VoidCallback onSeeTrees;
   final void Function(UserTreeSummary summary) onOpenTree;
 
@@ -778,7 +909,7 @@ class _InsightsPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     if (blockingLoader) {
       return const SizedBox(
-        height: 200,
+        height: 140,
         child: Center(
           child: SizedBox(
             width: 32,
@@ -821,15 +952,18 @@ class _InsightsPanel extends StatelessWidget {
               ),
           ],
         ),
-        const SizedBox(height: 8),
-        Text(
-          'Plants with high-severity findings from your scan history.',
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-                height: 1.35,
-              ),
-        ),
-        const SizedBox(height: 12),
+        if (urgentRows.isNotEmpty) ...[
+          const SizedBox(height: 6),
+          Text(
+            'High-severity findings from your scans.',
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  height: 1.3,
+                ),
+          ),
+          const SizedBox(height: 10),
+        ] else
+          const SizedBox(height: 8),
         if (urgentRows.isEmpty)
           const _UrgentAllClearCard()
         else
@@ -847,7 +981,7 @@ class _InsightsPanel extends StatelessWidget {
               ],
             ],
           ),
-        const SizedBox(height: 24),
+        const SizedBox(height: 18),
         Row(
           children: [
             Expanded(
@@ -868,11 +1002,11 @@ class _InsightsPanel extends StatelessWidget {
               ),
           ],
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 8),
         if (errorMessage != null && recentRows.isEmpty)
           _InsightErrorBanner(message: errorMessage!)
         else if (recentRows.isEmpty)
-          _RecentScansEmpty(onStartScan: onStartScan)
+          _RecentScansEmpty(onOpenHistory: onSeeAll)
         else
           SizedBox(
             height: 104,
@@ -1011,61 +1145,53 @@ class _RecentScanTile extends StatelessWidget {
 }
 
 class _RecentScansEmpty extends StatelessWidget {
-  const _RecentScansEmpty({required this.onStartScan});
+  const _RecentScansEmpty({required this.onOpenHistory});
 
-  final VoidCallback onStartScan;
+  final VoidCallback onOpenHistory;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: Theme.of(context).brightness == Brightness.dark
-              ? const Color(0xFF2A2A2A)
-              : Colors.black.withValues(alpha: 0.06),
-        ),
-      ),
+    return Padding(
+      padding: const EdgeInsets.only(top: 2),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: _DashboardScreenState._secondaryContainer,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Icon(
-              Icons.history,
-              color: _DashboardScreenState._primary,
-            ),
+          Icon(
+            Icons.history,
+            size: 20,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
-          const SizedBox(width: 14),
+          const SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   'No scans yet',
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w700,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
                       ),
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Your latest leaf checks will show up here.',
+                  'Use the scanner card above, then pull to refresh.',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        height: 1.3,
                       ),
+                ),
+                TextButton(
+                  onPressed: onOpenHistory,
+                  style: TextButton.styleFrom(
+                    padding: EdgeInsets.zero,
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    foregroundColor: _DashboardScreenState._primary,
+                  ),
+                  child: const Text('Open full history'),
                 ),
               ],
             ),
-          ),
-          TextButton(
-            onPressed: onStartScan,
-            child: const Text('Scan'),
           ),
         ],
       ),
@@ -1192,30 +1318,22 @@ class _UrgentAllClearCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: Theme.of(context).brightness == Brightness.dark
-              ? const Color(0xFF2A2A2A)
-              : Colors.black.withValues(alpha: 0.06),
-        ),
-      ),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 2),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Icon(
             Icons.check_circle_outline,
             color: _DashboardScreenState._primary,
-            size: 28,
+            size: 20,
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 8),
           Expanded(
             child: Text(
-              'No plants are flagged as high severity right now. Keep scanning if you spot new symptoms.',
+              'No high-severity plants right now.',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    height: 1.4,
+                    height: 1.3,
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
             ),
@@ -1511,46 +1629,77 @@ class _ScanTipsCard extends StatelessWidget {
 
 class _PopularDiseasesCard extends StatelessWidget {
   const _PopularDiseasesCard({
+    required this.items,
+    required this.insightsReady,
     required this.onSeeAll,
     required this.onDiseaseTap,
   });
 
+  final List<CommonThreatItem> items;
+  final bool insightsReady;
   final VoidCallback onSeeAll;
   final VoidCallback onDiseaseTap;
 
-  static const _items = <_DiseaseItem>[
-    _DiseaseItem(
-      title: 'Rice blast',
-      subtitle: 'Magnaporthe oryzae • 1.2k reports',
-      imageUrl:
-          'https://lh3.googleusercontent.com/aida-public/AB6AXuC6y89Z5i1M2Thl6LhQpTycTJTGYMvtg2HCf3H-MD0Vr4Mcpamjib5aWHNZYgQIA4J6zwq2s1Y_9zCUUsajgQSo2l3MjyDH-4oSMZi8361_NzaRhe2DUn4cNJU_fWKsh2cnOSMpcDaz5hF6BMbjh_X5d88pTy7Pq6zTROjJYVJsCS6I1AAPrrnzAEgLwih8ZaLPeV7fPlX77cP8APGyJeO-KRD6rF-gVVNvOvXlT9r7aqD0iI1_NzrLkE33HmJpO_7bTjNYgynnbMJn',
-    ),
-    _DiseaseItem(
-      title: 'Corn rust',
-      subtitle: 'Puccinia sorghi • 850 reports',
-      imageUrl:
-          'https://lh3.googleusercontent.com/aida-public/AB6AXuArjtI0eX8p6lyO6zKqs_VP26c7cX52dATKkacXOpmwFXL592VGOy_l-isz4LWqf4u27s2Wp4ULwPdmb2gyAGdHxOEbLxl_rILW1LYMHAEW_oEromrkGB8z1hMeuWZ-jZkizptFLEeSRJiAPLyTvbwPQhkf9vY0yLFMi4MWKO5sKHskpQYNv3wn8dqP3I9GHy-zqZ34841dXcm6oAg3qzxNLGdpcXqsCDWcyag_jSP33y_SrAfEJsgmTooJ8tDgYZGSlel2pvJOTka5',
-    ),
-    _DiseaseItem(
-      title: 'Citrus greening',
-      subtitle: 'Candidatus Liberibacter • 420 reports',
-      imageUrl:
-          'https://lh3.googleusercontent.com/aida-public/AB6AXuAhft4NNrNQaJPDHb764AzrJj1rRVUnUiUCH86EGeaqZNxVyKNfZGF0K7_F_Zc2b9eSZ6FzTGJrooHXO4SFcmALzPsv3DC09tlFbrJFIzxBIUglTacGd5bJuG3mxFprJ0mqwws7w587HkhvMdBL185SimgFnNkaw40eWOkhluxwNtp2RODdZAYet88BWp4t1pI-44iBBuFRwXI3CT_-KlovOY0W2f281E0_AiNptjWFuV71yAlEfuV0y4GqHx-IFUBj10eoVk2rdiJP',
-    ),
-  ];
+  static const _darkCardFill = Color(0xFF2D322B);
+  static const _darkBorder = Color(0xFF3D433B);
 
   @override
   Widget build(BuildContext context) {
+    if (!insightsReady) {
+      return Container(
+        height: 120,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: Theme.of(context).brightness == Brightness.dark
+                ? _darkBorder
+                : Colors.black.withValues(alpha: 0.06),
+          ),
+        ),
+        child: const SizedBox(
+          width: 28,
+          height: 28,
+          child: CircularProgressIndicator(
+            strokeWidth: 2.5,
+            color: _DashboardScreenState._primary,
+          ),
+        ),
+      );
+    }
+
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardColor =
+        isDark ? _darkCardFill : Theme.of(context).colorScheme.surface;
+    final dividerColor = isDark ? _darkBorder : Colors.grey.shade200;
+    final borderColor =
+        isDark ? _darkBorder : Colors.black.withValues(alpha: 0.06);
+
+    if (items.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: cardColor,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: borderColor),
+        ),
+        child: Text(
+          'No scan data yet. As predictions accumulate, the most common conditions will appear here.',
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                height: 1.35,
+              ),
+        ),
+      );
+    }
+
     return Container(
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
+        color: cardColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: Theme.of(context).brightness == Brightness.dark
-              ? const Color(0xFF2A2A2A)
-              : Colors.black.withValues(alpha: 0.06),
-        ),
-        boxShadow: Theme.of(context).brightness == Brightness.dark
+        border: Border.all(color: borderColor),
+        boxShadow: isDark
             ? const []
             : [
                 BoxShadow(
@@ -1562,29 +1711,29 @@ class _PopularDiseasesCard extends StatelessWidget {
       ),
       clipBehavior: Clip.antiAlias,
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          for (var i = 0; i < _items.length; i++) ...[
-            if (i > 0)
-              Divider(
-                height: 1,
-                color: Theme.of(context).brightness == Brightness.dark
-                    ? const Color(0xFF2A2A2A)
-                    : Colors.grey.shade100,
-              ),
-            _DiseaseTile(item: _items[i], onTap: onDiseaseTap),
+          for (var i = 0; i < items.length; i++) ...[
+            if (i > 0) Divider(height: 1, thickness: 1, color: dividerColor),
+            _CommonThreatTile(
+              item: items[i],
+              onTap: onDiseaseTap,
+              panelColor: cardColor,
+              isDark: isDark,
+            ),
           ],
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 12),
-            color: Theme.of(context).colorScheme.surfaceContainerHighest,
-            child: TextButton(
-              onPressed: onSeeAll,
-              child: const Text(
-                'Open my trees',
-                style: TextStyle(
-                  fontWeight: FontWeight.w700,
-                  fontSize: 12,
-                  color: _DashboardScreenState._primary,
+          Padding(
+            padding: const EdgeInsets.fromLTRB(8, 4, 8, 10),
+            child: Center(
+              child: TextButton(
+                onPressed: onSeeAll,
+                child: Text(
+                  'Open my trees',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 13,
+                    color: _DashboardScreenState._primary,
+                  ),
                 ),
               ),
             ),
@@ -1595,54 +1744,73 @@ class _PopularDiseasesCard extends StatelessWidget {
   }
 }
 
-class _DiseaseItem {
-  const _DiseaseItem({
-    required this.title,
-    required this.subtitle,
-    required this.imageUrl,
+class _CommonThreatTile extends StatelessWidget {
+  const _CommonThreatTile({
+    required this.item,
+    required this.onTap,
+    required this.panelColor,
+    required this.isDark,
   });
-  final String title;
-  final String subtitle;
-  final String imageUrl;
-}
 
-class _DiseaseTile extends StatelessWidget {
-  const _DiseaseTile({required this.item, required this.onTap});
-
-  final _DiseaseItem item;
+  final CommonThreatItem item;
   final VoidCallback onTap;
+  final Color panelColor;
+  final bool isDark;
 
   @override
   Widget build(BuildContext context) {
+    final titleColor = isDark
+        ? AppColors.textPrimaryDark
+        : Theme.of(context).colorScheme.onSurface;
+    final subColor = isDark
+        ? AppColors.textSecondaryDark
+        : Theme.of(context).colorScheme.onSurfaceVariant;
+    final chevronColor =
+        isDark ? AppColors.textSecondaryDark : Colors.grey.shade500;
+
+    final raw = item.imageUrl?.trim() ?? '';
+    final resolved =
+        raw.isEmpty ? '' : HistoryItem.resolveImageUrl(raw);
+
     return Material(
-      color: Theme.of(context).colorScheme.surface,
+      color: panelColor,
       child: InkWell(
         onTap: onTap,
+        splashColor: _DashboardScreenState._primary.withValues(alpha: 0.12),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           child: Row(
             children: [
               ClipRRect(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(10),
                 child: SizedBox(
                   width: 48,
                   height: 48,
-                  child: Image.network(
-                    item.imageUrl,
-                    fit: BoxFit.cover,
-                    cacheWidth: 112,
-                    cacheHeight: 112,
-                    filterQuality: FilterQuality.low,
-                    errorBuilder: (_, __, ___) => Container(
-                      color: Theme.of(context).brightness == Brightness.dark
-                          ? const Color(0xFF2A2A2A)
-                          : Colors.grey.shade200,
-                      child: const Icon(Icons.spa, color: Colors.grey),
-                    ),
-                  ),
+                  child: resolved.isEmpty
+                      ? ColoredBox(
+                          color: isDark
+                              ? const Color(0xFF1A1D18)
+                              : Colors.grey.shade200,
+                          child: Icon(Icons.eco_outlined,
+                              color: Colors.grey.shade500),
+                        )
+                      : Image.network(
+                          resolved,
+                          fit: BoxFit.cover,
+                          cacheWidth: 112,
+                          cacheHeight: 112,
+                          filterQuality: FilterQuality.low,
+                          errorBuilder: (_, __, ___) => ColoredBox(
+                            color: isDark
+                                ? const Color(0xFF1A1D18)
+                                : Colors.grey.shade200,
+                            child: Icon(Icons.eco_outlined,
+                                color: Colors.grey.shade500),
+                          ),
+                        ),
                 ),
               ),
-              const SizedBox(width: 14),
+              const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -1651,22 +1819,22 @@ class _DiseaseTile extends StatelessWidget {
                       item.title,
                       style: Theme.of(context).textTheme.titleSmall?.copyWith(
                             fontWeight: FontWeight.w700,
+                            color: titleColor,
+                            fontSize: 15,
                           ),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 3),
                     Text(
-                      item.subtitle,
+                      _formatCommonThreatSubtitle(item),
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                            color: subColor,
+                            height: 1.25,
                           ),
                     ),
                   ],
                 ),
               ),
-              Icon(
-                Icons.chevron_right,
-                color: Colors.grey.shade400,
-              ),
+              Icon(Icons.chevron_right, size: 22, color: chevronColor),
             ],
           ),
         ),

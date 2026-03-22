@@ -335,4 +335,70 @@ class PredictionService {
       return false;
     }
   }
+
+  /// Global DB aggregates for home dashboard "Common threats".
+  Future<List<CommonThreatItem>> fetchCommonThreats({int take = 5}) async {
+    try {
+      final accessToken = await StorageService.getAccessToken();
+      if (accessToken == null || accessToken.isEmpty) return [];
+      final response = await _dio.get<Map<String, dynamic>>(
+        ApiPaths.predictionCommonThreats(take: take),
+        options: Options(
+          headers: {'Authorization': _formatBearerToken(accessToken)},
+        ),
+      );
+      final data = response.data;
+      if (data == null || data['success'] != true) return [];
+      final raw = data['data'];
+      if (raw is! List) return [];
+      return raw
+          .map(
+            (e) => CommonThreatItem.fromJson(
+              Map<String, dynamic>.from(e as Map),
+            ),
+          )
+          .toList();
+    } catch (_) {
+      return [];
+    }
+  }
+}
+
+/// One row from [PredictionService.fetchCommonThreats].
+class CommonThreatItem {
+  const CommonThreatItem({
+    this.illnessId,
+    required this.title,
+    this.scientificName,
+    required this.reportCount,
+    this.imageUrl,
+  });
+
+  final int? illnessId;
+  final String title;
+  final String? scientificName;
+  final int reportCount;
+  final String? imageUrl;
+
+  factory CommonThreatItem.fromJson(Map<String, dynamic> json) {
+    final illRaw = json['illnessId'] ?? json['IllnessId'];
+    int? illnessId;
+    if (illRaw is int) {
+      illnessId = illRaw;
+    } else if (illRaw != null) {
+      illnessId = int.tryParse(illRaw.toString());
+    }
+    final rc = json['reportCount'] ?? json['ReportCount'];
+    final count = rc is int
+        ? rc
+        : (rc is num ? rc.toInt() : int.tryParse('$rc') ?? 0);
+    return CommonThreatItem(
+      illnessId: illnessId,
+      title: (json['title'] ?? json['Title'] ?? 'Unknown').toString(),
+      scientificName: (json['scientificName'] ?? json['ScientificName'])
+          ?.toString(),
+      reportCount: count,
+      imageUrl: (json['imageUrl'] ?? json['ImageUrl'])?.toString(),
+    );
+  }
 }

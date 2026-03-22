@@ -83,6 +83,8 @@ abstract final class ApiPaths {
   static const predictionModels = '/api/Prediction/models';
   static const predictionClasses = '/api/Prediction/classes';
   static const predictionHealth = '/api/Prediction/health';
+  static String predictionCommonThreats({int take = 5}) =>
+      '/api/Prediction/common-threats?take=$take';
 
   static String ratingPrediction(int predictionId) =>
       '/api/rating/prediction/$predictionId';

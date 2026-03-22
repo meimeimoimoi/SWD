@@ -10,5 +10,6 @@ namespace MyApp.Application.Interfaces
         Task<List<ModelAccuracyDto>> GetModelAccuracyAsync();
         Task<List<RatingDto>> GetRatingsAsync(int page = 1, int pageSize = 20);
         Task<List<ActivityLog>> GetActivityLogsAsync(int count = 50);
+        Task<List<CommonThreatItemDto>> GetCommonThreatsAsync(int take = 5);
     }
 }

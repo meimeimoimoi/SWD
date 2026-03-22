@@ -1,4 +1,4 @@
-﻿namespace MyApp.Application.Features.Users.DTOs
+namespace MyApp.Application.Features.Users.DTOs
 {
     public class RatingResponseDto
     {
@@ -19,5 +19,10 @@
 
         public string? UserEmail { get; set; }
         public string? UserName { get; set; }
+
+        public int? UserId { get; set; }
+
+        /// <summary>Relative URL served under static files, e.g. /uploads/images/{file}.</summary>
+        public string? ImageUrl { get; set; }
     }
 }

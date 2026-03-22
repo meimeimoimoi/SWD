@@ -81,7 +81,8 @@ namespace MyApp.Infrastructure.Services
                     Phone = u.Phone,
                     ProfileImagePath = u.ProfileImagePath,
                     LastLoginAt = u.LastLoginAt,
-                    Role = u.Role?.ToString()
+                    Role = u.Role?.ToString(),
+                    AccountStatus = u.AccountStatus
                 }).ToList();
 
                 _logger.LogInformation("Retrieved {Count} users", userDtos.Count);
@@ -114,7 +115,8 @@ namespace MyApp.Infrastructure.Services
                     Phone = user.Phone,
                     ProfileImagePath = user.ProfileImagePath,
                     LastLoginAt = user.LastLoginAt,
-                    Role = user.Role?.ToString()
+                    Role = user.Role?.ToString(),
+                    AccountStatus = user.AccountStatus
                 };
             }
             catch (Exception ex)
@@ -183,12 +185,16 @@ namespace MyApp.Infrastructure.Services
                 if (user == null)
                     return false;
 
-                user.AccountStatus = status;
+                var normalized = NormalizeAccountStatus(status);
+                if (normalized == null)
+                    throw new ArgumentException($"Invalid account status: '{status}'");
+
+                user.AccountStatus = normalized;
                 user.UpdatedAt = DateTime.UtcNow;
 
                 await _userRepository.UpdateUserAsync(user);
                 
-                _logger.LogInformation("User {UserId} status updated to {Status}", userId, status);
+                _logger.LogInformation("User {UserId} status updated to {Status}", userId, normalized);
                 return true;
             }
             catch (Exception ex)
@@ -196,6 +202,22 @@ namespace MyApp.Infrastructure.Services
                 _logger.LogError(ex, "Error updating user status: {UserId}", userId);
                 throw;
             }
+        }
+
+        private static string? NormalizeAccountStatus(string status)
+        {
+            if (string.IsNullOrWhiteSpace(status))
+                return null;
+            var s = status.Trim();
+            if (string.Equals(s, "Active", StringComparison.OrdinalIgnoreCase))
+                return "Active";
+            if (string.Equals(s, "Locked", StringComparison.OrdinalIgnoreCase))
+                return "Locked";
+            if (string.Equals(s, "Pending", StringComparison.OrdinalIgnoreCase))
+                return "Pending";
+            if (string.Equals(s, "Deleted", StringComparison.OrdinalIgnoreCase))
+                return "Deleted";
+            return null;
         }
 
         public async Task<UserDto> CreateStaffUserAsync(CreateTechnicianStaffDto createDto)
@@ -262,7 +284,8 @@ namespace MyApp.Infrastructure.Services
                     Phone = user.Phone,
                     ProfileImagePath = user.ProfileImagePath,
                     LastLoginAt = user.LastLoginAt,
-                    Role = user.Role?.ToString()
+                    Role = user.Role?.ToString(),
+                    AccountStatus = user.AccountStatus
                 };
             }
             catch (Exception ex)

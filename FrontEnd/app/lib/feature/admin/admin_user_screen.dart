@@ -196,7 +196,10 @@ class _AdminUserScreenState extends State<AdminUserScreen> {
     final users = usersData.map((u) {
       final username = u['username'] ?? 'User';
       final email = u['email'] ?? '';
-      final statusStr = u['accountStatus'] ?? 'Active';
+      final rawStatus = u['accountStatus'] ?? u['AccountStatus'];
+      final statusStr = (rawStatus == null || rawStatus.toString().trim().isEmpty)
+          ? 'Active'
+          : rawStatus.toString().trim();
       
       String role = u['role']?.toString() ?? 'User';
       if (role == 'Tech') role = 'Technician';
@@ -205,10 +208,13 @@ class _AdminUserScreenState extends State<AdminUserScreen> {
         role = 'User';
       }
       
+      final sLower = statusStr.toLowerCase();
       _UserStatus status = _UserStatus.active;
-      if (statusStr == 'Locked') status = _UserStatus.locked;
-      if (statusStr == 'Pending') status = _UserStatus.pending;
-      if (statusStr == 'Deleted') status = _UserStatus.locked;
+      if (sLower == 'locked' || sLower == 'deleted') {
+        status = _UserStatus.locked;
+      } else if (sLower == 'pending') {
+        status = _UserStatus.pending;
+      }
 
       return _UserItem(
         userId: u['userId'] ?? 0,
@@ -319,7 +325,7 @@ class _AdminUserScreenState extends State<AdminUserScreen> {
           ),
         ),
       ),
-      bottomNavigationBar: const AdminBottomNav(currentIndex: 0),
+      bottomNavigationBar: const AdminBottomNav(currentIndex: 1),
       ),
     );
   }

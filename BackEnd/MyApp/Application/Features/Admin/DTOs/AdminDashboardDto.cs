@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace MyApp.Application.Features.Admin.DTOs
 {
@@ -48,6 +48,17 @@ namespace MyApp.Application.Features.Admin.DTOs
         public int TotalPredictions { get; set; }
         public double AverageConfidence { get; set; }
         public double PositiveRatingRate { get; set; }
+    }
+
+    /// <summary>Top diseases by prediction volume for home dashboard &quot;Common threats&quot;.</summary>
+    public class CommonThreatItemDto
+    {
+        public int? IllnessId { get; set; }
+        public string Title { get; set; } = "";
+        public string? ScientificName { get; set; }
+        public int ReportCount { get; set; }
+        /// <summary>Relative URL e.g. /uploads/images/file.jpg</summary>
+        public string? ImageUrl { get; set; }
     }
 
     public class RatingDto

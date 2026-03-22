@@ -162,5 +162,79 @@ namespace MyApp.Infrastructure.Services
                 .Take(count)
                 .ToListAsync();
         }
+
+        public async Task<List<CommonThreatItemDto>> GetCommonThreatsAsync(int take = 5)
+        {
+            if (take < 1) take = 5;
+            if (take > 30) take = 30;
+
+            var illnesses = await _context.TreeIllnesses.AsNoTracking().ToListAsync();
+
+            var rows = await _context.Predictions
+                .AsNoTracking()
+                .Where(p => p.IllnessId != null ||
+                    (p.PredictedClass != null && p.PredictedClass.Trim() != ""))
+                .Select(p => new
+                {
+                    p.IllnessId,
+                    p.PredictedClass,
+                    p.CreatedAt,
+                    StoredFilename = p.Upload != null ? p.Upload.StoredFilename : null,
+                    IllnessName = p.Illness != null ? p.Illness.IllnessName : null,
+                    ScientificName = p.Illness != null ? p.Illness.ScientificName : null
+                })
+                .ToListAsync();
+
+            if (rows.Count == 0)
+                return new List<CommonThreatItemDto>();
+
+            var groups = rows
+                .GroupBy(p => p.IllnessId != null
+                    ? $"i:{p.IllnessId}"
+                    : $"c:{p.PredictedClass!.Trim()}")
+                .OrderByDescending(g => g.Count())
+                .Take(take)
+                .ToList();
+
+            var list = new List<CommonThreatItemDto>();
+            foreach (var g in groups)
+            {
+                var latest = g.OrderByDescending(x => x.CreatedAt).First();
+                var title = g.Select(x => x.IllnessName)
+                        .FirstOrDefault(x => x != null && x.Trim() != "")
+                    ?? latest.PredictedClass?.Trim()
+                    ?? "Unknown";
+
+                var sci = g.Select(x => x.ScientificName)
+                    .FirstOrDefault(x => x != null && x.Trim() != "");
+                int? illId = g.First().IllnessId;
+
+                if (string.IsNullOrWhiteSpace(sci))
+                {
+                    var match = illnesses.FirstOrDefault(i =>
+                        string.Equals(i.IllnessName?.Trim(), title, StringComparison.OrdinalIgnoreCase));
+                    if (match != null)
+                    {
+                        sci = match.ScientificName;
+                        illId ??= match.IllnessId;
+                    }
+                }
+
+                string? imagePath = null;
+                if (!string.IsNullOrWhiteSpace(latest.StoredFilename))
+                    imagePath = $"/uploads/images/{latest.StoredFilename}";
+
+                list.Add(new CommonThreatItemDto
+                {
+                    IllnessId = illId,
+                    Title = title,
+                    ScientificName = sci,
+                    ReportCount = g.Count(),
+                    ImageUrl = imagePath
+                });
+            }
+
+            return list;
+        }
     }
 }

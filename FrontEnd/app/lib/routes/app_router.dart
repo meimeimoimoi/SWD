@@ -5,6 +5,7 @@ import '../feature/admin/admin_model_management_screen.dart';
 import '../feature/admin/admin_model_upload_screen.dart';
 import '../feature/admin/admin_server_management_screen.dart';
 import '../feature/admin/admin_profile_screen.dart';
+import '../feature/admin/admin_dashboard_screen.dart';
 import '../feature/admin/admin_user_screen.dart';
 import '../feature/admin/setting/admin_setting_sceern.dart';
 import '../feature/auth/login/login_screen.dart';
@@ -56,7 +57,7 @@ class AppRouter {
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
       case adminDashboard:
-        return MaterialPageRoute(builder: (_) => const AdminUserScreen());
+        return MaterialPageRoute(builder: (_) => const AdminDashboardScreen());
       case adminUsers:
         return MaterialPageRoute(builder: (_) => const AdminUserScreen());
       case adminModels:

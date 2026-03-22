@@ -307,7 +307,7 @@ class _AdminIllnessManagementScreenState
             style: GoogleFonts.spaceGrotesk(fontWeight: FontWeight.w700),
           ),
         ),
-        bottomNavigationBar: const AdminBottomNav(currentIndex: 3),
+        bottomNavigationBar: const AdminBottomNav(currentIndex: 4),
       ),
     );
   }

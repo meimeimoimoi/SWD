@@ -12,13 +12,16 @@ namespace MyApp.Api.Controllers
     public class PredictionController : ControllerBase
     {
         private readonly IPredictionService _predictionService;
+        private readonly IMonitoringService _monitoringService;
         private readonly ILogger<PredictionController> _logger;
 
         public PredictionController(
             IPredictionService predictionService,
+            IMonitoringService monitoringService,
             ILogger<PredictionController> logger)
         {
             _predictionService = predictionService;
+            _monitoringService = monitoringService;
             _logger = logger;
         }
 
@@ -168,6 +171,25 @@ namespace MyApp.Api.Controllers
                     : "Prediction service unavailable",
                 modelLoaded = isLoaded
             });
+        }
+
+        /// <summary>
+        /// Top diseases by prediction count (global DB stats) for the home dashboard.
+        /// </summary>
+        [HttpGet("common-threats")]
+        [Authorize]
+        public async Task<IActionResult> GetCommonThreats([FromQuery] int take = 5)
+        {
+            try
+            {
+                var data = await _monitoringService.GetCommonThreatsAsync(take);
+                return Ok(new { success = true, data });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error loading common threats");
+                return StatusCode(500, new { success = false, message = "Could not load common threats." });
+            }
         }
 
         private string BuildImageUrl(string? storedFilename)

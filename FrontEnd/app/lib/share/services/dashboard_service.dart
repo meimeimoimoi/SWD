@@ -829,7 +829,11 @@ class DashboardService {
       path,
       data: data,
       options: Options(
-        headers: {'Authorization': 'Bearer $accessToken'},
+        headers: {
+          'Authorization': 'Bearer $accessToken',
+          Headers.contentTypeHeader: Headers.jsonContentType,
+          'Accept': 'application/json',
+        },
       ),
     );
   }
@@ -840,7 +844,11 @@ class DashboardService {
       path,
       data: data,
       options: Options(
-        headers: {'Authorization': 'Bearer $accessToken'},
+        headers: {
+          'Authorization': 'Bearer $accessToken',
+          Headers.contentTypeHeader: Headers.jsonContentType,
+          'Accept': 'application/json',
+        },
       ),
     );
   }
@@ -851,7 +859,11 @@ class DashboardService {
       path,
       data: data,
       options: Options(
-        headers: {'Authorization': 'Bearer $accessToken'},
+        headers: {
+          'Authorization': 'Bearer $accessToken',
+          Headers.contentTypeHeader: Headers.jsonContentType,
+          'Accept': 'application/json',
+        },
       ),
     );
   }

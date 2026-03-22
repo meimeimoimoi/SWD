@@ -75,7 +75,7 @@ class _LoginScreenState extends State<LoginScreen> {
           final isAdmin = roleLower == 'admin';
           Navigator.pushReplacementNamed(
             context,
-            isAdmin ? AppRouter.adminUsers : AppRouter.dashboard,
+            isAdmin ? AppRouter.adminDashboard : AppRouter.dashboard,
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
