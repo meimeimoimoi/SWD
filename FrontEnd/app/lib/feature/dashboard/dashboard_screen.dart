@@ -132,6 +132,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
       appBar: _ArgivisionAppBar(
         username: _username,
         onOpenProfile: () => Navigator.pushNamed(context, AppRouter.profile),
+        onOpenNotifications: () =>
+            Navigator.pushNamed(context, AppRouter.notifications),
       ),
       bottomNavigationBar: const UserBottomNavBar(),
       body: RefreshIndicator(
@@ -1227,10 +1229,15 @@ class _InsightErrorBanner extends StatelessWidget {
 }
 
 class _ArgivisionAppBar extends StatelessWidget implements PreferredSizeWidget {
-  const _ArgivisionAppBar({this.username, this.onOpenProfile});
+  const _ArgivisionAppBar({
+    this.username,
+    this.onOpenProfile,
+    this.onOpenNotifications,
+  });
 
   final String? username;
   final VoidCallback? onOpenProfile;
+  final VoidCallback? onOpenNotifications;
 
   @override
   Size get preferredSize => const Size.fromHeight(56);
@@ -1264,7 +1271,7 @@ class _ArgivisionAppBar extends StatelessWidget implements PreferredSizeWidget {
       ),
       actions: [
         IconButton(
-          onPressed: () {},
+          onPressed: onOpenNotifications,
           icon: Icon(
             Icons.notifications_outlined,
             color: Colors.grey.shade600,

@@ -66,7 +66,7 @@ public class PredictionService : IPredictionService, IDisposable
             throw new InvalidOperationException($"Model file not found: {modelPath}");
 
         var session = new InferenceSession(modelPath);
-        _classNames = OnnxModelLabels.Read(session);
+        _classNames = OnnxModelLabels.Read(session, modelPath);
         _session = session;
         _loadedModelVersionId = defaultModel.ModelVersionId;
 

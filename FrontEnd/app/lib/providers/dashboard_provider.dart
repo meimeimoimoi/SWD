@@ -19,6 +19,12 @@ class DashboardProvider with ChangeNotifier {
   List<dynamic> _adminUsers = [];
   List<dynamic> get adminUsers => _adminUsers;
 
+  /// Last filters for GET /api/Admin/users (search, role, sort).
+  String? _adminUsersSearch;
+  String? _adminUsersRole;
+  String _adminUsersSortBy = 'email';
+  String _adminUsersSortOrder = 'asc';
+
   List<dynamic> _feedbackList = [];
   List<dynamic> get feedbackList => _feedbackList;
 
@@ -36,7 +42,12 @@ class DashboardProvider with ChangeNotifier {
 
     _adminStats = await _service.getAdminStats();
     _adminLogs = await _service.getAdminActivityLogs();
-    _adminUsers = await _service.getAdminUsers();
+    _adminUsersSearch = null;
+    _adminUsersRole = null;
+    _adminUsers = await _service.getAdminUsers(
+      sortBy: _adminUsersSortBy,
+      sortOrder: _adminUsersSortOrder,
+    );
     _feedbackList = await _service.getFeedbackList();
 
     _isLoading = false;
@@ -46,9 +57,36 @@ class DashboardProvider with ChangeNotifier {
   Future<void> fetchAdminUsers() async {
     _isLoading = true;
     notifyListeners();
-    _adminUsers = await _service.getAdminUsers();
+    _adminUsers = await _service.getAdminUsers(
+      search: _adminUsersSearch,
+      role: _adminUsersRole,
+      sortBy: _adminUsersSortBy,
+      sortOrder: _adminUsersSortOrder,
+    );
     _isLoading = false;
     notifyListeners();
+  }
+
+  /// Updates user list filters and refetches (OpenAPI query params).
+  Future<void> setAdminUsersFilters({
+    String? search,
+    String? role,
+    String? sortBy,
+    String? sortOrder,
+  }) async {
+    if (search != null) {
+      _adminUsersSearch = search.trim().isEmpty ? null : search.trim();
+    }
+    if (role != null) {
+      _adminUsersRole = role.trim().isEmpty ? null : role.trim();
+    }
+    if (sortBy != null && sortBy.isNotEmpty) {
+      _adminUsersSortBy = sortBy;
+    }
+    if (sortOrder != null && sortOrder.isNotEmpty) {
+      _adminUsersSortOrder = sortOrder;
+    }
+    await fetchAdminUsers();
   }
 
   Future<bool> createUser(String email, String password, String role) async {
@@ -56,7 +94,12 @@ class DashboardProvider with ChangeNotifier {
     notifyListeners();
     final success = await _service.createUser(email, password, role);
     if (success) {
-      _adminUsers = await _service.getAdminUsers();
+      _adminUsers = await _service.getAdminUsers(
+        search: _adminUsersSearch,
+        role: _adminUsersRole,
+        sortBy: _adminUsersSortBy,
+        sortOrder: _adminUsersSortOrder,
+      );
     }
     _isLoading = false;
     notifyListeners();
@@ -68,7 +111,12 @@ class DashboardProvider with ChangeNotifier {
     notifyListeners();
     final success = await _service.updateUserStatus(userId, status);
     if (success) {
-      _adminUsers = await _service.getAdminUsers();
+      _adminUsers = await _service.getAdminUsers(
+        search: _adminUsersSearch,
+        role: _adminUsersRole,
+        sortBy: _adminUsersSortBy,
+        sortOrder: _adminUsersSortOrder,
+      );
     }
     _isLoading = false;
     notifyListeners();
@@ -80,7 +128,12 @@ class DashboardProvider with ChangeNotifier {
     notifyListeners();
     final success = await _service.updateUserRole(userId, role);
     if (success) {
-      _adminUsers = await _service.getAdminUsers();
+      _adminUsers = await _service.getAdminUsers(
+        search: _adminUsersSearch,
+        role: _adminUsersRole,
+        sortBy: _adminUsersSortBy,
+        sortOrder: _adminUsersSortOrder,
+      );
     }
     _isLoading = false;
     notifyListeners();

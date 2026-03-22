@@ -5,8 +5,6 @@ import 'package:intl/intl.dart';
 import '../../providers/dashboard_provider.dart';
 import '../../share/theme/app_colors.dart';
 import '../../share/widgets/app_card.dart';
-import '../../share/widgets/admin_bottom_nav.dart';
-
 class FeedbackListScreen extends StatefulWidget {
   const FeedbackListScreen({super.key});
 
@@ -39,6 +37,10 @@ class _FeedbackListScreenState extends State<FeedbackListScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
+        ),
         title: const Text('User feedback'),
         elevation: 0,
         backgroundColor: Colors.transparent,
@@ -178,7 +180,6 @@ class _FeedbackListScreenState extends State<FeedbackListScreen> {
                     ),
                   ),
       ),
-      bottomNavigationBar: const AdminBottomNav(currentIndex: 2), // Adjust index as needed
     );
   }
 }

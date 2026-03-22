@@ -74,8 +74,12 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           );
 
-          // Home is always Argivision; admins open admin from Profile.
-          Navigator.pushReplacementNamed(context, AppRouter.dashboard);
+          final roleLower = role?.toLowerCase() ?? '';
+          final isAdmin = roleLower == 'admin';
+          Navigator.pushReplacementNamed(
+            context,
+            isAdmin ? AppRouter.adminUsers : AppRouter.dashboard,
+          );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -117,7 +121,6 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return AppScaffold(
       centerContent: false,
-      showThemeToggle: false,
       child: LayoutBuilder(
         builder: (context, constraints) {
           final bool isWide = constraints.maxWidth > 900;

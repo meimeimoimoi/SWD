@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../../routes/app_router.dart';
 import '../../share/constants/app_brand.dart';
 import '../../share/services/history_service.dart';
 import '../../share/services/treatment_api_service.dart';
 import '../../share/utils/disease_mapper.dart';
+import 'user_illness_detail_screen.dart';
 import 'user_tree_models.dart';
 
 const Color _primary = Color(0xFF2D7B31);
@@ -76,7 +78,10 @@ class _TreeDetailScreenState extends State<TreeDetailScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Tree details'),
+        title: Text(
+          'Chi tiết cây',
+          style: GoogleFonts.spaceGrotesk(fontWeight: FontWeight.w700),
+        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
@@ -132,11 +137,11 @@ class _TreeDetailScreenState extends State<TreeDetailScreen> {
               ),
             ],
             const SizedBox(height: 24),
-            _sectionTitle(context, 'Illness & treatment'),
+            _sectionTitle(context, 'Bệnh & điều trị'),
             const SizedBox(height: 10),
             if (_illnessRows.isEmpty)
               Text(
-                'No illness recorded from scans yet.',
+                'Chưa ghi nhận bệnh từ các lần quét.',
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
                 ),
@@ -148,16 +153,28 @@ class _TreeDetailScreenState extends State<TreeDetailScreen> {
                         ? (_byIllnessId[p.illnessId!] ?? const [])
                         : const [],
                     loading: _loadingRx,
+                    onOpenDetail: () {
+                      Navigator.pushNamed(
+                        context,
+                        AppRouter.userIllnessDetail,
+                        arguments: UserIllnessDetailArgs(
+                          item: p,
+                          recommendations: p.illnessId != null
+                              ? (_byIllnessId[p.illnessId!] ?? const [])
+                              : const [],
+                        ),
+                      );
+                    },
                   )),
             const SizedBox(height: 28),
-            _sectionTitle(context, 'Monitoring history'),
+            _sectionTitle(context, 'Lịch sử theo dõi'),
             const SizedBox(height: 10),
             ...s.predictions.map((p) => _TimelineTile(item: p)),
             const SizedBox(height: 28),
-            _sectionTitle(context, 'Suggested recovery steps'),
+            _sectionTitle(context, 'Gợi ý phục hồi'),
             const SizedBox(height: 8),
             Text(
-              'Suggestions from the ${AppBrand.name} treatment library (when illness codes are linked).',
+              'Gợi ý từ thư viện điều trị ${AppBrand.name} (khi có mã bệnh liên kết).',
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
               ),
@@ -173,8 +190,8 @@ class _TreeDetailScreenState extends State<TreeDetailScreen> {
             else if (_allHealingSteps.isEmpty)
               Text(
                 s.illnessIds.isEmpty
-                    ? 'No illness codes linked — link records in the system for detailed steps.'
-                    : 'No treatments in the database for these illnesses.',
+                    ? 'Chưa liên kết mã bệnh — cần ghi nhận trong hệ thống để có bước chi tiết.'
+                    : 'Chưa có phương án điều trị trong cơ sở dữ liệu cho (các) bệnh này.',
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
                 ),
@@ -188,7 +205,7 @@ class _TreeDetailScreenState extends State<TreeDetailScreen> {
               onPressed: () =>
                   Navigator.pushNamed(context, AppRouter.history),
               icon: const Icon(Icons.history),
-              label: const Text('View full scan history'),
+              label: const Text('Xem toàn bộ lịch sử quét'),
             ),
           ],
         ),
@@ -213,11 +230,13 @@ class _IllnessSolutionCard extends StatelessWidget {
     required this.item,
     required this.recommendations,
     required this.loading,
+    required this.onOpenDetail,
   });
 
   final HistoryItem item;
   final List<TreatmentRecommendationItem> recommendations;
   final bool loading;
+  final VoidCallback onOpenDetail;
 
   @override
   Widget build(BuildContext context) {
@@ -237,25 +256,39 @@ class _IllnessSolutionCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(14),
         side: BorderSide(color: _primary.withValues(alpha: 0.12)),
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              name,
-              style: theme.textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w800,
+      child: InkWell(
+        onTap: onOpenDetail,
+        borderRadius: BorderRadius.circular(14),
+        child: Padding(
+          padding: const EdgeInsets.all(14),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Text(
+                      name,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                  Icon(
+                    Icons.chevron_right_rounded,
+                    color: theme.colorScheme.outline,
+                  ),
+                ],
               ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              sci,
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: _primary,
-                fontStyle: FontStyle.italic,
+              const SizedBox(height: 4),
+              Text(
+                sci,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: _primary,
+                  fontStyle: FontStyle.italic,
+                ),
               ),
-            ),
             if (item.symptoms != null && item.symptoms!.trim().isNotEmpty) ...[
               const SizedBox(height: 8),
               Text(
@@ -347,6 +380,7 @@ class _IllnessSolutionCard extends StatelessWidget {
           ],
         ),
       ),
+    ),
     );
   }
 }

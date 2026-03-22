@@ -80,7 +80,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Widget build(BuildContext context) {
     return AppScaffold(
       centerContent: false,
-      showThemeToggle: false,
       child: LayoutBuilder(
         builder: (context, constraints) {
           final bool isWide = constraints.maxWidth > 900;

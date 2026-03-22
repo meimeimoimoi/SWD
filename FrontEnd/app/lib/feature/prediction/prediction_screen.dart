@@ -219,7 +219,10 @@ class _PredictionScreenState extends State<PredictionScreen> {
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.camera_alt), label: 'Scan'),
           BottomNavigationBarItem(icon: Icon(Icons.history), label: 'History'),
-          BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Setting'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.account_circle_outlined),
+            label: 'Profile',
+          ),
         ],
         onTap: (index) {
           switch (index) {

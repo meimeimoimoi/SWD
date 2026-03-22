@@ -4,21 +4,37 @@ using Microsoft.ML.OnnxRuntime.Tensors;
 
 namespace MyApp.Infrastructure.Ml;
 
-/// <summary>Reads <c>class_labels</c> from ONNX metadata (JSON string array). Must match output size.</summary>
+/// <summary>
+/// Reads class names in model output order from (1) ONNX custom metadata <c>class_labels</c>, or
+/// (2) a sidecar file next to the model: <c>{modelName}.class_labels.json</c> (JSON string array).
+/// </summary>
 internal static class OnnxModelLabels
 {
-    public static string[] Read(InferenceSession session)
+    public static string[] Read(InferenceSession session, string? onnxModelPath = null)
     {
-        if (!session.ModelMetadata.CustomMetadataMap.TryGetValue("class_labels", out var json) ||
-            string.IsNullOrWhiteSpace(json))
+        string? json = null;
+        if (session.ModelMetadata.CustomMetadataMap.TryGetValue("class_labels", out var meta) &&
+            !string.IsNullOrWhiteSpace(meta))
+        {
+            json = meta;
+        }
+        else if (!string.IsNullOrWhiteSpace(onnxModelPath))
+        {
+            var sidecar = Path.ChangeExtension(onnxModelPath, ".class_labels.json");
+            if (File.Exists(sidecar))
+                json = File.ReadAllText(sidecar);
+        }
+
+        if (string.IsNullOrWhiteSpace(json))
         {
             throw new InvalidOperationException(
-                "ONNX model needs metadata key 'class_labels' with a JSON array of class names (output order).");
+                "ONNX model needs custom metadata key 'class_labels' (JSON array of names) " +
+                "or a sidecar file next to the .onnx: same base name + '.class_labels.json'.");
         }
 
         var labels = JsonSerializer.Deserialize<string[]>(json);
         if (labels is not { Length: > 0 })
-            throw new InvalidOperationException("ONNX metadata 'class_labels' must be a non-empty JSON string array.");
+            throw new InvalidOperationException("class_labels must be a non-empty JSON string array.");
 
         var n = ProbeOutputLength(session);
         if (labels.Length != n)

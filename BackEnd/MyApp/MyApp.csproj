@@ -72,6 +72,9 @@
 	  <None Update="Models\rice_disease_v3.onnx">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </None>
+	  <None Update="Models\rice_disease_v3.class_labels.json">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
 	</ItemGroup>
 
 </Project>

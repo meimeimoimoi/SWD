@@ -1,17 +1,15 @@
 import 'package:app/feature/auth/login/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'routes/app_router.dart';
 import 'share/services/auth_api_service.dart';
 import 'share/constants/app_brand.dart';
 import 'share/theme/app_theme.dart';
-import 'share/theme/theme_notifier.dart';
 import 'providers/dashboard_provider.dart';
+import 'providers/theme_mode_provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  final prefs = await SharedPreferences.getInstance();
   AuthApiService.onSessionExpired = () {
     final navigator = AppRouter.navigatorKey.currentState;
     if (navigator == null) {
@@ -22,8 +20,8 @@ Future<void> main() async {
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => ThemeNotifier(prefs: prefs)),
         ChangeNotifierProvider(create: (_) => DashboardProvider()),
+        ChangeNotifierProvider(create: (_) => ThemeModeProvider()),
       ],
       child: const MyApp(),
     ),
@@ -35,15 +33,15 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<ThemeNotifier>(
-      builder: (context, notifier, _) {
+    return Consumer<ThemeModeProvider>(
+      builder: (context, theme, _) {
         return MaterialApp(
           title: AppBrand.appTitle,
           debugShowCheckedModeBanner: false,
           navigatorKey: AppRouter.navigatorKey,
           theme: AppTheme.light,
           darkTheme: AppTheme.dark,
-          themeMode: notifier.themeMode,
+          themeMode: theme.themeMode,
           initialRoute: AppRouter.initialRoute,
           onGenerateRoute: AppRouter.onGenerateRoute,
           onUnknownRoute: (_) =>

@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MyApp.Application.Features.Users.DTOs;
 using MyApp.Application.Interfaces;
@@ -157,15 +157,41 @@ namespace MyApp.Api.Controllers
             }
         }
 
+        /// <summary>
+        /// Logout. Accepts JWT via standard <c>Authorization: Bearer &lt;token&gt;</c>
+        /// or optional legacy header <c>token: &lt;jwt&gt;</c> (matches OpenAPI).
+        /// </summary>
         [HttpPost("logout")]
         [Authorize]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<IActionResult> Logout([FromHeader] string token)
+        public async Task<IActionResult> Logout()
         {
             try
             {
-                await _authService.LogoutAsync(token);
+                var rawAuth = Request.Headers.Authorization.FirstOrDefault();
+                string? jwt = null;
+                if (!string.IsNullOrEmpty(rawAuth) &&
+                    rawAuth.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+                {
+                    jwt = rawAuth["Bearer ".Length..].Trim();
+                }
+
+                if (string.IsNullOrEmpty(jwt))
+                {
+                    jwt = Request.Headers["token"].FirstOrDefault();
+                }
+
+                if (string.IsNullOrEmpty(jwt))
+                {
+                    return Unauthorized(new
+                    {
+                        success = false,
+                        message = "Missing token. Send Authorization: Bearer <jwt> or token header."
+                    });
+                }
+
+                await _authService.LogoutAsync(jwt);
                 return Ok(new
                 {
                     success = true,

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../routes/app_router.dart';
 import '../theme/app_colors.dart';
 
+/// Admin shell: users, models, server, illnesses, profile (Cá nhân).
 class AdminBottomNav extends StatelessWidget {
   const AdminBottomNav({super.key, required this.currentIndex});
 
@@ -18,24 +19,29 @@ class AdminBottomNav extends StatelessWidget {
 
     final items = <_AdminNavItem>[
       const _AdminNavItem(
-        label: 'Tong quan',
-        icon: Icons.dashboard,
-        route: AppRouter.adminDashboard,
-      ),
-      const _AdminNavItem(
         label: 'Users',
         icon: Icons.groups_outlined,
         route: AppRouter.adminUsers,
       ),
       const _AdminNavItem(
-        label: 'Phan hoi',
-        icon: Icons.chat_bubble_outline,
-        route: AppRouter.adminFeedback,
+        label: 'Models',
+        icon: Icons.psychology_outlined,
+        route: AppRouter.adminModels,
       ),
       const _AdminNavItem(
-        label: 'Cai dat',
-        icon: Icons.settings_outlined,
-        route: AppRouter.adminSettings,
+        label: 'Server',
+        icon: Icons.dns_outlined,
+        route: AppRouter.adminServer,
+      ),
+      const _AdminNavItem(
+        label: 'Bệnh',
+        icon: Icons.coronavirus_outlined,
+        route: AppRouter.adminIllnesses,
+      ),
+      const _AdminNavItem(
+        label: 'Cá nhân',
+        icon: Icons.account_circle_outlined,
+        route: AppRouter.adminProfile,
       ),
     ];
 
@@ -51,28 +57,33 @@ class AdminBottomNav extends StatelessWidget {
             final isActive = index == currentIndex;
             final color = isActive ? AppColors.primary : textSecondary;
 
-            return InkWell(
-              onTap: isActive
-                  ? null
-                  : () => Navigator.pushNamed(context, item.route),
-              borderRadius: BorderRadius.circular(12),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 2),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(item.icon, size: 22, color: color),
-                    const SizedBox(height: 2),
-                    Text(
-                      item.label,
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        color: color,
-                        fontWeight: isActive
-                            ? FontWeight.w700
-                            : FontWeight.w500,
+            return Expanded(
+              child: InkWell(
+                onTap: isActive
+                    ? null
+                    : () => Navigator.pushReplacementNamed(context, item.route),
+                borderRadius: BorderRadius.circular(12),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 2),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(item.icon, size: 22, color: color),
+                      const SizedBox(height: 2),
+                      Text(
+                        item.label,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: color,
+                          fontSize: 9,
+                          fontWeight: isActive
+                              ? FontWeight.w700
+                              : FontWeight.w500,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             );

@@ -7,11 +7,16 @@ import 'package:image_picker/image_picker.dart';
 import '../../routes/app_router.dart';
 import '../../share/services/image_upload_service.dart';
 import '../../share/services/prediction_service.dart';
-import '../../share/theme/app_colors.dart';
 import '../../share/widgets/app_button.dart';
-import '../../share/widgets/app_card.dart';
 import '../../share/widgets/app_scaffold.dart';
 import '../prediction/prediction_screen.dart';
+
+/// Matches [DashboardScreen] owner hub palette.
+const Color _kBrandGreen = Color(0xFF2D7B31);
+const Color _kPageBgLight = Color(0xFFF6F8F6);
+const Color _kDarkCard = Color(0xFF2D322B);
+const Color _kPrimaryFixed = Color(0xFFA4F69C);
+const Color _kOnPrimaryFixed = Color(0xFF1A3D16);
 
 class ScanScreen extends StatefulWidget {
   const ScanScreen({super.key});
@@ -397,61 +402,70 @@ class _ScanScreenState extends State<ScanScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final bg = Theme.of(context).brightness == Brightness.light
+        ? _kPageBgLight
+        : Theme.of(context).colorScheme.surface;
+
     return AppScaffold(
       centerContent: false,
       showUserBottomNav: true,
       selectedNavIndex: 1,
       title: 'Scan',
-      child: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('New scan', style: Theme.of(context).textTheme.displayMedium),
-            const SizedBox(height: 6),
-            Text(
-              'Upload or capture to run the model.',
-              style: Theme.of(context).textTheme.bodyLarge,
-            ),
-            const SizedBox(height: 20),
-            LayoutBuilder(
-              builder: (context, constraints) {
-                final isWide = constraints.maxWidth > 900;
-                final uploadCard = _UploadCard(
-                  selectedImage: _selectedImage,
-                  hasImage: _selectedImage != null,
-                  isUploading: _isUploading,
-                  statusMessage: _statusMessage,
-                  uploadStatus: _uploadStatus,
-                  onCapture: _pickFromCameraFlow,
-                  onUploadFromDevice: _showUploadFromDeviceSheet,
-                  onClearImage: _clearImage,
-                  onUpload: _uploadSelectedImage,
-                  onPredict: _predictImage,
-                );
+      backgroundColor: bg,
+      contentPadding: const EdgeInsets.fromLTRB(16, 8, 16, 28),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final isWide = constraints.maxWidth > 900;
+          final workbench = _ScanWorkbenchCard(
+            selectedImage: _selectedImage,
+            hasImage: _selectedImage != null,
+            isUploading: _isUploading,
+            statusMessage: _statusMessage,
+            uploadStatus: _uploadStatus,
+            onCapture: _pickFromCameraFlow,
+            onUploadFromDevice: _showUploadFromDeviceSheet,
+            onClearImage: _clearImage,
+            onUpload: _uploadSelectedImage,
+            onPredict: _predictImage,
+          );
+          const tips = _ScanPageTipsCard();
+          final recent = _RecentActivityCard(uploads: _uploads);
 
-                if (isWide) {
-                  return Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(child: uploadCard),
-                      const SizedBox(width: 16),
-                      Expanded(child: _HistoryCard(uploads: _uploads)),
-                    ],
-                  );
-                }
+          if (isWide) {
+            return SingleChildScrollView(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        workbench,
+                        const SizedBox(height: 20),
+                        tips,
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(child: recent),
+                ],
+              ),
+            );
+          }
 
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    uploadCard,
-                    const SizedBox(height: 16),
-                    _HistoryCard(uploads: _uploads),
-                  ],
-                );
-              },
+          return SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                workbench,
+                const SizedBox(height: 20),
+                tips,
+                const SizedBox(height: 20),
+                recent,
+              ],
             ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
@@ -461,8 +475,8 @@ enum _UploadStatus { idle, uploading, success, error }
 
 enum _CaptureLeafAction { retake, confirm }
 
-class _UploadCard extends StatelessWidget {
-  const _UploadCard({
+class _ScanWorkbenchCard extends StatelessWidget {
+  const _ScanWorkbenchCard({
     required this.selectedImage,
     required this.hasImage,
     required this.isUploading,
@@ -486,201 +500,478 @@ class _UploadCard extends StatelessWidget {
   final VoidCallback onUpload;
   final VoidCallback? onPredict;
 
-  Color _statusColor(BuildContext context) {
+  Color _statusColor() {
     switch (uploadStatus) {
       case _UploadStatus.success:
-        return Colors.green;
+        return _kPrimaryFixed;
       case _UploadStatus.error:
-        return Colors.red;
+        return const Color(0xFFFFB4A8);
       case _UploadStatus.uploading:
-        return Theme.of(context).colorScheme.primary;
+        return _kPrimaryFixed;
       case _UploadStatus.idle:
-        return Theme.of(context).textTheme.bodyMedium?.color ?? Colors.black54;
+        return const Color(0xFFB8C4BF);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final closeBackground =
-        hasImage ? cs.error : cs.surfaceContainerHighest;
-    final closeIconColor = hasImage ? cs.onError : cs.onSurfaceVariant;
+    final isLight = Theme.of(context).brightness == Brightness.light;
+    final cardBg = isLight ? _kDarkCard : const Color(0xFF2C3430);
+    final innerSurface =
+        isLight ? const Color(0xFFF0F4F1) : const Color(0xFF1E2521);
+    final muted = Colors.grey.shade400;
 
-    return AppCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+    return Material(
+      color: cardBg,
+      borderRadius: BorderRadius.circular(20),
+      clipBehavior: Clip.antiAlias,
+      child: Stack(
         children: [
-          Text('Upload image', style: Theme.of(context).textTheme.titleLarge),
-          const SizedBox(height: 12),
-          Stack(
-            children: [
-              Material(
-                color: cs.surface,
-                borderRadius: BorderRadius.circular(14),
-                child: InkWell(
-                  onTap: !isUploading && !hasImage ? onUploadFromDevice : null,
-                  borderRadius: BorderRadius.circular(14),
-                  child: Container(
-                height: 180,
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(
-                    color: Theme.of(context)
-                        .dividerColor
-                        .withValues(alpha: 0.3),
-                  ),
-                  color: cs.surface,
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(14),
-                  child: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      if (hasImage)
-                        Image.file(File(selectedImage!.path), fit: BoxFit.cover)
-                      else
-                        Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.add_photo_alternate_outlined,
-                                size: 40,
-                                color: cs.primary,
-                              ),
-                              const SizedBox(height: 10),
-                              Text(
-                                'Tap to upload',
-                                style: Theme.of(context).textTheme.titleSmall
-                                    ?.copyWith(fontWeight: FontWeight.w700),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                'Or use Capture / Upload below · JPG, PNG',
-                                style: Theme.of(context).textTheme.bodySmall
-                                    ?.copyWith(
-                                  color: cs.onSurfaceVariant,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                            ],
-                          ),
+          Positioned(
+            right: -28,
+            bottom: -28,
+            child: Icon(
+              Icons.document_scanner_outlined,
+              size: 150,
+              color: Colors.white.withValues(alpha: 0.06),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 22, 20, 22),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 5,
+                      ),
+                      decoration: BoxDecoration(
+                        color: _kBrandGreen.withValues(alpha: 0.4),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Text(
+                        'LEAF SCAN',
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0.8,
+                          color: _kPrimaryFixed,
                         ),
-                      if (isUploading)
-                        Container(
-                          color: cs.scrim.withValues(alpha: 0.12),
-                          child: Center(
-                            child: SizedBox(
-                              width: 28,
-                              height: 28,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 3,
-                                color: cs.primary,
-                              ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                const Text(
+                  'Analyze a sample',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 22,
+                    fontWeight: FontWeight.w800,
+                    height: 1.15,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Add a clear leaf photo, then submit to run the model.',
+                  style: TextStyle(color: muted, fontSize: 13, height: 1.4),
+                ),
+                const SizedBox(height: 18),
+                Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    Material(
+                      color: innerSurface,
+                      borderRadius: BorderRadius.circular(16),
+                      child: InkWell(
+                        onTap: !isUploading && !hasImage ? onUploadFromDevice : null,
+                        borderRadius: BorderRadius.circular(16),
+                        child: Container(
+                          height: 200,
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: Colors.black.withValues(alpha: 0.06),
+                            ),
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(16),
+                            child: Stack(
+                              fit: StackFit.expand,
+                              children: [
+                                if (hasImage)
+                                  Image.file(
+                                    File(selectedImage!.path),
+                                    fit: BoxFit.cover,
+                                  )
+                                else
+                                  Center(
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(16),
+                                      child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Icon(
+                                            Icons.add_photo_alternate_outlined,
+                                            size: 44,
+                                            color: _kBrandGreen,
+                                          ),
+                                          const SizedBox(height: 10),
+                                          Text(
+                                            'Tap to choose from device',
+                                            textAlign: TextAlign.center,
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .titleSmall
+                                                ?.copyWith(
+                                                  fontWeight: FontWeight.w700,
+                                                  color: const Color(0xFF1B2D20),
+                                                ),
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            'Or use Capture / Upload below',
+                                            textAlign: TextAlign.center,
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .bodySmall
+                                                ?.copyWith(
+                                                  color: const Color(0xFF5C6B62),
+                                                ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                if (isUploading)
+                                  Container(
+                                    color: Colors.black.withValues(alpha: 0.08),
+                                    child: const Center(
+                                      child: SizedBox(
+                                        width: 32,
+                                        height: 32,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 3,
+                                          color: _kBrandGreen,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                              ],
                             ),
                           ),
                         ),
-                    ],
-                  ),
-                ),
-                  ),
-                ),
-              ),
-              Positioned(
-                top: 8,
-                right: 8,
-                child: GestureDetector(
-                  onTap: hasImage && !isUploading ? onClearImage : null,
-                  child: Container(
-                    width: 36,
-                    height: 36,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: closeBackground,
+                      ),
                     ),
-                    child: Center(
-                      child: Icon(Icons.close, color: closeIconColor, size: 20),
+                    Positioned(
+                      top: 8,
+                      right: 8,
+                      child: GestureDetector(
+                        onTap: hasImage && !isUploading ? onClearImage : null,
+                        child: Container(
+                          width: 36,
+                          height: 36,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: hasImage
+                                ? const Color(0xFFC94C4C)
+                                : Colors.white.withValues(alpha: 0.65),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.12),
+                                blurRadius: 8,
+                              ),
+                            ],
+                          ),
+                          child: Center(
+                            child: Icon(
+                              Icons.close,
+                              color: hasImage ? Colors.white : Colors.black45,
+                              size: 20,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _WorkbenchOutlineButton(
+                        icon: Icons.photo_camera_outlined,
+                        label: 'Capture',
+                        onPressed: isUploading ? null : onCapture,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _WorkbenchOutlineButton(
+                        icon: Icons.upload_file_outlined,
+                        label: 'Upload',
+                        onPressed: isUploading ? null : onUploadFromDevice,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton.icon(
+                    onPressed: hasImage && !isUploading
+                        ? (onPredict ?? onUpload)
+                        : null,
+                    icon: const Icon(Icons.biotech_outlined, size: 22),
+                    label: const Text(
+                      'Submit',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w800,
+                        fontSize: 16,
+                      ),
+                    ),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: _kPrimaryFixed,
+                      foregroundColor: _kOnPrimaryFixed,
+                      disabledBackgroundColor:
+                          Colors.white.withValues(alpha: 0.12),
+                      disabledForegroundColor:
+                          Colors.white.withValues(alpha: 0.35),
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: AppButton(
-                  label: 'Capture',
-                  variant: AppButtonVariant.outlined,
-                  icon: Icons.photo_camera_outlined,
-                  onPressed: isUploading ? null : onCapture,
+                const SizedBox(height: 12),
+                Text(
+                  statusMessage ??
+                      (hasImage
+                          ? 'Ready when you are — tap Submit to analyze.'
+                          : 'Choose or capture a leaf image to begin.'),
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: statusMessage != null
+                            ? _statusColor()
+                            : muted,
+                        height: 1.45,
+                      ),
                 ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: AppButton(
-                  label: 'Upload',
-                  variant: AppButtonVariant.outlined,
-                  icon: Icons.upload_file_outlined,
-                  onPressed: isUploading ? null : onUploadFromDevice,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 14),
-          AppButton(
-            label: 'Submit',
-            minimumHeight: 56,
-            icon: Icons.biotech_outlined,
-            onPressed: hasImage && !isUploading
-                ? (onPredict ?? onUpload)
-                : null,
-          ),
-          if (statusMessage != null) ...[
-            const SizedBox(height: 12),
-            Text(
-              statusMessage!,
-              style: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.copyWith(color: _statusColor(context)),
+              ],
             ),
-          ] else ...[
-            const SizedBox(height: 12),
-            Text(
-              'Choose an image to begin',
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
-          ],
+          ),
         ],
       ),
     );
   }
 }
 
-class _HistoryCard extends StatelessWidget {
-  const _HistoryCard({required this.uploads});
+class _WorkbenchOutlineButton extends StatelessWidget {
+  const _WorkbenchOutlineButton({
+    required this.icon,
+    required this.label,
+    required this.onPressed,
+  });
+
+  final IconData icon;
+  final String label;
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return OutlinedButton.icon(
+      onPressed: onPressed,
+      icon: Icon(icon, size: 20),
+      label: Text(
+        label,
+        style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+      ),
+      style: OutlinedButton.styleFrom(
+        minimumSize: const Size.fromHeight(52),
+        foregroundColor: Colors.white,
+        side: BorderSide(color: Colors.white.withValues(alpha: 0.38)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+      ),
+    );
+  }
+}
+
+/// Same tips as dashboard [dashboard_screen.dart] `_ScanTipsCard`.
+class _ScanPageTipsCard extends StatelessWidget {
+  const _ScanPageTipsCard();
+
+  static const _tips = <String>[
+    'Fill the frame with one leaf; avoid harsh shadow on the spot you care about.',
+    'Natural daylight works best—avoid yellow indoor bulbs if you can.',
+    'Hold steady; blurry photos are harder for the model to read.',
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final line = Theme.of(context).dividerColor.withValues(alpha: 0.12);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          'GET A CLEAR SCAN',
+          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                letterSpacing: 1.2,
+                fontWeight: FontWeight.w700,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+        ),
+        const SizedBox(height: 12),
+        Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).brightness == Brightness.light
+                ? Colors.white
+                : Theme.of(context).colorScheme.surfaceContainerHighest,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: line),
+          ),
+          padding: const EdgeInsets.fromLTRB(18, 16, 18, 18),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Icon(
+                    Icons.tips_and_updates_outlined,
+                    size: 22,
+                    color: _kBrandGreen,
+                  ),
+                  const SizedBox(width: 10),
+                  Text(
+                    'Photo tips',
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              for (var i = 0; i < _tips.length; i++) ...[
+                if (i > 0) const SizedBox(height: 10),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${i + 1}.',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            fontWeight: FontWeight.w700,
+                            color: _kBrandGreen,
+                          ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        _tips[i],
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              height: 1.45,
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurfaceVariant,
+                            ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _RecentActivityCard extends StatelessWidget {
+  const _RecentActivityCard({required this.uploads});
+
   final List<_ScanItem> uploads;
 
   @override
   Widget build(BuildContext context) {
-    return AppCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Recent scans', style: Theme.of(context).textTheme.titleLarge),
-          const SizedBox(height: 12),
-          ...uploads.map((item) => _ScanTile(item: item)),
-          const SizedBox(height: 12),
-            AppButton(
-            label: 'View full history',
-            variant: AppButtonVariant.ghost,
-            onPressed: () =>
-                Navigator.pushNamed(context, AppRouter.history),
+    final line = Theme.of(context).dividerColor.withValues(alpha: 0.12);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          'RECENT ACTIVITY',
+          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                letterSpacing: 1.2,
+                fontWeight: FontWeight.w700,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+        ),
+        const SizedBox(height: 12),
+        Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).brightness == Brightness.light
+                ? Colors.white
+                : Theme.of(context).colorScheme.surfaceContainerHighest,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: line),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(
+                  alpha: Theme.of(context).brightness == Brightness.light
+                      ? 0.06
+                      : 0.2,
+                ),
+                blurRadius: 14,
+                offset: const Offset(0, 8),
+              ),
+            ],
           ),
-        ],
-      ),
+          padding: const EdgeInsets.fromLTRB(18, 18, 18, 12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(
+                    Icons.history_rounded,
+                    size: 22,
+                    color: _kBrandGreen,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Queue snapshot',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w800,
+                        ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 14),
+              ...uploads.map((item) => _ScanTile(item: item)),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: TextButton(
+                  onPressed: () =>
+                      Navigator.pushNamed(context, AppRouter.history),
+                  style: TextButton.styleFrom(
+                    foregroundColor: _kBrandGreen,
+                    textStyle: const TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 13,
+                    ),
+                  ),
+                  child: const Text('View full history'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
@@ -700,44 +991,67 @@ class _ScanTile extends StatelessWidget {
   const _ScanTile({required this.item});
   final _ScanItem item;
 
-  Color _statusColor() {
+  Color _statusAccent() {
     switch (item.status.toLowerCase()) {
       case 'completed':
-        return AppColors.accent;
+        return _kBrandGreen;
       case 'processing':
-        return Colors.amber;
+        return const Color(0xFFD4A017);
       default:
-        return Colors.blueGrey;
+        return const Color(0xFF64748B);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final soft = theme.dividerColor.withValues(alpha: 0.2);
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
-        color: theme.colorScheme.surface,
-        border: Border.all(
-          color: theme.dividerColor.withValues(alpha: 0.3),
-        ),
+        color: theme.colorScheme.surface.withValues(alpha: 0.65),
+        border: Border.all(color: soft),
       ),
       child: Row(
         children: [
-          Icon(Icons.image_outlined, color: _statusColor()),
-          const SizedBox(width: 10),
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: _statusAccent().withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(Icons.image_outlined, color: _statusAccent(), size: 22),
+          ),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(item.name, style: theme.textTheme.titleMedium),
-                Text(item.status, style: theme.textTheme.bodyMedium),
+                Text(
+                  item.name,
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  item.status,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
               ],
             ),
           ),
-          Text(item.time, style: theme.textTheme.bodyMedium),
+          Text(
+            item.time,
+            style: theme.textTheme.labelMedium?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
         ],
       ),
     );

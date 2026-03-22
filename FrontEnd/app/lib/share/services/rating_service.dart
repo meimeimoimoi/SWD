@@ -1,17 +1,18 @@
 import 'package:dio/dio.dart';
+
+import '../constants/api_config.dart';
 import 'auth_api_service.dart';
 import 'storage_service.dart';
 
 class RatingService {
   final Dio _dio;
-  static const String _baseUrl = 'http://10.0.2.2:5299'; // For Android emulator
 
   RatingService({Dio? dio})
     : _dio =
           dio ??
           Dio(
             BaseOptions(
-              baseUrl: _baseUrl,
+              baseUrl: ApiConfig.baseUrl,
               connectTimeout: const Duration(seconds: 30),
               receiveTimeout: const Duration(seconds: 30),
               sendTimeout: const Duration(seconds: 30),
@@ -46,7 +47,7 @@ class RatingService {
       }
 
       final response = await _dio.post(
-        '/api/rating/prediction/$predictionId',
+        ApiPaths.ratingPrediction(predictionId),
         data: {'score': score, 'comment': comment},
         options: Options(
           headers: {'Authorization': _formatBearerToken(accessToken)},
@@ -101,5 +102,47 @@ class RatingService {
       return trimmed;
     }
     return 'Bearer $trimmed';
+  }
+
+  /// GET /api/rating/prediction/{predictionId}
+  Future<Map<String, dynamic>?> getRatingForPrediction(int predictionId) async {
+    try {
+      final accessToken = await StorageService.getAccessToken();
+      if (accessToken == null || accessToken.isEmpty) return null;
+      final response = await _dio.get<Map<String, dynamic>>(
+        ApiPaths.ratingPrediction(predictionId),
+        options: Options(
+          headers: {'Authorization': _formatBearerToken(accessToken)},
+        ),
+      );
+      final d = response.data;
+      if (d != null && d['success'] == true) {
+        return Map<String, dynamic>.from(d);
+      }
+      return null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// GET /api/rating/all
+  Future<List<dynamic>> getAllRatings() async {
+    try {
+      final accessToken = await StorageService.getAccessToken();
+      if (accessToken == null || accessToken.isEmpty) return [];
+      final response = await _dio.get<Map<String, dynamic>>(
+        ApiPaths.ratingAll,
+        options: Options(
+          headers: {'Authorization': _formatBearerToken(accessToken)},
+        ),
+      );
+      final d = response.data;
+      if (d != null && d['success'] == true && d['data'] is List) {
+        return List<dynamic>.from(d['data'] as List);
+      }
+      return [];
+    } catch (_) {
+      return [];
+    }
   }
 }

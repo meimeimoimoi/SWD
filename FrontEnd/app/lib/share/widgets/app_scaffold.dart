@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'theme_toggle.dart';
 import 'user_bottom_nav_bar.dart';
 
 class AppScaffold extends StatelessWidget {
@@ -11,7 +10,9 @@ class AppScaffold extends StatelessWidget {
     this.centerContent = true,
     this.showUserBottomNav = false,
     this.selectedNavIndex,
-    this.showThemeToggle = true,
+    this.backgroundColor,
+    this.contentPadding =
+        const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
   });
 
   final Widget child;
@@ -20,26 +21,20 @@ class AppScaffold extends StatelessWidget {
   final bool centerContent;
   final bool showUserBottomNav;
   final int? selectedNavIndex;
-  final bool showThemeToggle;
+  final Color? backgroundColor;
+  final EdgeInsetsGeometry contentPadding;
 
   @override
   Widget build(BuildContext context) {
-    final hasAppBar = title != null ||
-        (actions != null && actions!.isNotEmpty) ||
-        showThemeToggle;
+    final hasAppBar =
+        title != null || (actions != null && actions!.isNotEmpty);
 
     return Scaffold(
+      backgroundColor: backgroundColor,
       appBar: hasAppBar
           ? AppBar(
               title: title != null ? Text(title!) : null,
-              actions: [
-                ...?actions,
-                if (showThemeToggle)
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 4),
-                    child: ThemeToggle(compact: true),
-                  ),
-              ],
+              actions: actions,
             )
           : null,
       body: SafeArea(
@@ -47,7 +42,7 @@ class AppScaffold extends StatelessWidget {
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 1100),
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              padding: contentPadding,
               child: centerContent ? Center(child: child) : child,
             ),
           ),

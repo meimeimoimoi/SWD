@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../constants/api_config.dart';
 import 'auth_api_service.dart';
 import 'storage_service.dart';
 
@@ -22,8 +23,8 @@ class ImageUploadResult {
 }
 
 class ImageUploadService {
-  static const String baseUrl = 'http://10.0.2.2:5299';
-  static const String uploadEndpoint = '/api/ImageUpload/upload';
+  static String get baseUrl => ApiConfig.baseUrl;
+  static String get uploadEndpoint => ApiPaths.imageUpload;
   static const Duration timeout = Duration(seconds: 120);
   static const int maxFileBytes = 10 * 1024 * 1024;
 
@@ -192,5 +193,64 @@ class ImageUploadService {
       }
     } catch (_) {}
     return {'message': body};
+  }
+
+  /// GET /api/ImageUpload/{uploadId}
+  Future<Map<String, dynamic>> getUploadStatus(int uploadId) async {
+    try {
+      final token = await StorageService.getAccessToken();
+      if (token == null || token.isEmpty) {
+        return {'success': false, 'message': 'Unauthorized'};
+      }
+      final uri = Uri.parse(
+        '$baseUrl${ApiPaths.imageUploadById(uploadId)}',
+      );
+      final response = await http
+          .get(
+            uri,
+            headers: {
+              'Accept': 'application/json',
+              'Authorization': _formatBearerToken(token),
+            },
+          )
+          .timeout(timeout);
+      final payload = _tryParseJson(response.body);
+      return {
+        'success': response.statusCode == 200 && payload['success'] == true,
+        'message': payload['message']?.toString() ?? '',
+        'data': payload['data'],
+      };
+    } catch (e) {
+      return {'success': false, 'message': e.toString()};
+    }
+  }
+
+  /// GET /api/ImageUpload/my-images
+  Future<Map<String, dynamic>> getMyImages() async {
+    try {
+      final token = await StorageService.getAccessToken();
+      if (token == null || token.isEmpty) {
+        return {'success': false, 'message': 'Unauthorized', 'data': <dynamic>[]};
+      }
+      final uri = Uri.parse('$baseUrl${ApiPaths.imageUploadMyImages}');
+      final response = await http
+          .get(
+            uri,
+            headers: {
+              'Accept': 'application/json',
+              'Authorization': _formatBearerToken(token),
+            },
+          )
+          .timeout(timeout);
+      final payload = _tryParseJson(response.body);
+      final raw = payload['data'];
+      return {
+        'success': response.statusCode == 200 && payload['success'] == true,
+        'message': payload['message']?.toString() ?? '',
+        'data': raw is List ? raw : <dynamic>[],
+      };
+    } catch (e) {
+      return {'success': false, 'message': e.toString(), 'data': <dynamic>[]};
+    }
   }
 }

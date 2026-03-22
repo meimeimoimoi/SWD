@@ -3,9 +3,10 @@ import 'package:provider/provider.dart';
 
 import '../../providers/dashboard_provider.dart';
 import '../../share/theme/app_colors.dart';
-import '../../share/widgets/app_card.dart';
+import '../../share/widgets/admin_app_bar_actions.dart';
 import '../../share/widgets/admin_bottom_nav.dart';
-import '../../share/widgets/theme_toggle.dart';
+import '../../share/widgets/admin_pop_scope.dart';
+import '../../share/widgets/app_card.dart';
 
 class AdminUserScreen extends StatefulWidget {
   const AdminUserScreen({super.key});
@@ -19,6 +20,7 @@ class _AdminUserScreenState extends State<AdminUserScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+  final _userSearchController = TextEditingController();
   bool _obscurePassword = true;
 
   @override
@@ -31,6 +33,7 @@ class _AdminUserScreenState extends State<AdminUserScreen> {
 
   @override
   void dispose() {
+    _userSearchController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
@@ -222,8 +225,9 @@ class _AdminUserScreenState extends State<AdminUserScreen> {
       );
     }).toList();
 
-    return Scaffold(
-      appBar: AppBar(
+    return AdminPopScope(
+      child: Scaffold(
+        appBar: AppBar(
         backgroundColor: appBarBackground,
         surfaceTintColor: Colors.transparent,
         elevation: isDark ? 0 : 1,
@@ -232,7 +236,7 @@ class _AdminUserScreenState extends State<AdminUserScreen> {
           'User Management',
           style: theme.textTheme.titleLarge?.copyWith(color: textPrimary),
         ),
-        actions: [const ThemeToggle(), const SizedBox(width: 8)],
+        actions: adminSecondaryAppBarActions(context),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(120),
           child: Padding(
@@ -240,6 +244,8 @@ class _AdminUserScreenState extends State<AdminUserScreen> {
             child: Column(
               children: [
                 TextField(
+                  controller: _userSearchController,
+                  textInputAction: TextInputAction.search,
                   decoration: InputDecoration(
                     hintText: 'Search by name or email...',
                     hintStyle: theme.textTheme.bodySmall?.copyWith(
@@ -251,6 +257,11 @@ class _AdminUserScreenState extends State<AdminUserScreen> {
                         ? AppColors.surfaceDark
                         : AppColors.surfaceLight,
                   ),
+                  onSubmitted: (_) {
+                    context.read<DashboardProvider>().setAdminUsersFilters(
+                          search: _userSearchController.text,
+                        );
+                  },
                 ),
                 const SizedBox(height: 10),
                 SizedBox(
@@ -308,7 +319,8 @@ class _AdminUserScreenState extends State<AdminUserScreen> {
           ),
         ),
       ),
-      bottomNavigationBar: const AdminBottomNav(currentIndex: 1),
+      bottomNavigationBar: const AdminBottomNav(currentIndex: 0),
+      ),
     );
   }
 }

@@ -1,8 +1,12 @@
 import 'package:app/feature/admin/feedback/admin_feebackList_sceern.dart';
 import 'package:flutter/material.dart';
-import '../feature/admin/admin_dashboard_screen.dart';
-import '../feature/admin/setting/admin_setting_sceern.dart';
+import '../feature/admin/admin_illness_management_screen.dart';
+import '../feature/admin/admin_model_management_screen.dart';
+import '../feature/admin/admin_model_upload_screen.dart';
+import '../feature/admin/admin_server_management_screen.dart';
+import '../feature/admin/admin_profile_screen.dart';
 import '../feature/admin/admin_user_screen.dart';
+import '../feature/admin/setting/admin_setting_sceern.dart';
 import '../feature/auth/login/login_screen.dart';
 import '../feature/auth/register/register_screen.dart';
 import '../feature/dashboard/dashboard_screen.dart';
@@ -14,7 +18,10 @@ import '../feature/history/hisstory_screen.dart';
 import '../feature/prediction/prediction_screen.dart';
 import '../feature/trees/tree_detail_screen.dart';
 import '../feature/trees/trees_screen.dart';
+import '../feature/trees/user_illness_detail_screen.dart';
 import '../feature/trees/user_tree_models.dart';
+import '../feature/notifications/notifications_screen.dart';
+import '../feature/settings/settings_screen.dart';
 
 class AppRouter {
   static final GlobalKey<NavigatorState> navigatorKey =
@@ -26,6 +33,11 @@ class AppRouter {
   static const String dashboard = '/dashboard';
   static const String adminDashboard = '/admin/dashboard';
   static const String adminUsers = '/admin/users';
+  static const String adminModels = '/admin/models';
+  static const String adminModelUpload = '/admin/models/upload';
+  static const String adminServer = '/admin/server';
+  static const String adminIllnesses = '/admin/illnesses';
+  static const String adminProfile = '/admin/profile';
   static const String adminFeedback = '/admin/feedback';
   static const String adminSettings = '/admin/settings';
   static const String scan = '/scan';
@@ -36,14 +48,37 @@ class AppRouter {
   static const String history = '/history';
   static const String trees = '/trees';
   static const String treeDetail = '/trees/detail';
+  static const String userIllnessDetail = '/trees/illness';
   static const String treatmentHub = '/treatments';
+  static const String notifications = '/notifications';
+  static const String appSettings = '/settings';
 
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
       case adminDashboard:
-        return MaterialPageRoute(builder: (_) => const AdminDashboardScreen());
+        return MaterialPageRoute(builder: (_) => const AdminUserScreen());
       case adminUsers:
         return MaterialPageRoute(builder: (_) => const AdminUserScreen());
+      case adminModels:
+        return MaterialPageRoute(
+          builder: (_) => const AdminModelManagementScreen(),
+        );
+      case adminModelUpload:
+        return MaterialPageRoute(
+          builder: (_) => const AdminModelUploadScreen(),
+        );
+      case adminServer:
+        return MaterialPageRoute(
+          builder: (_) => const AdminServerManagementScreen(),
+        );
+      case adminIllnesses:
+        return MaterialPageRoute(
+          builder: (_) => const AdminIllnessManagementScreen(),
+        );
+      case adminProfile:
+        return MaterialPageRoute(
+          builder: (_) => const AdminProfileScreen(),
+        );
       case adminFeedback:
         return MaterialPageRoute(
           builder: (_) => const AdminFeedbackListScreen(),
@@ -68,6 +103,10 @@ class AppRouter {
 
       case history:
         return MaterialPageRoute(builder: (_) => const HistoryScreen());
+      case notifications:
+        return MaterialPageRoute(builder: (_) => const NotificationsScreen());
+      case appSettings:
+        return MaterialPageRoute(builder: (_) => const SettingsScreen());
       case trees:
         return MaterialPageRoute(builder: (_) => const TreesScreen());
       case treeDetail:
@@ -77,6 +116,17 @@ class AppRouter {
         }
         return MaterialPageRoute(
           builder: (_) => TreeDetailScreen(summary: summary),
+        );
+      case userIllnessDetail:
+        final args = settings.arguments;
+        if (args is! UserIllnessDetailArgs) {
+          return MaterialPageRoute(builder: (_) => const TreesScreen());
+        }
+        return MaterialPageRoute(
+          builder: (_) => UserIllnessDetailScreen(
+            item: args.item,
+            recommendations: args.recommendations,
+          ),
         );
       case feedback:
         final predictionResult = settings.arguments as PredictionResult?;

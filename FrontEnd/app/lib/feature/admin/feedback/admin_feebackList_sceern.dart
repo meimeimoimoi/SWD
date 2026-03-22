@@ -3,8 +3,6 @@ import 'package:provider/provider.dart';
 
 import '../../../share/theme/app_colors.dart';
 import '../../../share/widgets/app_card.dart';
-import '../../../share/widgets/admin_bottom_nav.dart';
-import '../../../share/widgets/theme_toggle.dart';
 import '../../../providers/dashboard_provider.dart';
 
 class AdminFeedbackListScreen extends StatefulWidget {
@@ -71,16 +69,14 @@ class _AdminFeedbackListScreenState extends State<AdminFeedbackListScreen> {
         elevation: isDark ? 0 : 1,
         shadowColor: appBarShadow,
         titleSpacing: 16,
-        title: Row(
-          children: [
-            const SizedBox(width: 8),
-            Text(
-              'Feedback',
-              style: theme.textTheme.titleLarge?.copyWith(color: textPrimary),
-            ),
-          ],
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
         ),
-        actions: [const ThemeToggle(), const SizedBox(width: 8)],
+        title: Text(
+          'Feedback',
+          style: theme.textTheme.titleLarge?.copyWith(color: textPrimary),
+        ),
       ),
       body: SafeArea(
         child: RefreshIndicator(
@@ -186,7 +182,6 @@ class _AdminFeedbackListScreenState extends State<AdminFeedbackListScreen> {
           ),
         ),
       ),
-      bottomNavigationBar: const AdminBottomNav(currentIndex: 2),
     );
   }
 }

@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../../../share/theme/app_colors.dart';
 import '../../../share/widgets/app_card.dart';
-import '../../../share/widgets/admin_bottom_nav.dart';
-
 class AdminFeedbackDetailScreen extends StatelessWidget {
   const AdminFeedbackDetailScreen({super.key});
 
@@ -55,7 +53,6 @@ class AdminFeedbackDetailScreen extends StatelessWidget {
           ),
         ),
       ),
-      bottomNavigationBar: const AdminBottomNav(currentIndex: 2),
     );
   }
 }

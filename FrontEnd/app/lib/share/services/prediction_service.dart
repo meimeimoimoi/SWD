@@ -1,4 +1,6 @@
 import 'package:dio/dio.dart';
+
+import '../constants/api_config.dart';
 import 'auth_api_service.dart';
 import 'storage_service.dart';
 
@@ -64,15 +66,13 @@ class PredictionData {
 /// Service to handle predictions
 class PredictionService {
   final Dio _dio;
-  static const String _baseUrl = 'http://10.0.2.2:5299'; // For Android emulator
-  // For physical device or web, change to: 'http://your-server-ip:5299'
 
   PredictionService({Dio? dio})
     : _dio =
           dio ??
           Dio(
             BaseOptions(
-              baseUrl: _baseUrl,
+              baseUrl: ApiConfig.baseUrl,
               connectTimeout: const Duration(seconds: 30),
               receiveTimeout: const Duration(seconds: 30),
               sendTimeout: const Duration(seconds: 30),
@@ -106,7 +106,7 @@ class PredictionService {
       });
 
       final response = await _dio.post(
-        '/api/Prediction/predict',
+        ApiPaths.predictionPredict,
         data: formData,
         options: Options(
           headers: {'Authorization': _formatBearerToken(accessToken)},
@@ -152,5 +152,25 @@ class PredictionService {
       return trimmed;
     }
     return 'Bearer $trimmed';
+  }
+
+  /// GET /api/Prediction/classes
+  Future<dynamic> getPredictionClasses() async {
+    try {
+      final response = await _dio.get(ApiPaths.predictionClasses);
+      return response.data;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /// GET /api/Prediction/health
+  Future<bool> isPredictionServiceHealthy() async {
+    try {
+      final response = await _dio.get(ApiPaths.predictionHealth);
+      return response.statusCode == 200;
+    } catch (_) {
+      return false;
+    }
   }
 }

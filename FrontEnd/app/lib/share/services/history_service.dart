@@ -1,4 +1,6 @@
 import 'package:dio/dio.dart';
+
+import '../constants/api_config.dart';
 import 'auth_api_service.dart';
 import 'storage_service.dart';
 
@@ -48,7 +50,7 @@ class HistoryItem {
         'http://10.0.2.2:5299',
       );
     } else {
-      final base = HistoryService._baseUrl;
+      final base = ApiConfig.baseUrl;
       final path = (rawUrl.contains('uploads'))
           ? (rawUrl.startsWith('/') ? rawUrl : '/$rawUrl')
           : '/uploads/images/${rawUrl.startsWith('/') ? rawUrl.substring(1) : rawUrl}';
@@ -155,6 +157,53 @@ class HistoryService {
     return _fetch(retryOnUnauthorized: true);
   }
 
+  /// GET /api/predictions/history/{id}
+  Future<Map<String, dynamic>?> getPredictionById(int id) async {
+    return _fetchDetail(id, retryOnUnauthorized: true);
+  }
+
+  Future<Map<String, dynamic>?> _fetchDetail(
+    int id, {
+    required bool retryOnUnauthorized,
+  }) async {
+    try {
+      final accessToken = await StorageService.getAccessToken();
+      if (accessToken == null || accessToken.isEmpty) {
+        return null;
+      }
+
+      final response = await _dio.get<Map<String, dynamic>>(
+        ApiPaths.predictionsHistoryItem(id),
+        options: Options(
+          headers: {'Authorization': _formatBearerToken(accessToken)},
+        ),
+      );
+
+      final body = response.data;
+      if (body != null &&
+          body['success'] == true &&
+          body['data'] is Map<String, dynamic>) {
+        return Map<String, dynamic>.from(body['data'] as Map);
+      }
+      return null;
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 401 && retryOnUnauthorized) {
+        final refreshToken = await StorageService.getRefreshToken();
+        if (refreshToken != null && refreshToken.isNotEmpty) {
+          final refresh = await AuthApiService.refreshToken(refreshToken);
+          if (refresh['success'] == true) {
+            return _fetchDetail(id, retryOnUnauthorized: false);
+          }
+        }
+        await StorageService.clearAuth();
+        AuthApiService.onSessionExpired?.call();
+      }
+      return null;
+    } catch (_) {
+      return null;
+    }
+  }
+
   Future<HistoryListResponse> _fetch({
     required bool retryOnUnauthorized,
   }) async {
@@ -169,7 +218,7 @@ class HistoryService {
       }
 
       final response = await _dio.get(
-        '/api/predictions/history',
+        ApiPaths.predictionsHistory,
         options: Options(
           headers: {'Authorization': _formatBearerToken(accessToken)},
         ),

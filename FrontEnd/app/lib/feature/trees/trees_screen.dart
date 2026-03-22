@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../../routes/app_router.dart';
 import '../../share/constants/app_brand.dart';
@@ -6,10 +7,11 @@ import '../../share/services/history_service.dart';
 import '../../share/widgets/user_bottom_nav_bar.dart';
 import 'user_tree_models.dart';
 
-const Color _primary = Color(0xFF2D7B31);
-const Color _bg = Color(0xFFF6F8F6);
+const Color _kPrimary = Color(0xFF2D7B31);
+const Color _kBgLight = Color(0xFFF6F8F6);
+const Color _kBgDark = Color(0xFF141E15);
 
-/// Lists the user's trees (grouped from scan history), guide-style cards.
+/// Danh sách cây — bố cục theo `.guide/danh_m_c_b_nh_technical_view` (thẻ ảnh, chip lọc, nút Sửa/Chi tiết).
 class TreesScreen extends StatefulWidget {
   const TreesScreen({super.key});
 
@@ -75,215 +77,432 @@ class _TreesScreenState extends State<TreesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final bg = isDark ? _kBgDark : _kBgLight;
+    final onSurface = isDark ? Colors.white : const Color(0xFF0F172A);
+
     return Scaffold(
-      backgroundColor: _bg,
-      appBar: AppBar(
-        title: const Text('My trees'),
-        actions: [
-          IconButton(
-            onPressed: () => Navigator.pushNamed(context, AppRouter.profile),
-            icon: const Icon(Icons.settings_outlined),
-          ),
-        ],
+      backgroundColor: bg,
+      body: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _TreesAppBar(
+              title: 'Cây của tôi',
+              onSurface: onSurface,
+              onSettings: () =>
+                  Navigator.pushNamed(context, AppRouter.appSettings),
+            ),
+            Expanded(
+              child: _loading
+                  ? const Center(
+                      child: CircularProgressIndicator(color: _kPrimary),
+                    )
+                  : _error != null
+                      ? _ErrorBody(
+                          message: _error!,
+                          onRetry: _load,
+                          isDark: isDark,
+                        )
+                      : Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                              child: _SearchField(
+                                controller: _search,
+                                isDark: isDark,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            SizedBox(
+                              height: 40,
+                              child: ListView(
+                                scrollDirection: Axis.horizontal,
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 16),
+                                children: TreeListFilter.values.map((f) {
+                                  final selected = _filter == f;
+                                  return Padding(
+                                    padding: const EdgeInsets.only(right: 8),
+                                    child: FilterChip(
+                                      label: Text(
+                                        _filterLabelVi(f),
+                                        style: GoogleFonts.spaceGrotesk(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w600,
+                                          color: selected
+                                              ? Colors.white
+                                              : (isDark
+                                                  ? const Color(0xFFCBD5E1)
+                                                  : const Color(0xFF475569)),
+                                        ),
+                                      ),
+                                      selected: selected,
+                                      onSelected: (_) =>
+                                          setState(() => _filter = f),
+                                      selectedColor: _kPrimary,
+                                      backgroundColor: isDark
+                                          ? const Color(0xFF1E293B)
+                                          : Colors.white,
+                                      side: BorderSide(
+                                        color: selected
+                                            ? _kPrimary
+                                            : _kPrimary.withValues(alpha: 0.12),
+                                      ),
+                                      showCheckmark: false,
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                      ),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
+                                    ),
+                                  );
+                                }).toList(),
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Expanded(
+                              child: _filtered.isEmpty
+                                  ? _EmptyBody(
+                                      hasNoTrees: _all.isEmpty,
+                                      isDark: isDark,
+                                      onScan: () => Navigator.pushNamed(
+                                        context,
+                                        AppRouter.scan,
+                                      ),
+                                    )
+                                  : RefreshIndicator(
+                                      color: _kPrimary,
+                                      onRefresh: _load,
+                                      child: ListView.builder(
+                                        padding: const EdgeInsets.fromLTRB(
+                                          16,
+                                          8,
+                                          16,
+                                          100,
+                                        ),
+                                        itemCount: _filtered.length,
+                                        itemBuilder: (context, i) {
+                                          final t = _filtered[i];
+                                          return Padding(
+                                            padding: const EdgeInsets.only(
+                                              bottom: 16,
+                                            ),
+                                            child: _TreeCard(
+                                              summary: t,
+                                              isDark: isDark,
+                                              onDetails: () =>
+                                                  Navigator.pushNamed(
+                                                context,
+                                                AppRouter.treeDetail,
+                                                arguments: t,
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ),
+                            ),
+                          ],
+                        ),
+            ),
+          ],
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => Navigator.pushNamed(context, AppRouter.scan),
-        backgroundColor: _primary,
-        child: const Icon(Icons.add, color: Colors.white),
+        backgroundColor: _kPrimary,
+        elevation: 4,
+        child: const Icon(Icons.add, color: Colors.white, size: 28),
       ),
       bottomNavigationBar: const UserBottomNavBar(selectedIndexOverride: 2),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+    );
+  }
+}
+
+String _filterLabelVi(TreeListFilter f) {
+  switch (f) {
+    case TreeListFilter.all:
+      return 'Tất cả';
+    case TreeListFilter.concern:
+      return 'Cần chú ý';
+    case TreeListFilter.healthy:
+      return 'Khỏe mạnh';
+  }
+}
+
+class _TreesAppBar extends StatelessWidget {
+  const _TreesAppBar({
+    required this.title,
+    required this.onSurface,
+    required this.onSettings,
+  });
+
+  final String title;
+  final Color onSurface;
+  final VoidCallback onSettings;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(4, 4, 8, 8),
+      child: Row(
         children: [
-          TextField(
-            controller: _search,
-            decoration: InputDecoration(
-              hintText: 'Search by tree or disease...',
-              prefixIcon: Icon(Icons.search, color: Colors.grey.shade500),
-              filled: true,
-              fillColor: Colors.white,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(14),
-                borderSide: BorderSide(color: Colors.black.withValues(alpha: 0.06)),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(14),
-                borderSide: BorderSide(color: Colors.black.withValues(alpha: 0.06)),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(14),
-                borderSide: const BorderSide(color: _primary, width: 2),
-              ),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            ),
-          ),
-          const SizedBox(height: 12),
-          SizedBox(
-            height: 40,
-            child: ListView(
-              scrollDirection: Axis.horizontal,
-              children: TreeListFilter.values.map((f) {
-                final selected = _filter == f;
-                return Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: ChoiceChip(
-                    label: Text(f.label),
-                    selected: selected,
-                    onSelected: (_) => setState(() => _filter = f),
-                    selectedColor: _primary,
-                    labelStyle: TextStyle(
-                      color: selected ? Colors.white : Colors.grey.shade800,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 13,
-                    ),
-                    side: BorderSide(
-                      color: selected ? _primary : Colors.black.withValues(alpha: 0.08),
-                    ),
-                    backgroundColor: Colors.white,
-                    showCheckmark: false,
-                  ),
-                );
-              }).toList(),
-            ),
-          ),
-          const SizedBox(height: 16),
+          if (Navigator.of(context).canPop())
+            IconButton(
+              onPressed: () => Navigator.of(context).pop(),
+              icon: Icon(Icons.arrow_back_rounded, color: _kPrimary),
+              tooltip: 'Quay lại',
+            )
+          else
+            const SizedBox(width: 8),
           Expanded(
-            child: _loading
-                ? const Center(child: CircularProgressIndicator(color: _primary))
-                : _error != null
-                ? Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(_error!, textAlign: TextAlign.center),
-                        const SizedBox(height: 12),
-                        FilledButton(
-                          onPressed: _load,
-                          child: const Text('Retry'),
-                        ),
-                      ],
-                    ),
-                  )
-                : _filtered.isEmpty
-                ? Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(24),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.park_outlined, size: 56, color: Colors.grey.shade400),
-                          const SizedBox(height: 16),
-                          Text(
-                            _all.isEmpty
-                                ? 'No trees yet. Scan a leaf to start tracking in ${AppBrand.name}.'
-                                : 'No trees match this filter.',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(color: Colors.grey.shade600),
-                          ),
-                          if (_all.isEmpty) ...[
-                            const SizedBox(height: 20),
-                            FilledButton.icon(
-                              onPressed: () =>
-                                  Navigator.pushNamed(context, AppRouter.scan),
-                              icon: const Icon(Icons.camera_alt),
-                              label: const Text('Scan now'),
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                  )
-                : RefreshIndicator(
-                    color: _primary,
-                    onRefresh: _load,
-                    child: ListView.builder(
-                      padding: const EdgeInsets.only(bottom: 88),
-                      itemCount: _filtered.length,
-                      itemBuilder: (context, i) {
-                        final t = _filtered[i];
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 16),
-                          child: _TreeCard(
-                            summary: t,
-                            onDetails: () => Navigator.pushNamed(
-                              context,
-                              AppRouter.treeDetail,
-                              arguments: t,
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
+            child: Text(
+              title,
+              style: GoogleFonts.spaceGrotesk(
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+                color: onSurface,
+                letterSpacing: -0.3,
+              ),
+            ),
+          ),
+          IconButton(
+            style: IconButton.styleFrom(
+              backgroundColor: _kPrimary.withValues(alpha: 0.1),
+            ),
+            onPressed: onSettings,
+            icon: const Icon(Icons.settings_outlined, color: _kPrimary),
+            tooltip: 'Cài đặt',
           ),
         ],
       ),
+    );
+  }
+}
+
+class _SearchField extends StatelessWidget {
+  const _SearchField({
+    required this.controller,
+    required this.isDark,
+  });
+
+  final TextEditingController controller;
+  final bool isDark;
+
+  @override
+  Widget build(BuildContext context) {
+    return TextField(
+      controller: controller,
+      style: GoogleFonts.spaceGrotesk(
+        fontSize: 15,
+        color: isDark ? Colors.white : const Color(0xFF0F172A),
+      ),
+      decoration: InputDecoration(
+        hintText: 'Tìm kiếm tên cây hoặc bệnh…',
+        hintStyle: GoogleFonts.spaceGrotesk(
+          fontSize: 14,
+          color: isDark ? Colors.white38 : Colors.grey.shade500,
+        ),
+        prefixIcon: Icon(Icons.search_rounded, color: _kPrimary.withValues(alpha: 0.85)),
+        filled: true,
+        fillColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide.none,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide(
+            color: _kPrimary.withValues(alpha: 0.1),
+          ),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: _kPrimary, width: 2),
+        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 14),
+      ),
+    );
+  }
+}
+
+class _ErrorBody extends StatelessWidget {
+  const _ErrorBody({
+    required this.message,
+    required this.onRetry,
+    required this.isDark,
+  });
+
+  final String message;
+  final VoidCallback onRetry;
+  final bool isDark;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.spaceGrotesk(
+                color: isDark ? Colors.white70 : Colors.grey.shade700,
+              ),
+            ),
+            const SizedBox(height: 16),
+            FilledButton(
+              onPressed: onRetry,
+              style: FilledButton.styleFrom(
+                backgroundColor: _kPrimary,
+                foregroundColor: Colors.white,
+              ),
+              child: Text(
+                'Thử lại',
+                style: GoogleFonts.spaceGrotesk(fontWeight: FontWeight.w700),
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 }
 
+class _EmptyBody extends StatelessWidget {
+  const _EmptyBody({
+    required this.hasNoTrees,
+    required this.isDark,
+    required this.onScan,
+  });
+
+  final bool hasNoTrees;
+  final bool isDark;
+  final VoidCallback onScan;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: const EdgeInsets.all(32),
+      children: [
+        const SizedBox(height: 48),
+        Icon(
+          Icons.park_outlined,
+          size: 56,
+          color: _kPrimary.withValues(alpha: 0.35),
+        ),
+        const SizedBox(height: 16),
+        Text(
+          hasNoTrees
+              ? 'Chưa có cây. Quét lá để bắt đầu theo dõi trên ${AppBrand.name}.'
+              : 'Không có cây phù hợp bộ lọc.',
+          textAlign: TextAlign.center,
+          style: GoogleFonts.spaceGrotesk(
+            fontSize: 15,
+            height: 1.4,
+            color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+          ),
+        ),
+        if (hasNoTrees) ...[
+          const SizedBox(height: 24),
+          FilledButton.icon(
+            onPressed: onScan,
+            style: FilledButton.styleFrom(
+              backgroundColor: _kPrimary,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+            ),
+            icon: const Icon(Icons.document_scanner_outlined),
+            label: Text(
+              'Quét ngay',
+              style: GoogleFonts.spaceGrotesk(fontWeight: FontWeight.w700),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
 class _TreeCard extends StatelessWidget {
-  const _TreeCard({required this.summary, required this.onDetails});
+  const _TreeCard({
+    required this.summary,
+    required this.isDark,
+    required this.onDetails,
+  });
 
   final UserTreeSummary summary;
+  final bool isDark;
   final VoidCallback onDetails;
 
   @override
   Widget build(BuildContext context) {
     final latest = summary.predictions.first;
-    final subtitle = summary.scientificName != null &&
-            summary.scientificName!.isNotEmpty
-        ? summary.scientificName!
-        : (latest.diseaseName.isNotEmpty
-              ? latest.diseaseName
-              : 'No scientific name');
+    final diseaseLine = latest.diseaseName.trim().isEmpty
+        ? 'Chưa xác định'
+        : latest.diseaseName;
+    final sci = (summary.scientificName ?? latest.scientificName ?? '').trim();
     final desc = (latest.treeDescription ?? latest.illnessDescription ?? '')
         .trim();
     final snippet = desc.isEmpty
-        ? '${summary.scanCount} scans — updated ${_TreeCard._fmtDate(summary.latestScan)}'
-        : (desc.length > 120 ? '${desc.substring(0, 117)}...' : desc);
+        ? '${summary.scanCount} lần quét · cập nhật ${_fmtDate(summary.latestScan)}'
+        : (desc.length > 120 ? '${desc.substring(0, 117)}…' : desc);
+
+    final cardBg = isDark ? const Color(0xFF1E293B) : Colors.white;
+    final border = _kPrimary.withValues(alpha: 0.06);
 
     return Material(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(16),
+      color: cardBg,
+      borderRadius: BorderRadius.circular(14),
       clipBehavior: Clip.antiAlias,
+      elevation: isDark ? 0 : 0.5,
+      shadowColor: Colors.black26,
       child: InkWell(
         onTap: onDetails,
         child: Container(
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: _primary.withValues(alpha: 0.08)),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: border),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Stack(
                 children: [
-                  AspectRatio(
-                    aspectRatio: 16 / 9,
+                  SizedBox(
+                    height: 192,
+                    width: double.infinity,
                     child: summary.heroImageUrl.isEmpty
                         ? Container(
-                            color: Colors.grey.shade200,
-                            child: const Icon(Icons.park, size: 48, color: Colors.grey),
+                            color: isDark
+                                ? const Color(0xFF334155)
+                                : Colors.grey.shade300,
+                            child: Icon(
+                              Icons.park_rounded,
+                              size: 56,
+                              color: isDark ? Colors.white24 : Colors.grey.shade500,
+                            ),
                           )
                         : Image.network(
                             summary.heroImageUrl,
                             fit: BoxFit.cover,
                             errorBuilder: (_, __, ___) => Container(
-                              color: Colors.grey.shade200,
+                              color: Colors.grey.shade300,
                               child: const Icon(Icons.broken_image_outlined),
                             ),
                           ),
                   ),
                   Positioned(
-                    top: 10,
-                    right: 10,
-                    child: _HealthBadge(level: summary.health),
+                    top: 12,
+                    right: 12,
+                    child: _SeverityBadge(level: summary.health, isDark: isDark),
                   ),
                 ],
               ),
@@ -298,43 +517,129 @@ class _TreeCard extends StatelessWidget {
                         Expanded(
                           child: Text(
                             summary.displayName,
-                            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                  fontWeight: FontWeight.w700,
-                                ),
+                            style: GoogleFonts.spaceGrotesk(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w700,
+                              color: isDark ? Colors.white : const Color(0xFF0F172A),
+                              height: 1.2,
+                            ),
                           ),
                         ),
-                        Icon(Icons.more_vert, color: Colors.grey.shade400),
+                        PopupMenuButton<String>(
+                          icon: Icon(
+                            Icons.more_vert_rounded,
+                            color: isDark
+                                ? const Color(0xFF94A3B8)
+                                : Colors.grey.shade400,
+                          ),
+                          onSelected: (v) {
+                            if (v == 'detail') onDetails();
+                          },
+                          itemBuilder: (ctx) => [
+                            PopupMenuItem(
+                              value: 'detail',
+                              child: Text(
+                                'Chi tiết',
+                                style: GoogleFonts.spaceGrotesk(),
+                              ),
+                            ),
+                          ],
+                        ),
                       ],
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      subtitle,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: _primary.withValues(alpha: 0.85),
-                            fontWeight: FontWeight.w600,
-                          ),
+                    const SizedBox(height: 6),
+                    Text.rich(
+                      TextSpan(
+                        style: GoogleFonts.spaceGrotesk(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: _kPrimary.withValues(alpha: 0.85),
+                        ),
+                        children: [
+                          TextSpan(text: diseaseLine),
+                          if (sci.isNotEmpty)
+                            TextSpan(
+                              children: [
+                                const TextSpan(text: ' | '),
+                                TextSpan(
+                                  text: sci,
+                                  style: GoogleFonts.spaceGrotesk(
+                                    fontSize: 12,
+                                    fontStyle: FontStyle.italic,
+                                    fontWeight: FontWeight.w500,
+                                    color: _kPrimary.withValues(alpha: 0.85),
+                                  ),
+                                ),
+                              ],
+                            ),
+                        ],
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 10),
                     Text(
                       snippet,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Colors.grey.shade600,
-                            height: 1.35,
-                          ),
+                      style: GoogleFonts.spaceGrotesk(
+                        fontSize: 13,
+                        height: 1.4,
+                        color: isDark
+                            ? const Color(0xFF94A3B8)
+                            : const Color(0xFF64748B),
+                      ),
                     ),
-                    const SizedBox(height: 14),
+                    const SizedBox(height: 16),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
+                        TextButton(
+                          onPressed: onDetails,
+                          style: TextButton.styleFrom(
+                            foregroundColor: isDark
+                                ? const Color(0xFFCBD5E1)
+                                : const Color(0xFF475569),
+                            backgroundColor: isDark
+                                ? const Color(0xFF334155)
+                                : const Color(0xFFF1F5F9),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 10,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                          child: Text(
+                            'Sửa',
+                            style: GoogleFonts.spaceGrotesk(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
                         FilledButton.tonal(
                           onPressed: onDetails,
                           style: FilledButton.styleFrom(
-                            backgroundColor: _primary.withValues(alpha: 0.12),
-                            foregroundColor: _primary,
+                            backgroundColor: _kPrimary.withValues(alpha: 0.12),
+                            foregroundColor: _kPrimary,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 10,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
                           ),
-                          child: const Text('Details'),
+                          child: Text(
+                            'Chi tiết',
+                            style: GoogleFonts.spaceGrotesk(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 13,
+                            ),
+                          ),
                         ),
                       ],
                     ),
@@ -353,10 +658,11 @@ class _TreeCard extends StatelessWidget {
   }
 }
 
-class _HealthBadge extends StatelessWidget {
-  const _HealthBadge({required this.level});
+class _SeverityBadge extends StatelessWidget {
+  const _SeverityBadge({required this.level, required this.isDark});
 
   final TreeHealthLevel level;
+  final bool isDark;
 
   @override
   Widget build(BuildContext context) {
@@ -365,39 +671,47 @@ class _HealthBadge extends StatelessWidget {
     late String text;
     switch (level) {
       case TreeHealthLevel.healthy:
-        bg = Colors.green.shade100;
-        fg = Colors.green.shade800;
-        text = 'Healthy';
+        bg = isDark
+            ? const Color(0xFF14532D).withValues(alpha: 0.85)
+            : Colors.green.shade100;
+        fg = isDark ? const Color(0xFF86EFAC) : Colors.green.shade800;
+        text = 'KHỎE MẠNH';
         break;
       case TreeHealthLevel.low:
-        bg = Colors.lightGreen.shade100;
-        fg = Colors.green.shade900;
-        text = 'Risk: Low';
+        bg = isDark
+            ? const Color(0xFF14532D).withValues(alpha: 0.5)
+            : Colors.lightGreen.shade100;
+        fg = isDark ? const Color(0xFFBBF7D0) : Colors.green.shade900;
+        text = 'MỨC ĐỘ: THẤP';
         break;
       case TreeHealthLevel.medium:
-        bg = Colors.orange.shade100;
-        fg = Colors.orange.shade900;
-        text = 'Risk: Medium';
+        bg = isDark
+            ? const Color(0xFF7C2D12).withValues(alpha: 0.45)
+            : Colors.orange.shade100;
+        fg = isDark ? const Color(0xFFFDBA74) : Colors.orange.shade900;
+        text = 'MỨC ĐỘ: TRUNG BÌNH';
         break;
       case TreeHealthLevel.high:
-        bg = Colors.red.shade100;
-        fg = Colors.red.shade900;
-        text = 'Risk: High';
+        bg = isDark
+            ? const Color(0xFF7F1D1D).withValues(alpha: 0.55)
+            : Colors.red.shade100;
+        fg = isDark ? const Color(0xFFFECACA) : Colors.red.shade900;
+        text = 'MỨC ĐỘ: CAO';
         break;
     }
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
         color: bg,
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(
         text,
-        style: TextStyle(
+        style: GoogleFonts.spaceGrotesk(
           color: fg,
           fontSize: 10,
           fontWeight: FontWeight.w800,
-          letterSpacing: 0.3,
+          letterSpacing: 0.4,
         ),
       ),
     );

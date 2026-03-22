@@ -82,7 +82,7 @@ namespace MyApp.Infrastructure.Data
                 return;
             }
 
-            // Get admin credentials from configuration
+            // Must match SeedInitialMasterData migration when both use the same default (BCrypt hash, not plaintext).
             var adminEmail = _configuration["SuperAdminSettings:Email"] ?? "admin@swd.com";
             var adminPassword = _configuration["SuperAdminSettings:Password"] ?? "Admin123!";
 
@@ -181,7 +181,7 @@ namespace MyApp.Infrastructure.Data
             {
                 using var session = new InferenceSession(full);
                 var now = DateTime.UtcNow;
-                foreach (var name in OnnxModelLabels.Read(session))
+                foreach (var name in OnnxModelLabels.Read(session, full))
                 {
                     if (await _context.TreeIllnesses.AnyAsync(t => t.IllnessName == name, cancellationToken))
                         continue;
