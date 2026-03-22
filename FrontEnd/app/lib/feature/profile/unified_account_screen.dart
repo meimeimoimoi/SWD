@@ -722,7 +722,7 @@ class _UnifiedAccountScreenState extends State<UnifiedAccountScreen> {
                           child: OutlinedButton.icon(
                             onPressed: _logout,
                             style: OutlinedButton.styleFrom(
-                              minimumSize: const Size.fromHeight(52),
+                              minimumSize: const Size(0, 52),
                               foregroundColor: const Color(0xFFB91C1C),
                               backgroundColor: const Color(0xFFFFF1F2),
                               side: BorderSide(

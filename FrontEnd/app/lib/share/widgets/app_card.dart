@@ -17,20 +17,14 @@ class AppCard extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final surface = theme.colorScheme.surface;
-    final outline = theme.colorScheme.outline.withValues(alpha: isDark ? 0.9 : 1);
+    final outline = theme.colorScheme.outline.withValues(alpha: isDark ? 0.85 : 0.9);
     return Container(
       padding: padding,
       decoration: BoxDecoration(
         color: surface,
         borderRadius: AppLayout.borderRadiusMd,
         border: Border.all(color: outline),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.4 : 0.07),
-            blurRadius: isDark ? 18 : 14,
-            offset: const Offset(0, 8),
-          ),
-        ],
+        boxShadow: AppLayout.cardShadows(context),
       ),
       child: child,
     );

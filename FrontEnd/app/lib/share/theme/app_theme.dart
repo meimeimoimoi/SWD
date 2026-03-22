@@ -81,13 +81,16 @@ class AppTheme {
       ),
       cardTheme: CardThemeData(
         color: AppColors.surfaceLight,
-        surfaceTintColor: Colors.transparent,
-        elevation: 0,
+        surfaceTintColor: AppColors.primary.withValues(alpha: 0.04),
+        elevation: 2,
+        shadowColor: Colors.black.withValues(alpha: 0.09),
         margin: EdgeInsets.zero,
         clipBehavior: Clip.antiAlias,
         shape: RoundedRectangleBorder(
           borderRadius: AppLayout.borderRadiusMd,
-          side: const BorderSide(color: AppColors.borderLight),
+          side: BorderSide(
+            color: AppColors.borderLight.withValues(alpha: 0.85),
+          ),
         ),
       ),
       dialogTheme: DialogThemeData(
@@ -160,7 +163,8 @@ class AppTheme {
       floatingActionButtonTheme: FloatingActionButtonThemeData(
         backgroundColor: AppColors.primary,
         foregroundColor: AppColors.onPrimary,
-        elevation: 4,
+        elevation: 6,
+        highlightElevation: 8,
         shape: RoundedRectangleBorder(
           borderRadius: AppLayout.borderRadiusMd,
         ),
@@ -177,7 +181,7 @@ class AppTheme {
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           foregroundColor: AppColors.primary,
-          minimumSize: const Size.fromHeight(52),
+          minimumSize: const Size(0, 52),
           side: const BorderSide(color: AppColors.borderLight),
           shape: RoundedRectangleBorder(
             borderRadius: AppLayout.borderRadiusSm,
@@ -208,13 +212,23 @@ class AppTheme {
         style: ElevatedButton.styleFrom(
           foregroundColor: AppColors.onPrimary,
           backgroundColor: AppColors.primary,
-          minimumSize: const Size.fromHeight(52),
+          minimumSize: const Size(0, 52),
+          elevation: 3,
+          shadowColor: AppColors.primary.withValues(alpha: 0.42),
+          shape: RoundedRectangleBorder(
+            borderRadius: AppLayout.borderRadiusSm,
+          ),
+          textStyle: AppTextStyles.lightTextTheme.labelLarge,
+        ),
+      ),
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          minimumSize: const Size(0, 52),
           elevation: 2,
           shadowColor: AppColors.primary.withValues(alpha: 0.35),
           shape: RoundedRectangleBorder(
             borderRadius: AppLayout.borderRadiusSm,
           ),
-          textStyle: AppTextStyles.lightTextTheme.labelLarge,
         ),
       ),
     );
@@ -243,8 +257,9 @@ class AppTheme {
       appBarTheme: AppBarTheme(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        scrolledUnderElevation: 0,
-        surfaceTintColor: Colors.transparent,
+        scrolledUnderElevation: 4,
+        shadowColor: Colors.black.withValues(alpha: 0.4),
+        surfaceTintColor: AppColors.accent.withValues(alpha: 0.08),
         foregroundColor: AppColors.textPrimaryDark,
         centerTitle: false,
         titleTextStyle: GoogleFonts.poppins(
@@ -264,13 +279,16 @@ class AppTheme {
       ),
       cardTheme: CardThemeData(
         color: AppColors.surfaceDark,
-        surfaceTintColor: Colors.transparent,
-        elevation: 0,
+        surfaceTintColor: AppColors.accent.withValues(alpha: 0.06),
+        elevation: 3,
+        shadowColor: Colors.black.withValues(alpha: 0.55),
         margin: EdgeInsets.zero,
         clipBehavior: Clip.antiAlias,
         shape: RoundedRectangleBorder(
           borderRadius: AppLayout.borderRadiusMd,
-          side: const BorderSide(color: AppColors.borderDark),
+          side: BorderSide(
+            color: AppColors.borderDark.withValues(alpha: 0.9),
+          ),
         ),
       ),
       dialogTheme: DialogThemeData(
@@ -343,7 +361,8 @@ class AppTheme {
       floatingActionButtonTheme: FloatingActionButtonThemeData(
         backgroundColor: AppColors.primary,
         foregroundColor: AppColors.onPrimary,
-        elevation: 4,
+        elevation: 6,
+        highlightElevation: 10,
         shape: RoundedRectangleBorder(
           borderRadius: AppLayout.borderRadiusMd,
         ),
@@ -360,7 +379,7 @@ class AppTheme {
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           foregroundColor: AppColors.accent,
-          minimumSize: const Size.fromHeight(52),
+          minimumSize: const Size(0, 52),
           side: const BorderSide(color: AppColors.borderDark),
           shape: RoundedRectangleBorder(
             borderRadius: AppLayout.borderRadiusSm,
@@ -391,13 +410,23 @@ class AppTheme {
         style: ElevatedButton.styleFrom(
           foregroundColor: AppColors.onPrimary,
           backgroundColor: AppColors.primary,
-          minimumSize: const Size.fromHeight(52),
-          elevation: 2,
-          shadowColor: Colors.black.withValues(alpha: 0.45),
+          minimumSize: const Size(0, 52),
+          elevation: 3,
+          shadowColor: Colors.black.withValues(alpha: 0.55),
           shape: RoundedRectangleBorder(
             borderRadius: AppLayout.borderRadiusSm,
           ),
           textStyle: AppTextStyles.darkTextTheme.labelLarge,
+        ),
+      ),
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          minimumSize: const Size(0, 52),
+          elevation: 2,
+          shadowColor: Colors.black.withValues(alpha: 0.5),
+          shape: RoundedRectangleBorder(
+            borderRadius: AppLayout.borderRadiusSm,
+          ),
         ),
       ),
     );

@@ -1502,11 +1502,31 @@ class _OwnerScanHero extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: AppColors.forestCardDark,
-      borderRadius: BorderRadius.circular(20),
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: isDark
+              ? [
+                  const Color(0xFF2A2F28),
+                  AppColors.forestCardDark,
+                  const Color(0xFF1A1D18),
+                ]
+              : [
+                  const Color(0xFF3A4038),
+                  AppColors.forestCardDark,
+                  const Color(0xFF232821),
+                ],
+        ),
+        boxShadow: AppLayout.heroCardShadows(context),
+        border: Border.all(
+          color: AppColors.brandAccentOnDark.withValues(alpha: 0.16),
+        ),
+      ),
       clipBehavior: Clip.antiAlias,
-      elevation: 0,
       child: InkWell(
         onTap: onScan,
         child: Stack(
@@ -1582,6 +1602,8 @@ class _OwnerScanHero extends StatelessWidget {
                     style: FilledButton.styleFrom(
                       backgroundColor: AppColors.brandAccentOnDark,
                       foregroundColor: const Color(0xFF1A3D16),
+                      elevation: 4,
+                      shadowColor: Colors.black.withValues(alpha: 0.35),
                       padding: const EdgeInsets.symmetric(
                         horizontal: 20,
                         vertical: 14,

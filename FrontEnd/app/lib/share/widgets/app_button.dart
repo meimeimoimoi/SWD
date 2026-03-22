@@ -59,7 +59,7 @@ class AppButton extends StatelessWidget {
       button = OutlinedButton(
         onPressed: onPressed,
         style: OutlinedButton.styleFrom(
-          minimumSize: Size.fromHeight(minimumHeight ?? 52),
+          minimumSize: Size(0, minimumHeight ?? 52),
           foregroundColor: Theme.of(context).colorScheme.primary,
           side: BorderSide(color: outline),
           shape: RoundedRectangleBorder(
@@ -69,12 +69,15 @@ class AppButton extends StatelessWidget {
         child: child,
       );
     } else {
+      final cs = Theme.of(context).colorScheme;
       button = ElevatedButton(
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
           minimumSize: minimumHeight != null
-              ? Size.fromHeight(minimumHeight!)
+              ? Size(0, minimumHeight!)
               : null,
+          elevation: 3,
+          shadowColor: cs.primary.withValues(alpha: 0.4),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),

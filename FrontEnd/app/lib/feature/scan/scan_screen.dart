@@ -640,7 +640,6 @@ class _ScanWorkbenchCard extends StatelessWidget {
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final isLight = theme.brightness == Brightness.light;
-    final cardBg = isLight ? AppColors.forestCardDark : AppColors.surfaceDark;
     final innerSurface =
         isLight ? const Color(0xFFF0F4F1) : AppColors.darkControlFill;
     final muted = Colors.grey.shade400;
@@ -648,9 +647,30 @@ class _ScanWorkbenchCard extends StatelessWidget {
     final onInnerSecondary = cs.onSurfaceVariant;
     final accentReadable = AppColors.brandAccentReadable(context);
 
-    return Material(
-      color: cardBg,
-      borderRadius: BorderRadius.circular(20),
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: isLight
+              ? [
+                  const Color(0xFF3A4038),
+                  AppColors.forestCardDark,
+                  const Color(0xFF232821),
+                ]
+              : [
+                  const Color(0xFF1C1C1C),
+                  AppColors.surfaceDark,
+                  const Color(0xFF0A0A0A),
+                ],
+        ),
+        boxShadow: AppLayout.heroCardShadows(context),
+        border: Border.all(
+          color: (isLight ? AppColors.brandAccentOnDark : AppColors.accent)
+              .withValues(alpha: isLight ? 0.14 : 0.12),
+        ),
+      ),
       clipBehavior: Clip.antiAlias,
       child: Stack(
         children: [
@@ -710,19 +730,36 @@ class _ScanWorkbenchCard extends StatelessWidget {
                 Stack(
                   clipBehavior: Clip.none,
                   children: [
-                    Material(
-                      color: innerSurface,
-                      borderRadius: BorderRadius.circular(16),
-                      child: InkWell(
-                        onTap: !isUploading && !hasImage ? onUploadFromDevice : null,
+                    Container(
+                      decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(16),
-                        child: Container(
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(
+                              alpha: isLight ? 0.14 : 0.5,
+                            ),
+                            blurRadius: 12,
+                            offset: const Offset(0, 5),
+                          ),
+                        ],
+                      ),
+                      child: Material(
+                        color: innerSurface,
+                        borderRadius: BorderRadius.circular(16),
+                        child: InkWell(
+                          onTap: !isUploading && !hasImage
+                              ? onUploadFromDevice
+                              : null,
+                          borderRadius: BorderRadius.circular(16),
+                          child: Container(
                           height: 200,
                           width: double.infinity,
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(16),
                             border: Border.all(
-                              color: Colors.black.withValues(alpha: 0.06),
+                              color: isLight
+                                  ? Colors.black.withValues(alpha: 0.07)
+                                  : Colors.white.withValues(alpha: 0.08),
                             ),
                           ),
                           child: ClipRRect(
@@ -790,6 +827,7 @@ class _ScanWorkbenchCard extends StatelessWidget {
                           ),
                         ),
                       ),
+                    ),
                     ),
                     Positioned(
                       top: 8,
@@ -973,6 +1011,8 @@ class _ScanWorkbenchCard extends StatelessWidget {
                     style: FilledButton.styleFrom(
                       backgroundColor: AppColors.brandAccentOnDark,
                       foregroundColor: AppColors.onBrandFixedDark,
+                      elevation: 4,
+                      shadowColor: Colors.black.withValues(alpha: 0.4),
                       disabledBackgroundColor:
                           AppColors.surfaceLight.withValues(alpha: 0.12),
                       disabledForegroundColor:
@@ -1027,7 +1067,7 @@ class _WorkbenchOutlineButton extends StatelessWidget {
         style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
       ),
       style: OutlinedButton.styleFrom(
-        minimumSize: const Size.fromHeight(52),
+        minimumSize: const Size(0, 52),
         foregroundColor: AppColors.onPrimary,
         side: BorderSide(
           color: AppColors.onPrimary.withValues(alpha: 0.38),
@@ -1072,6 +1112,7 @@ class _ScanPageTipsCard extends StatelessWidget {
                 : Theme.of(context).colorScheme.surfaceContainerHighest,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: line),
+            boxShadow: AppLayout.cardShadows(context),
           ),
           padding: const EdgeInsets.fromLTRB(18, 16, 18, 18),
           child: Column(
@@ -1175,17 +1216,7 @@ class _RecentActivityCard extends StatelessWidget {
                 : Theme.of(context).colorScheme.surfaceContainerHighest,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: line),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(
-                  alpha: Theme.of(context).brightness == Brightness.light
-                      ? 0.06
-                      : 0.2,
-                ),
-                blurRadius: 14,
-                offset: const Offset(0, 8),
-              ),
-            ],
+            boxShadow: AppLayout.cardShadows(context),
           ),
           padding: const EdgeInsets.fromLTRB(18, 18, 18, 12),
           child: Column(
