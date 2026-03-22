@@ -5,6 +5,7 @@ import '../../routes/app_router.dart';
 import '../../share/constants/app_brand.dart';
 import '../../share/services/history_service.dart';
 import '../../share/theme/app_colors.dart';
+import '../../share/theme/app_layout.dart';
 import '../../share/widgets/user_bottom_nav_bar.dart';
 import 'user_tree_models.dart';
 
@@ -107,7 +108,12 @@ class _TreesScreenState extends State<TreesScreen> {
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
                             Padding(
-                              padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                              padding: const EdgeInsets.fromLTRB(
+                                AppLayout.screenPaddingH,
+                                AppLayout.screenPaddingV,
+                                AppLayout.screenPaddingH,
+                                0,
+                              ),
                               child: _SearchField(
                                 controller: _search,
                                 isDark: isDark,

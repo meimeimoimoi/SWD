@@ -64,10 +64,17 @@ class _LoginScreenState extends State<LoginScreen> {
             expiresIn: expiresIn,
           );
 
+          final cs = Theme.of(context).colorScheme;
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Welcome back, ${username ?? "User"}!'),
-              backgroundColor: Theme.of(context).colorScheme.primary,
+              content: Text(
+                'Welcome back, ${username ?? "User"}!',
+                style: TextStyle(
+                  color: cs.onPrimary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              backgroundColor: cs.primary,
             ),
           );
 
@@ -79,10 +86,14 @@ class _LoginScreenState extends State<LoginScreen> {
             useStaffConsole ? AppRouter.adminDashboard : AppRouter.dashboard,
           );
         } else {
+          final cs = Theme.of(context).colorScheme;
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: const Text('Login failed: No token received'),
-              backgroundColor: Theme.of(context).colorScheme.error,
+              content: Text(
+                'Login failed: No token received',
+                style: TextStyle(color: cs.onError, fontWeight: FontWeight.w600),
+              ),
+              backgroundColor: cs.error,
             ),
           );
         }
@@ -97,19 +108,27 @@ class _LoginScreenState extends State<LoginScreen> {
           }
         }
 
+        final cs = Theme.of(context).colorScheme;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(errorMessage),
-            backgroundColor: Theme.of(context).colorScheme.error,
+            content: Text(
+              errorMessage,
+              style: TextStyle(color: cs.onError, fontWeight: FontWeight.w500),
+            ),
+            backgroundColor: cs.error,
           ),
         );
       }
     } catch (e) {
       if (!mounted) return;
+      final cs = Theme.of(context).colorScheme;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Error: $e'),
-          backgroundColor: Theme.of(context).colorScheme.error,
+          content: Text(
+            'Error: $e',
+            style: TextStyle(color: cs.onError, fontWeight: FontWeight.w500),
+          ),
+          backgroundColor: cs.error,
         ),
       );
     } finally {

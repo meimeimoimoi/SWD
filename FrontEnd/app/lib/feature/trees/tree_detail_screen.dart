@@ -6,6 +6,7 @@ import '../../share/constants/app_brand.dart';
 import '../../share/services/history_service.dart';
 import '../../share/services/treatment_api_service.dart';
 import '../../share/theme/app_colors.dart';
+import '../../share/theme/app_layout.dart';
 import '../../share/utils/disease_mapper.dart';
 import 'user_illness_detail_screen.dart';
 import 'user_tree_models.dart';
@@ -83,7 +84,12 @@ class _TreeDetailScreenState extends State<TreeDetailScreen> {
         ),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+        padding: const EdgeInsets.fromLTRB(
+          AppLayout.screenPaddingH,
+          AppLayout.screenPaddingV,
+          AppLayout.screenPaddingH,
+          32,
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [

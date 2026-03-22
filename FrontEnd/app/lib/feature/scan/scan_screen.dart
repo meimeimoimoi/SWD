@@ -11,6 +11,7 @@ import '../../share/services/prediction_service.dart';
 import '../../share/services/storage_service.dart';
 import '../../share/utils/disease_mapper.dart';
 import '../../share/theme/app_colors.dart';
+import '../../share/theme/app_layout.dart';
 import '../../share/widgets/app_button.dart';
 import '../../share/widgets/app_scaffold.dart';
 import '../prediction/prediction_screen.dart';
@@ -319,7 +320,12 @@ class _ScanScreenState extends State<ScanScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+                  padding: const EdgeInsets.fromLTRB(
+                    AppLayout.screenPaddingH,
+                    AppLayout.screenPaddingV,
+                    AppLayout.screenPaddingH,
+                    4,
+                  ),
                   child: Text(
                     'Upload from device',
                     style: theme.textTheme.titleMedium?.copyWith(
@@ -500,7 +506,12 @@ class _ScanScreenState extends State<ScanScreen> {
         ),
       ],
       backgroundColor: bg,
-      contentPadding: const EdgeInsets.fromLTRB(16, 8, 16, 28),
+      contentPadding: const EdgeInsets.fromLTRB(
+        AppLayout.screenPaddingH,
+        AppLayout.screenPaddingV,
+        AppLayout.screenPaddingH,
+        28,
+      ),
       child: LayoutBuilder(
         builder: (context, constraints) {
           final isWide = constraints.maxWidth > 900;

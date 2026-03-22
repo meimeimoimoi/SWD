@@ -12,6 +12,7 @@ import '../../share/services/auth_api_service.dart';
 import '../../share/services/dashboard_service.dart';
 import '../../share/services/storage_service.dart';
 import '../../share/theme/app_colors.dart';
+import '../../share/theme/app_layout.dart';
 import '../../share/widgets/admin_bottom_nav.dart';
 import '../../share/widgets/user_bottom_nav_bar.dart';
 
@@ -238,7 +239,12 @@ class _UnifiedAccountScreenState extends State<UnifiedAccountScreen> {
                       ),
                     ),
                     SliverPadding(
-                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                      padding: const EdgeInsets.fromLTRB(
+                        AppLayout.screenPaddingH,
+                        AppLayout.screenPaddingV,
+                        AppLayout.screenPaddingH,
+                        8,
+                      ),
                       sliver: SliverToBoxAdapter(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
