@@ -5,13 +5,11 @@ namespace MyApp.Application.Interfaces
 {
     public interface IReviewService
     {
-        // Treatment review
         Task<List<TreatmentReviewDto>> GetAllTreatmentsAsync();
         Task<TreatmentReviewDto?> GetTreatmentByIdAsync(int solutionId);
         Task<TreatmentReviewDto?> UpdateTreatmentAsync(int solutionId, UpdateTreatmentDto dto);
         Task<bool> DeleteTreatmentAsync(int solutionId);
 
-        // Model control
         Task<List<ModelVersionDto>> GetAllModelsAsync();
         Task<ModelVersionDto?> ActivateModelAsync(int modelVersionId);
         Task<bool> DeactivateModelAsync(int modelVersionId);

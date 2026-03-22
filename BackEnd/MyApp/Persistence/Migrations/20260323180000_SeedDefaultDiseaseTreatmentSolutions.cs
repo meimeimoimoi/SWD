@@ -4,15 +4,8 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace MyApp.Persistence.Migrations
 {
-    /// <summary>
-    /// Seeds default <c>tree_stages</c> row (FK for solutions), default <c>tree_illnesses</c> rows for
-    /// rice_disease_v3 ONNX labels if missing, and baseline <c>treatment_solutions</c> (treatment + medicine).
-    /// Uses <c>priority = 9000</c> for seeded solutions so Down can remove them safely.
-    /// Idempotent: for each disease, inserts the full pair only when that illness has no solutions yet.
-    /// </summary>
     public partial class SeedDefaultDiseaseTreatmentSolutions : Migration
     {
-        /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.Sql(
@@ -150,7 +143,6 @@ namespace MyApp.Persistence.Migrations
                 """);
         }
 
-        /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.Sql(

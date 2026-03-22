@@ -20,7 +20,6 @@ namespace MyApp.Api.Controllers
             _logger = logger;
         }
 
-        // ── Tree Stages ──────────────────
 
         [HttpGet("stages")]
         public async Task<IActionResult> GetAllStages()
@@ -112,7 +111,6 @@ namespace MyApp.Api.Controllers
             }
         }
 
-        // ── Tree-Illness Relationships ──────────────────
 
         [HttpGet("relationships")]
         public async Task<IActionResult> GetAllRelationships(

@@ -123,7 +123,6 @@ class PredictionModelOption {
   }
 }
 
-/// Result of [PredictionService.fetchAvailableModels] (list + optional error for UI).
 class PredictionModelsFetchResult {
   const PredictionModelsFetchResult({
     required this.models,
@@ -346,7 +345,6 @@ class PredictionService {
     }
   }
 
-  /// Global DB aggregates for home dashboard "Common threats".
   Future<List<CommonThreatItem>> fetchCommonThreats({int take = 5}) async {
     try {
       final accessToken = await StorageService.getAccessToken();
@@ -374,7 +372,6 @@ class PredictionService {
   }
 }
 
-/// One row from [PredictionService.fetchCommonThreats].
 class CommonThreatItem {
   const CommonThreatItem({
     this.illnessId,

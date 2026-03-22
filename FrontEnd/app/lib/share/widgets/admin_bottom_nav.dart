@@ -5,7 +5,6 @@ import '../services/storage_service.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_layout.dart';
 
-/// Bottom tabs for the admin / technician console (Users tab only for Admin).
 enum AdminShellTab {
   dashboard,
   users,

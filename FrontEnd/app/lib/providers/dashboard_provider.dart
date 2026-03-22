@@ -139,7 +139,6 @@ class DashboardProvider with ChangeNotifier {
     _isLoading = true;
     notifyListeners();
     final success = await _service.updateUserStatus(userId, status);
-    // Always reload so UI matches server (PATCH may succeed even if client misread response).
     _adminUsers = await _service.getAdminUsers(
       search: _adminUsersSearch,
       role: _adminUsersRole,

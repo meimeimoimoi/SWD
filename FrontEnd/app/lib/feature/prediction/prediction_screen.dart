@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../routes/app_router.dart';
+import '../../share/constants/api_config.dart';
 import '../../share/services/history_service.dart';
 import '../../share/services/prediction_service.dart';
 import '../../share/services/storage_service.dart';
@@ -10,9 +11,6 @@ import '../../share/widgets/user_bottom_nav_bar.dart';
 import 'prediction_solutions_sheet.dart';
 
 class PredictionResult {
-  static const String _imageBaseUrl = 'http://10.0.2.2:5299';
-  static const String _imagePathPrefix = '/uploads/images/';
-
   final int predictionId;
   final int? illnessId;
   final String diseaseName;
@@ -116,17 +114,7 @@ class PredictionResult {
     }).toList();
   }
 
-  static String _buildImageUrl(String imageUrl) {
-    if (imageUrl.isEmpty) return imageUrl;
-    final trimmed = imageUrl.trim();
-    if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
-      return trimmed;
-    }
-    final normalizedPath = trimmed.startsWith('/')
-        ? trimmed.substring(1)
-        : trimmed;
-    return '$_imageBaseUrl$_imagePathPrefix$normalizedPath';
-  }
+  static String _buildImageUrl(String imageUrl) => ApiConfig.resolveMediaUrl(imageUrl);
 }
 
 class TreatmentProduct {
@@ -196,9 +184,8 @@ class _PredictionScreenState extends State<PredictionScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: isDark
-          ? AppColors.darkBackground
-          : const Color(0xFFF4F4F5),
+      backgroundColor:
+          isDark ? AppColors.darkBackground : AppColors.lightBackground,
       body: SafeArea(
         child: Column(
           children: [
@@ -957,13 +944,16 @@ class _PredictionScreenState extends State<PredictionScreen> {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: const Color(0xFF2D7B31).withValues(alpha: 0.45),
+                    color: AppColors.brandAccent.withValues(alpha: 0.45),
                   ),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.park_outlined, color: Color(0xFF2D7B31)),
+                    Icon(
+                      Icons.park_outlined,
+                      color: AppColors.brandAccentReadable(context),
+                    ),
                     const SizedBox(width: 8),
                     Text(
                       'ASSIGN TO PLANT',
@@ -971,9 +961,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
                         fontSize: 11,
                         fontWeight: FontWeight.w800,
                         letterSpacing: 0.6,
-                        color: isDark
-                            ? const Color(0xFFA4F69C)
-                            : const Color(0xFF2D7B31),
+                        color: AppColors.brandAccentReadable(context),
                       ),
                     ),
                   ],
@@ -1003,7 +991,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: const Color(0xFF2D7B31).withValues(alpha: 0.35),
+                  color: AppColors.brandAccent.withValues(alpha: 0.35),
                 ),
               ),
               child: Row(
@@ -1012,8 +1000,8 @@ class _PredictionScreenState extends State<PredictionScreen> {
                   Icon(
                     Icons.healing_outlined,
                     color: isDark
-                        ? const Color(0xFFA4F69C)
-                        : const Color(0xFF2D7B31),
+                        ? AppColors.brandAccentOnDark
+                        : AppColors.brandAccent,
                   ),
                   const SizedBox(width: 8),
                   Text(
@@ -1023,8 +1011,8 @@ class _PredictionScreenState extends State<PredictionScreen> {
                       fontWeight: FontWeight.w800,
                       letterSpacing: 0.6,
                       color: isDark
-                          ? const Color(0xFFA4F69C)
-                          : const Color(0xFF2D7B31),
+                          ? AppColors.brandAccentOnDark
+                          : AppColors.brandAccent,
                     ),
                   ),
                 ],

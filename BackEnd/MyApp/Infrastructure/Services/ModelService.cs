@@ -33,7 +33,6 @@ namespace MyApp.Infrastructure.Services
         {
             _logger.LogInformation("Uploading new model: {Name} v{Version}", dto.ModelName, dto.Version);
 
-            // 1. Validate file extension - only .onnx allowed
             var ext = Path.GetExtension(dto.ModelFile.FileName).ToLowerInvariant();
             if (ext != ".onnx")
             {
@@ -41,7 +40,6 @@ namespace MyApp.Infrastructure.Services
                 return (false, "Only .onnx files are accepted.", null);
             }
 
-            // 2. Check duplicate name + version in DB
             var exists = await _modelRepository.ExistsByNameAndVersionAsync(dto.ModelName, dto.Version);
             if (exists)
             {
@@ -49,7 +47,6 @@ namespace MyApp.Infrastructure.Services
                 return (false, $"Model '{dto.ModelName}' version '{dto.Version}' already exists.", null);
             }
 
-            // 3. Build file path and check if the physical file already exists
             var modelsDir = Path.Combine(_env.ContentRootPath, "Models");
             Directory.CreateDirectory(modelsDir);
 
@@ -62,17 +59,14 @@ namespace MyApp.Infrastructure.Services
                 return (false, $"A file named '{fileName}' already exists on the server.", null);
             }
 
-            // 4. Save file to disk
             await using (var fs = new FileStream(savedFilePath, FileMode.Create))
             {
                 await dto.ModelFile.CopyToAsync(fs);
             }
             _logger.LogInformation("Model file saved to {Path}", savedFilePath);
 
-            // 5. Convert to relative path for DB storage
             var relativeFilePath = Path.Combine("Models", fileName);
 
-            // 6. New model is inactive and not default - admin must explicitly activate
             var entity = new ModelVersion
             {
                 ModelName   = dto.ModelName,
@@ -127,7 +121,6 @@ namespace MyApp.Infrastructure.Services
             return MapToDto(model);
         }
 
-        // ── Helpers ──────────────────
 
         private static ModelVersionDto MapToDto(ModelVersion m, string? filePath = null) => new()
         {

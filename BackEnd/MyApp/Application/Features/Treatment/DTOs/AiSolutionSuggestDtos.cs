@@ -4,7 +4,6 @@ namespace MyApp.Application.Features.Treatment.DTOs;
 
 public class AiSolutionSuggestRequest
 {
-    /// <summary>Optional when <see cref="DiseaseName"/> is sent.</summary>
     public int? IllnessId { get; set; }
 
     [MaxLength(255)]
@@ -17,7 +16,6 @@ public class AiSolutionSuggestRequest
 
 public class AiSolutionSuggestResponse
 {
-    /// <summary><c>openai</c> or <c>heuristic</c>.</summary>
     public string Source { get; set; } = "heuristic";
 
     public string Summary { get; set; } = string.Empty;

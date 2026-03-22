@@ -23,7 +23,6 @@ namespace MyApp.Application.Features.Admin.DTOs
         [MaxLength(20)]
         public string? Phone { get; set; }
 
-        /// <summary>One of <see cref="MyApp.Domain.Enums.UserRole"/> names (e.g. Technician, Staff).</summary>
         [Required]
         [MaxLength(50)]
         public string Role { get; set; } = null!;

@@ -25,7 +25,6 @@ namespace MyApp
             builder.Services.AddInfrastructureService();
             builder.Services.AddPersitenceService();
 
-            // Single AddControllers: JSON camelCase for clients + relaxed Unicode escaping.
             builder.Services.AddControllers()
                 .AddJsonOptions(options =>
                 {
@@ -35,7 +34,6 @@ namespace MyApp
                         System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping;
                 });
 
-            // Add DbContext
             builder.Services.AddDbContext<AppDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -46,13 +44,11 @@ namespace MyApp
                     failureStatus: HealthStatus.Unhealthy,
                     tags: new[] { "ready", "db" });
 
-            // Add JWT Authentication
             builder.Services.AddJwtAuthentication(builder.Configuration);
 
 
             var app = builder.Build();
 
-            // Migrations + seed: fail fast so the host never serves traffic against a missing or stale schema.
             using (var scope = app.Services.CreateScope())
             {
                 var services = scope.ServiceProvider;
@@ -80,7 +76,6 @@ namespace MyApp
                 RequestPath = "/uploads/images"
             });
 
-            // Important: Authentication must come before Authorization
             app.UseAuthentication();
             app.UseAuthorization();
 

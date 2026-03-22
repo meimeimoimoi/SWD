@@ -16,7 +16,6 @@ class NotificationsScreen extends StatefulWidget {
   State<NotificationsScreen> createState() => _NotificationsScreenState();
 }
 
-const Color _kPrimary = Color(0xFF2D7B31);
 const Color _kBg = Color(0xFFF6F8F6);
 
 enum _AdminFilter { all, system, model, illness, user, feedback }
@@ -196,7 +195,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                         fontSize: 10,
                         fontWeight: FontWeight.w700,
                         letterSpacing: 1.2,
-                        color: _kPrimary,
+                        color: AppColors.brandAccent,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -220,7 +219,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   style: GoogleFonts.spaceGrotesk(
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
-                    color: _kPrimary,
+                    color: AppColors.brandAccent,
                   ),
                 ),
               ),
@@ -234,9 +233,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         const SizedBox(height: 8),
         Expanded(
           child: _loading
-              ? const Center(child: CircularProgressIndicator(color: _kPrimary))
+              ? const Center(child: CircularProgressIndicator(color: AppColors.brandAccent))
               : RefreshIndicator(
-                  color: _kPrimary,
+                  color: AppColors.brandAccent,
                   onRefresh: _load,
                   child: _visible.isEmpty
                       ? ListView(
@@ -304,11 +303,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               label: Text(e.$2, style: GoogleFonts.spaceGrotesk(fontSize: 12)),
               selected: sel,
               onSelected: (_) => setState(() => _adminFilter = e.$1),
-              selectedColor: _kPrimary.withValues(alpha: 0.18),
-              checkmarkColor: _kPrimary,
+              selectedColor: AppColors.brandAccent.withValues(alpha: 0.18),
+              checkmarkColor: AppColors.brandAccent,
               labelStyle: TextStyle(
                 color: sel
-                    ? _kPrimary
+                    ? AppColors.brandAccent
                     : (isDark ? Colors.white70 : Colors.black87),
                 fontWeight: sel ? FontWeight.w700 : FontWeight.w500,
               ),
@@ -337,11 +336,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               label: Text(e.$2, style: GoogleFonts.spaceGrotesk(fontSize: 12)),
               selected: sel,
               onSelected: (_) => setState(() => _userFilter = e.$1),
-              selectedColor: _kPrimary.withValues(alpha: 0.18),
-              checkmarkColor: _kPrimary,
+              selectedColor: AppColors.brandAccent.withValues(alpha: 0.18),
+              checkmarkColor: AppColors.brandAccent,
               labelStyle: TextStyle(
                 color: sel
-                    ? _kPrimary
+                    ? AppColors.brandAccent
                     : (isDark ? Colors.white70 : Colors.black87),
                 fontWeight: sel ? FontWeight.w700 : FontWeight.w500,
               ),
@@ -399,7 +398,7 @@ class _GuideHeader extends StatelessWidget {
             ? Colors.black.withValues(alpha: 0.2)
             : AppColors.scrimLight(0.92),
         border: Border(
-          bottom: BorderSide(color: _kPrimary.withValues(alpha: 0.08)),
+          bottom: BorderSide(color: AppColors.brandAccent.withValues(alpha: 0.08)),
         ),
       ),
       child: Row(
@@ -409,7 +408,7 @@ class _GuideHeader extends StatelessWidget {
             icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
             color: isDark ? Colors.white70 : Colors.black54,
           ),
-          const Icon(Icons.eco, color: _kPrimary, size: 26),
+          const Icon(Icons.eco, color: AppColors.brandAccent, size: 26),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
@@ -417,7 +416,7 @@ class _GuideHeader extends StatelessWidget {
               style: GoogleFonts.spaceGrotesk(
                 fontWeight: FontWeight.w700,
                 fontSize: 17,
-                color: _kPrimary,
+                color: AppColors.brandAccent,
               ),
             ),
           ),
@@ -512,7 +511,7 @@ class _NotificationCard extends StatelessWidget {
                               width: 8,
                               height: 8,
                               decoration: const BoxDecoration(
-                                color: _kPrimary,
+                                color: AppColors.brandAccent,
                                 shape: BoxShape.circle,
                               ),
                             ),
@@ -576,7 +575,7 @@ _CardScheme _cardScheme(_UiVisualKind kind, bool isDark) {
     case _UiVisualKind.success:
       bg = isDark ? const Color(0xFF1A2E1C) : const Color(0xFFE8F5E9);
       iconBg = isDark ? const Color(0xFF2D4A32) : const Color(0xFFC9ECC1);
-      iconFg = _kPrimary;
+      iconFg = AppColors.brandAccent;
       icon = Icons.model_training_outlined;
       break;
     case _UiVisualKind.alert:
@@ -630,14 +629,14 @@ class _AdminOptimizationBanner extends StatelessWidget {
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1A2E1C) : const Color(0xFFE8F5E9),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: _kPrimary.withValues(alpha: 0.12)),
+        border: Border.all(color: AppColors.brandAccent.withValues(alpha: 0.12)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(Icons.auto_awesome, color: _kPrimary.withValues(alpha: 0.9)),
+              Icon(Icons.auto_awesome, color: AppColors.brandAccent.withValues(alpha: 0.9)),
               const SizedBox(width: 8),
               Text(
                 'System optimization',
@@ -668,7 +667,7 @@ class _AdminOptimizationBanner extends StatelessWidget {
                 Navigator.pushNamed(context, AppRouter.adminModels);
               },
               style: FilledButton.styleFrom(
-                backgroundColor: _kPrimary,
+                backgroundColor: AppColors.brandAccent,
                 foregroundColor: AppColors.onPrimary,
                 padding: const EdgeInsets.symmetric(vertical: 12),
               ),

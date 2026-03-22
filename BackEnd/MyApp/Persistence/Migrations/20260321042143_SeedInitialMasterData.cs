@@ -4,16 +4,10 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace MyApp.Persistence.Migrations
 {
-    /// <summary>
-    /// Master users (BCrypt hashes from BCrypt.Net-Next default work factor).
-    /// Default passwords: admin = Admin123!, user1–user3 = User123! — change in production.
-    /// </summary>
     public partial class SeedInitialMasterData : Migration
     {
-        /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            // Idempotent: safe if an admin was already created by runtime DataSeeder.
             migrationBuilder.Sql(
                 """
                 IF NOT EXISTS (SELECT 1 FROM [users] WHERE [username] = N'admin')
@@ -42,7 +36,6 @@ namespace MyApp.Persistence.Migrations
                 """);
         }
 
-        /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.Sql(

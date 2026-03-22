@@ -60,7 +60,6 @@ namespace MyApp.Infrastructure.Services
                 user.UpdatedAt = DateTime.UtcNow;
                 await _userRepository.UpdateUserAsync(user);
 
-                // Log the activity
                 try 
                 {
                     var log = new ActivityLog
@@ -78,7 +77,6 @@ namespace MyApp.Infrastructure.Services
                 catch (Exception logEx)
                 {
                     _logger.LogError(logEx, "Failed to record activity log for user {Username}", user.Username);
-                    // We don't throw here so the user can still login even if logging fails
                 }
 
                 return new LoginResponseDTO 
@@ -214,7 +212,6 @@ namespace MyApp.Infrastructure.Services
                 };
 
                 await _userRepository.AddUserAsync(user);
-                //await _context.SaveChangesAsync();
 
                 _logger.LogInformation("User registered successfully: {Username}", user.Username);
 

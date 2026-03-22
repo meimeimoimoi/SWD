@@ -8,7 +8,6 @@ import '../../share/utils/disease_mapper.dart';
 import '../../share/theme/app_colors.dart';
 import '../../share/widgets/user_bottom_nav_bar.dart';
 
-const Color _kPrimary = Color(0xFF2D7B31);
 const Color _kBgLight = Color(0xFFF6F8F6);
 
 class UserIllnessDetailArgs {
@@ -159,7 +158,7 @@ class _UserIllnessDetailScreenState extends State<UserIllnessDetailScreen> {
         centerTitle: true,
       ),
       body: _loadingApi && row == null && u.illnessId != null
-          ? const Center(child: CircularProgressIndicator(color: _kPrimary))
+          ? const Center(child: CircularProgressIndicator(color: AppColors.brandAccent))
           : SingleChildScrollView(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 28),
               child: Column(
@@ -203,7 +202,7 @@ class _UserIllnessDetailScreenState extends State<UserIllnessDetailScreen> {
                     children: [
                       Icon(
                         Icons.report_problem_outlined,
-                        color: _kPrimary,
+                        color: AppColors.brandAccent,
                         size: 22,
                       ),
                       const SizedBox(width: 8),
@@ -549,7 +548,7 @@ class _HeroCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final border = Border.all(
-      color: _kPrimary.withValues(alpha: 0.08),
+      color: AppColors.brandAccent.withValues(alpha: 0.08),
     );
     return Container(
       decoration: BoxDecoration(
@@ -578,7 +577,7 @@ class _HeroCard extends StatelessWidget {
                     child: Icon(
                       Icons.coronavirus_outlined,
                       size: 56,
-                      color: _kPrimary.withValues(alpha: 0.35),
+                      color: AppColors.brandAccent.withValues(alpha: 0.35),
                     ),
                   )
                 : Image.network(
@@ -630,7 +629,7 @@ class _HeroCard extends StatelessWidget {
                       style: GoogleFonts.spaceGrotesk(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
-                        color: _kPrimary,
+                        color: AppColors.brandAccent,
                       ),
                     ),
                   ],
@@ -720,7 +719,7 @@ class _CardShell extends StatelessWidget {
         color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: _kPrimary.withValues(alpha: 0.06),
+          color: AppColors.brandAccent.withValues(alpha: 0.06),
         ),
         boxShadow: isDark
             ? null
@@ -761,7 +760,7 @@ class _SolutionTile extends StatelessWidget {
         : Icons.medication_outlined;
 
     return Material(
-      color: _kPrimary.withValues(alpha: isDark ? 0.12 : 0.08),
+      color: AppColors.brandAccent.withValues(alpha: isDark ? 0.12 : 0.08),
       borderRadius: BorderRadius.circular(16),
       child: InkWell(
         onTap: onTap,
@@ -770,7 +769,7 @@ class _SolutionTile extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           child: Row(
             children: [
-              Icon(icon, color: _kPrimary, size: 24),
+              Icon(icon, color: AppColors.brandAccent, size: 24),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(

@@ -34,7 +34,6 @@ namespace MyApp.Infrastructure.Services
             {
                 var query = _userRepository.GetAllUsersQuery();
 
-                // Apply search filter
                 if (!string.IsNullOrWhiteSpace(search))
                 {
                     query = query.Where(u => 
@@ -44,13 +43,11 @@ namespace MyApp.Infrastructure.Services
                         (u.LastName != null && u.LastName.Contains(search)));
                 }
 
-                // Apply role filter
                 if (!string.IsNullOrWhiteSpace(role) && UserRoles.TryParse(role, out var roleFilter))
                 {
                     query = query.Where(u => u.Role == roleFilter);
                 }
 
-                // Apply sorting
                 query = sortBy?.ToLower() switch
                 {
                     "username" => sortOrder?.ToLower() == "desc" 
@@ -70,7 +67,6 @@ namespace MyApp.Infrastructure.Services
 
                 var users = await query.ToListAsync();
 
-                // Map to DTOs and return full list
                 var userDtos = users.Select(u => new UserDto
                 {
                     UserId = u.UserId,
@@ -135,10 +131,8 @@ namespace MyApp.Infrastructure.Services
                 if (user == null)
                     return false;
 
-                // Update fields if provided
                 if (!string.IsNullOrWhiteSpace(updateDto.Email))
                 {
-                    // Check if email already exists for another user
                     var existingUser = await _userRepository.FindByEmail(updateDto.Email);
                     if (existingUser != null && existingUser.UserId != userId)
                     {
@@ -224,20 +218,17 @@ namespace MyApp.Infrastructure.Services
         {
             try
             {
-                // Validate username doesn't exist
                 if (await _userRepository.ExistByUsernameAsync(createDto.Username))
                 {
                     throw new InvalidOperationException($"Username '{createDto.Username}' already exists");
                 }
 
-                // Validate email doesn't exist
                 var existingEmail = await _userRepository.FindByEmail(createDto.Email);
                 if (existingEmail != null)
                 {
                     throw new InvalidOperationException($"Email '{createDto.Email}' already exists");
                 }
 
-                // Auto-generate secure password using BCryptPasswordHasher
                 string temporaryPassword = _passwordHasher.GenerateRandomPassword(12);
                 var staffRole = UserRoles.ParseRequired(createDto.Role);
 
@@ -259,10 +250,8 @@ namespace MyApp.Infrastructure.Services
 
                 await _userRepository.CreateTechnicianStaff(user, staffRole);
 
-                // Generate confirmation token
                 string confirmationToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
 
-                // Send welcome email with auto-generated credentials
                 await _messageService.SendAccountCreatedByStaffEmailAsync(
                     user.Email,
                     user.FirstName ?? user.Username,
@@ -305,7 +294,6 @@ namespace MyApp.Infrastructure.Services
                     throw new InvalidOperationException("Email already exists");
                 }
 
-                // Generate a username from email if needed
                 string username = dto.Email.Split('@')[0];
                 int count = 1;
                 while (await _userRepository.ExistByUsernameAsync(username))

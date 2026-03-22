@@ -73,9 +73,6 @@ namespace MyApp.Api.Controllers
             }
         }
 
-        /// <summary>
-        /// Uses catalog context plus optional OpenAI (see appsettings <c>AiSolution</c>) to propose actions; falls back to heuristic text if no API key.
-        /// </summary>
         [HttpPost("treatments/ai-suggest")]
         public async Task<IActionResult> AiSuggestTreatmentPlan(
             [FromBody] AiSolutionSuggestRequest request,
@@ -177,9 +174,6 @@ namespace MyApp.Api.Controllers
             }
         }
 
-        /// <summary>
-        /// Link a completed scan to a tree (updates prediction.TreeId; may add illness–tree relationship).
-        /// </summary>
         [HttpPatch("predictions/history/{id:int}/tree")]
         public async Task<IActionResult> AssignPredictionToTree(int id, [FromBody] AssignPredictionToTreeDto dto)
         {

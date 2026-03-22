@@ -16,7 +16,6 @@ class AdminIllnessManagementScreen extends StatefulWidget {
       _AdminIllnessManagementScreenState();
 }
 
-const Color _kPrimary = Color(0xFF2D7B31);
 const Color _kBg = Color(0xFFF6F8F6);
 
 class _AdminIllnessManagementScreenState
@@ -98,7 +97,7 @@ class _AdminIllnessManagementScreenState
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(success ? 'Deleted' : 'Delete failed'),
-        backgroundColor: success ? _kPrimary : Colors.red,
+        backgroundColor: success ? AppColors.brandAccent : Colors.red,
         behavior: SnackBarBehavior.floating,
       ),
     );
@@ -135,7 +134,7 @@ class _AdminIllnessManagementScreenState
         appBar: AppBar(
           elevation: 0,
           scrolledUnderElevation: 0.5,
-          surfaceTintColor: _kPrimary.withValues(alpha: 0.08),
+          surfaceTintColor: AppColors.brandAccent.withValues(alpha: 0.08),
           backgroundColor: bg,
           title: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -171,7 +170,7 @@ class _AdminIllnessManagementScreenState
         body: SafeArea(
           child: _loading
               ? const Center(
-                  child: CircularProgressIndicator(color: _kPrimary),
+                  child: CircularProgressIndicator(color: AppColors.brandAccent),
                 )
               : Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -192,28 +191,28 @@ class _AdminIllnessManagementScreenState
                           ),
                           prefixIcon: Icon(
                             Icons.search_rounded,
-                            color: _kPrimary.withValues(alpha: 0.75),
+                            color: AppColors.brandAccent.withValues(alpha: 0.75),
                           ),
                           filled: true,
                           fillColor: isDark
                               ? const Color(0xFF2A322E)
-                              : _kPrimary.withValues(alpha: 0.05),
+                              : AppColors.brandAccent.withValues(alpha: 0.05),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(14),
                             borderSide: BorderSide(
-                              color: _kPrimary.withValues(alpha: 0.15),
+                              color: AppColors.brandAccent.withValues(alpha: 0.15),
                             ),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(14),
                             borderSide: BorderSide(
-                              color: _kPrimary.withValues(alpha: 0.15),
+                              color: AppColors.brandAccent.withValues(alpha: 0.15),
                             ),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(14),
                             borderSide: const BorderSide(
-                              color: _kPrimary,
+                              color: AppColors.brandAccent,
                               width: 2,
                             ),
                           ),
@@ -226,7 +225,7 @@ class _AdminIllnessManagementScreenState
                     ),
                     Expanded(
                       child: RefreshIndicator(
-                        color: _kPrimary,
+                        color: AppColors.brandAccent,
                         onRefresh: _load,
                         child: _filtered.isEmpty
                             ? ListView(
@@ -239,7 +238,7 @@ class _AdminIllnessManagementScreenState
                                   Icon(
                                     Icons.coronavirus_outlined,
                                     size: 56,
-                                    color: _kPrimary.withValues(alpha: 0.35),
+                                    color: AppColors.brandAccent.withValues(alpha: 0.35),
                                   ),
                                   const SizedBox(height: 16),
                                   Text(
@@ -298,7 +297,7 @@ class _AdminIllnessManagementScreenState
         ),
         floatingActionButton: FloatingActionButton.extended(
           onPressed: () => _openEditor(),
-          backgroundColor: _kPrimary,
+          backgroundColor: AppColors.brandAccent,
           foregroundColor: AppColors.onPrimary,
           elevation: 3,
           icon: const Icon(Icons.add_rounded),
@@ -357,7 +356,7 @@ class _IllnessCard extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: _kPrimary.withValues(alpha: 0.08),
+              color: AppColors.brandAccent.withValues(alpha: 0.08),
             ),
           ),
           padding: const EdgeInsets.all(14),
@@ -368,12 +367,12 @@ class _IllnessCard extends StatelessWidget {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: _kPrimary.withValues(alpha: 0.1),
+                  color: AppColors.brandAccent.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: Icon(
                   Icons.coronavirus_rounded,
-                  color: _kPrimary.withValues(alpha: 0.9),
+                  color: AppColors.brandAccent.withValues(alpha: 0.9),
                   size: 26,
                 ),
               ),
@@ -412,7 +411,7 @@ class _IllnessCard extends StatelessWidget {
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: _kPrimary.withValues(alpha: 0.12),
+                          color: AppColors.brandAccent.withValues(alpha: 0.12),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
@@ -420,7 +419,7 @@ class _IllnessCard extends StatelessWidget {
                           style: GoogleFonts.spaceGrotesk(
                             fontSize: 11,
                             fontWeight: FontWeight.w600,
-                            color: _kPrimary,
+                            color: AppColors.brandAccent,
                           ),
                         ),
                       ),

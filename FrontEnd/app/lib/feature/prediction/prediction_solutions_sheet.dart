@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../../share/services/treatment_api_service.dart';
 import '../../share/theme/app_colors.dart';
 
-/// Bottom sheet: load master-data recommendations or request AI/heuristic suggestion.
 Future<void> showPredictionSolutionsSheet({
   required BuildContext context,
   required String displayName,
@@ -241,7 +240,7 @@ class _PredictionSolutionsSheetContentState
                               Text(
                                 '• ',
                                 style: theme.textTheme.bodyMedium?.copyWith(
-                                  color: const Color(0xFF2D7B31),
+                                  color: AppColors.brandAccentReadable(context),
                                   fontWeight: FontWeight.w800,
                                 ),
                               ),

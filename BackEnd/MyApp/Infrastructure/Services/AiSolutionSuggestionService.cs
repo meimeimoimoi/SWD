@@ -11,9 +11,6 @@ using MyApp.Persistence.Context;
 
 namespace MyApp.Infrastructure.Services;
 
-/// <summary>
-/// Suggests agronomic actions using optional OpenAI (chat) or a deterministic heuristic built from master treatment data.
-/// </summary>
 public sealed class AiSolutionSuggestionService : IAiSolutionSuggestionService
 {
     private readonly IHttpClientFactory _httpClientFactory;

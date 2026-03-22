@@ -160,9 +160,6 @@ class _ScanMetadataCard extends StatelessWidget {
     final textPrimary = isDark
         ? AppColors.textPrimaryDark
         : AppColors.textPrimaryLight;
-    final textSecondary = isDark
-        ? AppColors.textSecondaryDark
-        : AppColors.textSecondaryLight;
 
     return AppCard(
       padding: const EdgeInsets.all(16),

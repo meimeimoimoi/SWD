@@ -16,8 +16,8 @@ class AppTheme {
       labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
       backgroundColor: bg,
       surfaceTintColor: Colors.transparent,
-      shadowColor: Colors.black.withValues(alpha: isDark ? 0.35 : 0.08),
-      elevation: isDark ? 0 : 3,
+      shadowColor: Colors.black.withValues(alpha: isDark ? 0.5 : 0.1),
+      elevation: isDark ? 14 : 6,
       indicatorColor: AppColors.primary.withValues(alpha: 0.14),
       indicatorShape: RoundedRectangleBorder(
         borderRadius: AppLayout.borderRadiusSm,
@@ -59,8 +59,9 @@ class AppTheme {
       appBarTheme: AppBarTheme(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        scrolledUnderElevation: 0,
-        surfaceTintColor: Colors.transparent,
+        scrolledUnderElevation: 3,
+        shadowColor: Colors.black.withValues(alpha: 0.06),
+        surfaceTintColor: AppColors.primary.withValues(alpha: 0.06),
         foregroundColor: AppColors.textPrimaryLight,
         centerTitle: false,
         titleTextStyle: GoogleFonts.poppins(

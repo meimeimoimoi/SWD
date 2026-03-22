@@ -16,7 +16,6 @@ import '../../share/theme/app_layout.dart';
 import '../../share/widgets/admin_bottom_nav.dart';
 import '../../share/widgets/user_bottom_nav_bar.dart';
 
-const Color _kPrimary = Color(0xFF2D7B31);
 const Color _kBgLight = Color(0xFFF6F8F6);
 
 class UnifiedAccountScreen extends StatefulWidget {
@@ -143,7 +142,7 @@ class _UnifiedAccountScreenState extends State<UnifiedAccountScreen> {
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
-            style: FilledButton.styleFrom(backgroundColor: _kPrimary),
+            style: FilledButton.styleFrom(backgroundColor: AppColors.brandAccent),
             child: Text(
               'Sign out',
               style: GoogleFonts.spaceGrotesk(fontWeight: FontWeight.w700),
@@ -180,7 +179,7 @@ class _UnifiedAccountScreenState extends State<UnifiedAccountScreen> {
       context: context,
       applicationName: AppBrand.name,
       applicationVersion: AppVersion.semantic,
-      applicationIcon: const Icon(Icons.eco, color: _kPrimary, size: 40),
+      applicationIcon: const Icon(Icons.eco, color: AppColors.brandAccent, size: 40),
       children: [
         Text(
           AppBrand.heroSubtitle,
@@ -217,9 +216,9 @@ class _UnifiedAccountScreenState extends State<UnifiedAccountScreen> {
       backgroundColor: bg,
       body: SafeArea(
         child: _loading
-            ? const Center(child: CircularProgressIndicator(color: _kPrimary))
+            ? const Center(child: CircularProgressIndicator(color: AppColors.brandAccent))
             : RefreshIndicator(
-                color: _kPrimary,
+                color: AppColors.brandAccent,
                 onRefresh: _load,
                 child: CustomScrollView(
                   physics: const AlwaysScrollableScrollPhysics(),
@@ -513,7 +512,7 @@ class _UnifiedAccountScreenState extends State<UnifiedAccountScreen> {
                                           const EdgeInsets.symmetric(horizontal: 12),
                                       leading: Icon(
                                         Icons.language_outlined,
-                                        color: _kPrimary,
+                                        color: AppColors.brandAccent,
                                       ),
                                       title: Text(
                                         'Language',
@@ -530,7 +529,7 @@ class _UnifiedAccountScreenState extends State<UnifiedAccountScreen> {
                                           vertical: 6,
                                         ),
                                         decoration: BoxDecoration(
-                                          color: _kPrimary.withValues(alpha: 0.12),
+                                          color: AppColors.brandAccent.withValues(alpha: 0.12),
                                           borderRadius: BorderRadius.circular(8),
                                         ),
                                         child: Text(
@@ -538,7 +537,7 @@ class _UnifiedAccountScreenState extends State<UnifiedAccountScreen> {
                                           style: GoogleFonts.spaceGrotesk(
                                             fontWeight: FontWeight.w700,
                                             fontSize: 12,
-                                            color: _kPrimary,
+                                            color: AppColors.brandAccent,
                                           ),
                                         ),
                                       ),
@@ -563,7 +562,7 @@ class _UnifiedAccountScreenState extends State<UnifiedAccountScreen> {
                                         children: [
                                           Icon(
                                             Icons.palette_outlined,
-                                            color: _kPrimary,
+                                            color: AppColors.brandAccent,
                                             size: 20,
                                           ),
                                           const SizedBox(width: 8),
@@ -573,7 +572,7 @@ class _UnifiedAccountScreenState extends State<UnifiedAccountScreen> {
                                               fontSize: 11,
                                               letterSpacing: 1.1,
                                               fontWeight: FontWeight.w800,
-                                              color: _kPrimary,
+                                              color: AppColors.brandAccent,
                                             ),
                                           ),
                                         ],
@@ -651,7 +650,7 @@ class _UnifiedAccountScreenState extends State<UnifiedAccountScreen> {
                                     'v${AppVersion.semantic}',
                                     style: GoogleFonts.spaceGrotesk(
                                       fontWeight: FontWeight.w700,
-                                      color: _kPrimary,
+                                      color: AppColors.brandAccent,
                                     ),
                                   ),
                                 ),
@@ -788,7 +787,7 @@ class _TopBrandBar extends StatelessWidget {
               ),
             ),
           ],
-          const Icon(Icons.eco, color: _kPrimary, size: 26),
+          const Icon(Icons.eco, color: AppColors.brandAccent, size: 26),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
@@ -796,7 +795,7 @@ class _TopBrandBar extends StatelessWidget {
               style: GoogleFonts.spaceGrotesk(
                 fontWeight: FontWeight.w700,
                 fontSize: 17,
-                color: _kPrimary,
+                color: AppColors.brandAccent,
               ),
             ),
           ),
@@ -885,13 +884,13 @@ class _ProfileHeroCard extends StatelessWidget {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: _kPrimary.withValues(alpha: 0.2),
+                    color: AppColors.brandAccent.withValues(alpha: 0.2),
                     width: 3,
                   ),
                 ),
                 child: CircleAvatar(
                   radius: 48,
-                  backgroundColor: _kPrimary.withValues(alpha: 0.08),
+                  backgroundColor: AppColors.brandAccent.withValues(alpha: 0.08),
                   backgroundImage:
                       hasImg ? NetworkImage(avatarUrl!) : null,
                   child: !hasImg
@@ -900,7 +899,7 @@ class _ProfileHeroCard extends StatelessWidget {
                           style: GoogleFonts.spaceGrotesk(
                             fontSize: 32,
                             fontWeight: FontWeight.w700,
-                            color: _kPrimary,
+                            color: AppColors.brandAccent,
                           ),
                         )
                       : null,
@@ -910,7 +909,7 @@ class _ProfileHeroCard extends StatelessWidget {
                 right: -2,
                 bottom: -2,
                 child: Material(
-                  color: _kPrimary,
+                  color: AppColors.brandAccent,
                   shape: const CircleBorder(),
                   child: InkWell(
                     onTap: onEditAvatar,
@@ -965,7 +964,7 @@ class _ProfileHeroCard extends StatelessWidget {
             child: FilledButton.icon(
               onPressed: onEditProfile,
               style: FilledButton.styleFrom(
-                backgroundColor: _kPrimary,
+                backgroundColor: AppColors.brandAccent,
                 foregroundColor: AppColors.onPrimary,
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
@@ -1114,7 +1113,7 @@ class _SectionCard extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
             child: Row(
               children: [
-                Icon(icon, color: _kPrimary, size: 20),
+                Icon(icon, color: AppColors.brandAccent, size: 20),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
@@ -1249,7 +1248,7 @@ class _ToggleRow extends StatelessWidget {
           ),
           Switch.adaptive(
             value: value,
-            activeColor: _kPrimary,
+            activeColor: AppColors.brandAccent,
             onChanged: onChanged,
           ),
         ],
@@ -1292,7 +1291,7 @@ class _ThemePick extends StatelessWidget {
               ),
             ),
             if (selected)
-              const Icon(Icons.check_circle, color: _kPrimary, size: 22)
+              const Icon(Icons.check_circle, color: AppColors.brandAccent, size: 22)
             else
               Icon(
                 Icons.circle_outlined,
@@ -1324,7 +1323,7 @@ class _QuickLink extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      leading: Icon(icon, color: _kPrimary),
+      leading: Icon(icon, color: AppColors.brandAccent),
       title: Text(title, style: GoogleFonts.spaceGrotesk(fontWeight: FontWeight.w600)),
       subtitle: Text(
         subtitle,

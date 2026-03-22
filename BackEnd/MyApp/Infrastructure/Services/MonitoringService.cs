@@ -57,7 +57,6 @@ namespace MyApp.Infrastructure.Services
                     .Average(p => p.ConfidenceScore!.Value)
                 : 0;
 
-            // Class distribution
             var classGroups = allPredictions
                 .Where(p => p.PredictedClass != null)
                 .GroupBy(p => p.PredictedClass!)
@@ -71,7 +70,6 @@ namespace MyApp.Infrastructure.Services
                 .OrderByDescending(x => x.Count)
                 .ToList();
 
-            // Daily trend
             var dailyTrend = Enumerable.Range(0, days)
                 .Select(i => since.AddDays(i))
                 .Select(date => new DailyPredictionDto

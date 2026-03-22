@@ -341,7 +341,6 @@ class _UserItem {
     required this.role,
     required this.lastLogin,
     required this.primaryAction,
-    this.secondaryAction,
     required this.showRoleDropdown,
   });
 
@@ -353,7 +352,6 @@ class _UserItem {
   final String role;
   final String lastLogin;
   final _UserAction primaryAction;
-  final _UserAction? secondaryAction;
   final bool showRoleDropdown;
 }
 
@@ -630,15 +628,11 @@ class _UserCard extends StatelessWidget {
                       : OutlinedButton.icon(
                           onPressed: () {},
                           icon: Icon(
-                            _actionIcon(
-                              user.secondaryAction ?? _UserAction.revoke,
-                            ),
+                            _actionIcon(_UserAction.revoke),
                             size: 16,
                           ),
                           label: Text(
-                            _actionLabel(
-                              user.secondaryAction ?? _UserAction.revoke,
-                            ),
+                            _actionLabel(_UserAction.revoke),
                           ),
                           style: OutlinedButton.styleFrom(
                             foregroundColor: textPrimary,

@@ -16,12 +16,6 @@ import '../../share/widgets/app_button.dart';
 import '../../share/widgets/app_scaffold.dart';
 import '../prediction/prediction_screen.dart';
 
-const Color _kBrandGreen = Color(0xFF2D7B31);
-const Color _kPageBgLight = Color(0xFFF6F8F6);
-const Color _kDarkCard = Color(0xFF2D322B);
-const Color _kPrimaryFixed = Color(0xFFA4F69C);
-const Color _kOnPrimaryFixed = Color(0xFF1A3D16);
-
 class ScanScreen extends StatefulWidget {
   const ScanScreen({super.key});
 
@@ -489,7 +483,7 @@ class _ScanScreenState extends State<ScanScreen> {
   @override
   Widget build(BuildContext context) {
     final bg = Theme.of(context).brightness == Brightness.light
-        ? _kPageBgLight
+        ? AppColors.scanBackgroundLight
         : Theme.of(context).colorScheme.surface;
 
     return AppScaffold(
@@ -631,11 +625,11 @@ class _ScanWorkbenchCard extends StatelessWidget {
   Color _statusColor() {
     switch (uploadStatus) {
       case _UploadStatus.success:
-        return _kPrimaryFixed;
+        return AppColors.brandAccentOnDark;
       case _UploadStatus.error:
         return const Color(0xFFFFB4A8);
       case _UploadStatus.uploading:
-        return _kPrimaryFixed;
+        return AppColors.brandAccentOnDark;
       case _UploadStatus.idle:
         return const Color(0xFFB8C4BF);
     }
@@ -643,11 +637,16 @@ class _ScanWorkbenchCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isLight = Theme.of(context).brightness == Brightness.light;
-    final cardBg = isLight ? _kDarkCard : AppColors.surfaceDark;
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+    final isLight = theme.brightness == Brightness.light;
+    final cardBg = isLight ? AppColors.forestCardDark : AppColors.surfaceDark;
     final innerSurface =
         isLight ? const Color(0xFFF0F4F1) : AppColors.darkControlFill;
     final muted = Colors.grey.shade400;
+    final onInnerPrimary = cs.onSurface;
+    final onInnerSecondary = cs.onSurfaceVariant;
+    final accentReadable = AppColors.brandAccentReadable(context);
 
     return Material(
       color: cardBg,
@@ -677,7 +676,7 @@ class _ScanWorkbenchCard extends StatelessWidget {
                         vertical: 5,
                       ),
                       decoration: BoxDecoration(
-                        color: _kBrandGreen.withValues(alpha: 0.4),
+                        color: AppColors.brandAccent.withValues(alpha: 0.4),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: const Text(
@@ -686,7 +685,7 @@ class _ScanWorkbenchCard extends StatelessWidget {
                           fontSize: 10,
                           fontWeight: FontWeight.w800,
                           letterSpacing: 0.8,
-                          color: _kPrimaryFixed,
+                          color: AppColors.brandAccentOnDark,
                         ),
                       ),
                     ),
@@ -747,30 +746,26 @@ class _ScanWorkbenchCard extends StatelessWidget {
                                           Icon(
                                             Icons.add_photo_alternate_outlined,
                                             size: 44,
-                                            color: _kBrandGreen,
+                                            color: accentReadable,
                                           ),
                                           const SizedBox(height: 10),
                                           Text(
                                             'Tap to choose from device',
                                             textAlign: TextAlign.center,
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .titleSmall
+                                            style: theme.textTheme.titleSmall
                                                 ?.copyWith(
-                                                  fontWeight: FontWeight.w700,
-                                                  color: const Color(0xFF1B2D20),
-                                                ),
+                                              fontWeight: FontWeight.w700,
+                                              color: onInnerPrimary,
+                                            ),
                                           ),
                                           const SizedBox(height: 4),
                                           Text(
                                             'Or use Capture / Upload below',
                                             textAlign: TextAlign.center,
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .bodySmall
+                                            style: theme.textTheme.bodySmall
                                                 ?.copyWith(
-                                                  color: const Color(0xFF5C6B62),
-                                                ),
+                                              color: onInnerSecondary,
+                                            ),
                                           ),
                                         ],
                                       ),
@@ -779,13 +774,13 @@ class _ScanWorkbenchCard extends StatelessWidget {
                                 if (isUploading)
                                   Container(
                                     color: Colors.black.withValues(alpha: 0.08),
-                                    child: const Center(
+                                    child: Center(
                                       child: SizedBox(
                                         width: 32,
                                         height: 32,
                                         child: CircularProgressIndicator(
                                           strokeWidth: 3,
-                                          color: _kBrandGreen,
+                                          color: accentReadable,
                                         ),
                                       ),
                                     ),
@@ -851,15 +846,15 @@ class _ScanWorkbenchCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 14),
                 if (modelsLoading)
-                  const Padding(
-                    padding: EdgeInsets.only(bottom: 12),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
                     child: Center(
                       child: SizedBox(
                         width: 28,
                         height: 28,
                         child: CircularProgressIndicator(
                           strokeWidth: 2.5,
-                          color: _kBrandGreen,
+                          color: accentReadable,
                         ),
                       ),
                     ),
@@ -907,21 +902,21 @@ class _ScanWorkbenchCard extends StatelessWidget {
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(14),
                           borderSide: BorderSide(
-                            color: _kBrandGreen.withValues(alpha: 0.45),
+                            color: AppColors.brandAccent.withValues(alpha: 0.45),
                             width: 1.25,
                           ),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(14),
                           borderSide: BorderSide(
-                            color: _kBrandGreen.withValues(alpha: 0.5),
+                            color: AppColors.brandAccent.withValues(alpha: 0.5),
                             width: 1.25,
                           ),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(14),
                           borderSide: const BorderSide(
-                            color: _kBrandGreen,
+                            color: AppColors.brandAccent,
                             width: 2,
                           ),
                         ),
@@ -936,9 +931,9 @@ class _ScanWorkbenchCard extends StatelessWidget {
                         ),
                       ),
                       dropdownColor: innerSurface,
-                      iconEnabledColor: _kBrandGreen,
-                      style: const TextStyle(
-                        color: Color(0xFF1B2D20),
+                      iconEnabledColor: accentReadable,
+                      style: theme.textTheme.bodyLarge?.copyWith(
+                        color: onInnerPrimary,
                         fontWeight: FontWeight.w700,
                         fontSize: 14,
                         height: 1.25,
@@ -976,8 +971,8 @@ class _ScanWorkbenchCard extends StatelessWidget {
                       ),
                     ),
                     style: FilledButton.styleFrom(
-                      backgroundColor: _kPrimaryFixed,
-                      foregroundColor: _kOnPrimaryFixed,
+                      backgroundColor: AppColors.brandAccentOnDark,
+                      foregroundColor: AppColors.onBrandFixedDark,
                       disabledBackgroundColor:
                           AppColors.surfaceLight.withValues(alpha: 0.12),
                       disabledForegroundColor:
@@ -1057,6 +1052,7 @@ class _ScanPageTipsCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final line = Theme.of(context).dividerColor.withValues(alpha: 0.12);
+    final accent = AppColors.brandAccentReadable(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -1083,10 +1079,10 @@ class _ScanPageTipsCard extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.tips_and_updates_outlined,
                     size: 22,
-                    color: _kBrandGreen,
+                    color: accent,
                   ),
                   const SizedBox(width: 10),
                   Text(
@@ -1107,7 +1103,7 @@ class _ScanPageTipsCard extends StatelessWidget {
                       '${i + 1}.',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                             fontWeight: FontWeight.w700,
-                            color: _kBrandGreen,
+                            color: accent,
                           ),
                     ),
                     const SizedBox(width: 8),
@@ -1159,6 +1155,7 @@ class _RecentActivityCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final line = Theme.of(context).dividerColor.withValues(alpha: 0.12);
     final now = DateTime.now();
+    final accent = AppColors.brandAccentReadable(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -1199,7 +1196,7 @@ class _RecentActivityCard extends StatelessWidget {
                   Icon(
                     Icons.history_rounded,
                     size: 22,
-                    color: _kBrandGreen,
+                    color: accent,
                   ),
                   const SizedBox(width: 8),
                   Text(
@@ -1212,15 +1209,15 @@ class _RecentActivityCard extends StatelessWidget {
               ),
               const SizedBox(height: 14),
               if (loading)
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 24),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 24),
                   child: Center(
                     child: SizedBox(
                       width: 28,
                       height: 28,
                       child: CircularProgressIndicator(
                         strokeWidth: 2.5,
-                        color: _kBrandGreen,
+                        color: accent,
                       ),
                     ),
                   ),
@@ -1251,8 +1248,8 @@ class _RecentActivityCard extends StatelessWidget {
                   onPressed: () =>
                       Navigator.pushNamed(context, AppRouter.history),
                   style: FilledButton.styleFrom(
-                    foregroundColor: _kBrandGreen,
-                    backgroundColor: _kBrandGreen.withValues(alpha: 0.12),
+                    foregroundColor: accent,
+                    backgroundColor: accent.withValues(alpha: 0.12),
                     padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
                   child: const Row(
@@ -1287,8 +1284,8 @@ class _ScanHistoryTile extends StatelessWidget {
   final String timeLabel;
   final VoidCallback onTap;
 
-  Color _accent(bool healthy) {
-    if (healthy) return _kBrandGreen;
+  Color _accent(BuildContext context, bool healthy) {
+    if (healthy) return AppColors.brandAccentReadable(context);
     return const Color(0xFFD4A017);
   }
 
@@ -1297,7 +1294,7 @@ class _ScanHistoryTile extends StatelessWidget {
     final theme = Theme.of(context);
     final soft = theme.dividerColor.withValues(alpha: 0.2);
     final healthy = DiseaseMapper.isHealthy(item.diseaseName);
-    final accent = _accent(healthy);
+    final accent = _accent(context, healthy);
     final title = DiseaseMapper.toDisplayName(
       item.diseaseName.trim().isEmpty ? 'Leaf scan' : item.diseaseName,
     );
@@ -1362,7 +1359,7 @@ class _ScanHistoryTile extends StatelessWidget {
                         statusLabel,
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: healthy
-                              ? _kBrandGreen
+                              ? AppColors.brandAccentReadable(context)
                               : const Color(0xFFCA8A04),
                           fontWeight: FontWeight.w700,
                         ),

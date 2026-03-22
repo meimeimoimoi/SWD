@@ -4,10 +4,6 @@ using Microsoft.ML.OnnxRuntime.Tensors;
 
 namespace MyApp.Infrastructure.Ml;
 
-/// <summary>
-/// Reads class names in model output order from (1) ONNX custom metadata <c>class_labels</c>, or
-/// (2) a sidecar file next to the model: <c>{modelName}.class_labels.json</c> (JSON string array).
-/// </summary>
 internal static class OnnxModelLabels
 {
     public static string[] Read(InferenceSession session, string? onnxModelPath = null)

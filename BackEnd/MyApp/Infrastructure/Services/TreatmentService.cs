@@ -94,7 +94,6 @@ namespace MyApp.Infrastructure.Services
             return MapToSolutionDto(solution);
         }
 
-        // ── Private helpers ──────────────────
 
         private static TreatmentSolutionDto MapToSolutionDto(Domain.Entities.TreatmentSolution s) => new()
         {

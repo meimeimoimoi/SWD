@@ -32,9 +32,6 @@ namespace MyApp.Infrastructure.Data
             _logger = logger;
         }
 
-        /// <summary>
-        /// Applies pending EF Core migrations. Call before <see cref="SeedAsync"/>; must succeed for a consistent schema.
-        /// </summary>
         public async Task MigrateDatabaseAsync(CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(_configuration.GetConnectionString("DefaultConnection")))
@@ -60,9 +57,6 @@ namespace MyApp.Infrastructure.Data
             }
         }
 
-        /// <summary>
-        /// Idempotent data seed (admin user, default model). Requires schema to be current — run <see cref="MigrateDatabaseAsync"/> first.
-        /// </summary>
         public async Task SeedAsync(CancellationToken cancellationToken = default)
         {
             await SeedAdminUserAsync(cancellationToken);
@@ -73,7 +67,6 @@ namespace MyApp.Infrastructure.Data
 
         private async Task SeedAdminUserAsync(CancellationToken cancellationToken = default)
         {
-            // Check if any admin user exists
             var adminExists = await _context.Users.AnyAsync(u => u.Role == UserRole.Admin, cancellationToken);
 
             if (adminExists)
@@ -82,11 +75,9 @@ namespace MyApp.Infrastructure.Data
                 return;
             }
 
-            // Must match SeedInitialMasterData + UpdateAdminPasswordHash (BCrypt for Admin123!, not plaintext).
             var adminEmail = _configuration["SuperAdminSettings:Email"] ?? "admin@swd.com";
             var adminPassword = _configuration["SuperAdminSettings:Password"] ?? "Admin123!";
 
-            // Create admin user
             var adminUser = new User
             {
                 Username = "admin",
@@ -113,7 +104,6 @@ namespace MyApp.Infrastructure.Data
             const string fileName  = "rice_disease_v3.onnx";
             var          filePath  = Path.Combine("Models", fileName);
 
-            // Skip if already registered
             var alreadyExists = await _context.ModelVersions
                 .AnyAsync(m => m.ModelName == modelName && m.Version == version, cancellationToken);
 
@@ -125,7 +115,6 @@ namespace MyApp.Infrastructure.Data
                 return;
             }
 
-            // Verify physical file exists
             var physicalPath = Path.Combine(AppContext.BaseDirectory, "Models", fileName);
             if (!File.Exists(physicalPath))
             {
@@ -135,7 +124,6 @@ namespace MyApp.Infrastructure.Data
                 return;
             }
 
-            // Deactivate any previously active/default model
             var currentActives = await _context.ModelVersions
                 .Where(m => m.IsActive == true || m.IsDefault == true)
                 .ToListAsync(cancellationToken);
@@ -145,7 +133,6 @@ namespace MyApp.Infrastructure.Data
                 m.IsDefault = false;
             }
 
-            // Register with FilePath stored in DB
             var model = new ModelVersion
             {
                 ModelName   = modelName,

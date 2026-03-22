@@ -41,23 +41,7 @@ class HistoryItem {
     this.treeImageUrl,
   });
 
-  static String resolveImageUrl(String rawUrl) {
-    if (rawUrl.isEmpty) return '';
-    String imageUrl = rawUrl;
-    if (rawUrl.startsWith('http')) {
-      imageUrl = rawUrl.replaceFirst(
-        'http://localhost:5299',
-        'http://10.0.2.2:5299',
-      );
-    } else {
-      final base = ApiConfig.baseUrl;
-      final path = (rawUrl.contains('uploads'))
-          ? (rawUrl.startsWith('/') ? rawUrl : '/$rawUrl')
-          : '/uploads/images/${rawUrl.startsWith('/') ? rawUrl.substring(1) : rawUrl}';
-      imageUrl = '$base$path';
-    }
-    return imageUrl;
-  }
+  static String resolveImageUrl(String rawUrl) => ApiConfig.resolveMediaUrl(rawUrl);
 
   factory HistoryItem.fromJson(Map<String, dynamic> json) {
     final rawUrl = (json['imageUrl'] ?? '') as String;
@@ -136,14 +120,13 @@ class HistoryListResponse {
 
 class HistoryService {
   final Dio _dio;
-  static const String _baseUrl = 'http://10.0.2.2:5299';
 
   HistoryService({Dio? dio})
     : _dio =
           dio ??
           Dio(
             BaseOptions(
-              baseUrl: _baseUrl,
+              baseUrl: ApiConfig.baseUrl,
               connectTimeout: const Duration(seconds: 30),
               receiveTimeout: const Duration(seconds: 30),
               headers: {'Accept': 'application/json'},

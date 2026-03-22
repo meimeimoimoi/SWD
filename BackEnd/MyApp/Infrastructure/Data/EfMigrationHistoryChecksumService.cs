@@ -9,10 +9,6 @@ using MyApp.Persistence.Context;
 
 namespace MyApp.Infrastructure.Data;
 
-/// <summary>
-/// Flyway-style integrity: stores a SHA-256 checksum of each applied migration's generated SQL.
-/// On startup, NULL checksums are sealed; non-null values must match the current assembly or startup fails.
-/// </summary>
 public sealed class EfMigrationHistoryChecksumService
 {
     private const string HistoryTable = "__EFMigrationsHistory";

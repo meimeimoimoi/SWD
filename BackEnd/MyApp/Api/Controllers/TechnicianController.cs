@@ -21,7 +21,6 @@ namespace MyApp.Api.Controllers
             _logger            = logger;
         }
 
-        // ── Illness management ──────────────────
 
         [HttpGet("illnesses")]
         public async Task<IActionResult> GetAllIllnesses()
@@ -134,7 +133,6 @@ namespace MyApp.Api.Controllers
             }
         }
 
-        // ── Stage management ──────────────────
 
         [HttpGet("stages")]
         public async Task<IActionResult> GetAllStages()

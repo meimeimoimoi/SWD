@@ -167,9 +167,6 @@ namespace MyApp.Api.Controllers
             }
         }
 
-        /// <summary>
-        /// Trees the current user has already linked to at least one scan (for assign-to-tree picker).
-        /// </summary>
         [HttpGet("trees")]
         public async Task<IActionResult> GetMyTrees()
         {
@@ -189,9 +186,6 @@ namespace MyApp.Api.Controllers
             }
         }
 
-        /// <summary>
-        /// Create a plant/tree record to attach scans to.
-        /// </summary>
         [HttpPost("trees")]
         public async Task<IActionResult> CreateTree([FromBody] CreateUserTreeDto dto)
         {

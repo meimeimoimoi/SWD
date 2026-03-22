@@ -1,6 +1,5 @@
 namespace MyApp.Domain.Enums;
 
-/// <summary>Stored as string in the database (role column).</summary>
 public enum UserRole
 {
     User = 0,
@@ -9,7 +8,6 @@ public enum UserRole
     Staff = 3
 }
 
-/// <summary>Constants for <see cref="Microsoft.AspNetCore.Authorization.AuthorizeAttribute.Roles"/>.</summary>
 public static class RolePolicy
 {
     public const string Admin = nameof(UserRole.Admin);
@@ -17,7 +15,6 @@ public static class RolePolicy
     public const string Technician = nameof(UserRole.Technician);
     public const string Staff = nameof(UserRole.Staff);
     public const string TechnicianOrAdmin = nameof(UserRole.Technician) + "," + nameof(UserRole.Admin);
-    /// <summary>Same role set as <see cref="TechnicianOrAdmin"/>; use for admin-console APIs shared with technicians.</summary>
     public const string AdminOrTechnician = nameof(UserRole.Admin) + "," + nameof(UserRole.Technician);
 }
 

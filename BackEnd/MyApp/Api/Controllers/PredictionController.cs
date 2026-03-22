@@ -25,11 +25,6 @@ namespace MyApp.Api.Controllers
             _logger = logger;
         }
 
-/// <summary>
-/// Dự đoán bệnh trên lá lúa từ hình ảnh được tải lên. Trả về treatment - thuốc(medicine)
-/// </summary>
-/// <param name="image">Uploaded image file.</param>
-/// <param name="modelVersionId">Optional active model id; default model is used when omitted.</param>
         [HttpPost("predict")]
         [Consumes("multipart/form-data")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -173,9 +168,6 @@ namespace MyApp.Api.Controllers
             });
         }
 
-        /// <summary>
-        /// Top diseases by prediction count (global DB stats) for the home dashboard.
-        /// </summary>
         [HttpGet("common-threats")]
         [Authorize]
         public async Task<IActionResult> GetCommonThreats([FromQuery] int take = 5)

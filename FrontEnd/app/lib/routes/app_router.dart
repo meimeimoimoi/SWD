@@ -2,6 +2,7 @@ import 'package:app/feature/admin/feedback/admin_feebackList_sceern.dart';
 import 'package:flutter/material.dart';
 
 import '../share/services/storage_service.dart';
+import '../share/theme/app_colors.dart';
 import '../feature/admin/admin_illness_management_screen.dart';
 import '../feature/admin/admin_model_management_screen.dart';
 import '../feature/admin/admin_model_upload_screen.dart';
@@ -183,7 +184,7 @@ class _AdminUsersAccessScreenState extends State<_AdminUsersAccessScreen> {
     return _child ??
         const Scaffold(
           body: Center(
-            child: CircularProgressIndicator(color: Color(0xFF2D7B31)),
+            child: CircularProgressIndicator(color: AppColors.brandAccent),
           ),
         );
   }

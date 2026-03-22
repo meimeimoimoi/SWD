@@ -136,7 +136,6 @@ class TreatmentApiService {
     }
   }
 
-  /// POST `/api/treatments/ai-suggest` — requires auth. Uses OpenAI on server when configured, else heuristic.
   Future<AiSuggestResult?> requestAiSolutionSuggestion({
     int? illnessId,
     required String diseaseName,

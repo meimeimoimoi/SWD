@@ -20,7 +20,6 @@ namespace MyApp.Api.Controllers
             _logger = logger;
         }
 
-        // ── Treatment content review ──────────────────
 
         [HttpGet("treatments")]
         public async Task<IActionResult> GetAllTreatments()
@@ -92,7 +91,6 @@ namespace MyApp.Api.Controllers
             }
         }
 
-        // ── Model control ──────────────────
 
         [HttpGet("models")]
         public async Task<IActionResult> GetAllModels()

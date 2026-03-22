@@ -9,7 +9,6 @@ import '../../share/theme/app_layout.dart';
 import '../../share/widgets/user_bottom_nav_bar.dart';
 import 'user_tree_models.dart';
 
-const Color _kPrimary = Color(0xFF2D7B31);
 const Color _kBgLight = Color(0xFFF6F8F6);
 
 class TreesScreen extends StatefulWidget {
@@ -96,7 +95,7 @@ class _TreesScreenState extends State<TreesScreen> {
             Expanded(
               child: _loading
                   ? const Center(
-                      child: CircularProgressIndicator(color: _kPrimary),
+                      child: CircularProgressIndicator(color: AppColors.brandAccent),
                     )
                   : _error != null
                       ? _ErrorBody(
@@ -146,14 +145,14 @@ class _TreesScreenState extends State<TreesScreen> {
                                       selected: selected,
                                       onSelected: (_) =>
                                           setState(() => _filter = f),
-                                      selectedColor: _kPrimary,
+                                      selectedColor: AppColors.brandAccent,
                                       backgroundColor: isDark
                                           ? AppColors.surfaceDark
                                           : AppColors.surfaceLight,
                                       side: BorderSide(
                                         color: selected
-                                            ? _kPrimary
-                                            : _kPrimary.withValues(alpha: 0.12),
+                                            ? AppColors.brandAccent
+                                            : AppColors.brandAccent.withValues(alpha: 0.12),
                                       ),
                                       showCheckmark: false,
                                       padding: const EdgeInsets.symmetric(
@@ -179,7 +178,7 @@ class _TreesScreenState extends State<TreesScreen> {
                                       ),
                                     )
                                   : RefreshIndicator(
-                                      color: _kPrimary,
+                                      color: AppColors.brandAccent,
                                       onRefresh: _load,
                                       child: ListView.builder(
                                         padding: const EdgeInsets.fromLTRB(
@@ -218,7 +217,7 @@ class _TreesScreenState extends State<TreesScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => Navigator.pushNamed(context, AppRouter.scan),
-        backgroundColor: _kPrimary,
+        backgroundColor: AppColors.brandAccent,
         elevation: 4,
         child: const Icon(Icons.add, color: AppColors.onPrimary, size: 28),
       ),
@@ -256,7 +255,7 @@ class _TreesAppBar extends StatelessWidget {
           if (Navigator.of(context).canPop())
             IconButton(
               onPressed: () => Navigator.of(context).pop(),
-              icon: Icon(Icons.arrow_back_rounded, color: _kPrimary),
+              icon: Icon(Icons.arrow_back_rounded, color: AppColors.brandAccent),
               tooltip: 'Back',
             )
           else
@@ -301,7 +300,7 @@ class _SearchField extends StatelessWidget {
           fontSize: 14,
           color: isDark ? Colors.white38 : Colors.grey.shade500,
         ),
-        prefixIcon: Icon(Icons.search_rounded, color: _kPrimary.withValues(alpha: 0.85)),
+        prefixIcon: Icon(Icons.search_rounded, color: AppColors.brandAccent.withValues(alpha: 0.85)),
         filled: true,
         fillColor: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
         border: OutlineInputBorder(
@@ -311,12 +310,12 @@ class _SearchField extends StatelessWidget {
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
           borderSide: BorderSide(
-            color: _kPrimary.withValues(alpha: 0.1),
+            color: AppColors.brandAccent.withValues(alpha: 0.1),
           ),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: _kPrimary, width: 2),
+          borderSide: const BorderSide(color: AppColors.brandAccent, width: 2),
         ),
         contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 14),
       ),
@@ -354,7 +353,7 @@ class _ErrorBody extends StatelessWidget {
             FilledButton(
               onPressed: onRetry,
               style: FilledButton.styleFrom(
-                backgroundColor: _kPrimary,
+                backgroundColor: AppColors.brandAccent,
                 foregroundColor: AppColors.onPrimary,
               ),
               child: Text(
@@ -390,7 +389,7 @@ class _EmptyBody extends StatelessWidget {
         Icon(
           Icons.park_outlined,
           size: 56,
-          color: _kPrimary.withValues(alpha: 0.35),
+          color: AppColors.brandAccent.withValues(alpha: 0.35),
         ),
         const SizedBox(height: 16),
         Text(
@@ -409,7 +408,7 @@ class _EmptyBody extends StatelessWidget {
           FilledButton.icon(
             onPressed: onScan,
             style: FilledButton.styleFrom(
-              backgroundColor: _kPrimary,
+              backgroundColor: AppColors.brandAccent,
               foregroundColor: AppColors.onPrimary,
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
             ),
@@ -450,7 +449,7 @@ class _TreeCard extends StatelessWidget {
         : (desc.length > 120 ? '${desc.substring(0, 117)}…' : desc);
 
     final cardBg = isDark ? AppColors.surfaceDark : AppColors.surfaceLight;
-    final border = _kPrimary.withValues(alpha: 0.06);
+    final border = AppColors.brandAccent.withValues(alpha: 0.06);
 
     return Material(
       color: cardBg,
@@ -549,7 +548,7 @@ class _TreeCard extends StatelessWidget {
                         style: GoogleFonts.spaceGrotesk(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
-                          color: _kPrimary.withValues(alpha: 0.85),
+                          color: AppColors.brandAccent.withValues(alpha: 0.85),
                         ),
                         children: [
                           TextSpan(text: diseaseLine),
@@ -563,7 +562,7 @@ class _TreeCard extends StatelessWidget {
                                     fontSize: 12,
                                     fontStyle: FontStyle.italic,
                                     fontWeight: FontWeight.w500,
-                                    color: _kPrimary.withValues(alpha: 0.85),
+                                    color: AppColors.brandAccent.withValues(alpha: 0.85),
                                   ),
                                 ),
                               ],
@@ -619,8 +618,8 @@ class _TreeCard extends StatelessWidget {
                         FilledButton.tonal(
                           onPressed: onDetails,
                           style: FilledButton.styleFrom(
-                            backgroundColor: _kPrimary.withValues(alpha: 0.12),
-                            foregroundColor: _kPrimary,
+                            backgroundColor: AppColors.brandAccent.withValues(alpha: 0.12),
+                            foregroundColor: AppColors.brandAccent,
                             padding: const EdgeInsets.symmetric(
                               horizontal: 16,
                               vertical: 10,

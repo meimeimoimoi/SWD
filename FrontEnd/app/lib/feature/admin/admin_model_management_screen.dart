@@ -17,7 +17,6 @@ class AdminModelManagementScreen extends StatefulWidget {
       _AdminModelManagementScreenState();
 }
 
-const Color _kGuidePrimary = Color(0xFF2D7B31);
 const Color _kGuideBgLight = Color(0xFFF6F8F6);
 
 class _AdminModelManagementScreenState
@@ -93,7 +92,7 @@ class _AdminModelManagementScreenState
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(ok ? 'Model activated' : 'Activation failed'),
-        backgroundColor: ok ? _kGuidePrimary : Colors.red,
+        backgroundColor: ok ? AppColors.brandAccent : Colors.red,
         behavior: SnackBarBehavior.floating,
       ),
     );
@@ -200,10 +199,10 @@ class _AdminModelManagementScreenState
         body: SafeArea(
           child: _loading
               ? const Center(
-                  child: CircularProgressIndicator(color: _kGuidePrimary),
+                  child: CircularProgressIndicator(color: AppColors.brandAccent),
                 )
               : RefreshIndicator(
-                  color: _kGuidePrimary,
+                  color: AppColors.brandAccent,
                   onRefresh: () async {
                     await context.read<DashboardProvider>().fetchAdminData();
                     await _load();
@@ -261,7 +260,7 @@ class _AdminModelManagementScreenState
                                 children: [
                                   Icon(
                                     Icons.layers_outlined,
-                                    color: _kGuidePrimary,
+                                    color: AppColors.brandAccent,
                                     size: 22,
                                   ),
                                   const SizedBox(width: 8),
@@ -281,7 +280,7 @@ class _AdminModelManagementScreenState
                                   vertical: 5,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: _kGuidePrimary.withValues(alpha: 0.12),
+                                  color: AppColors.brandAccent.withValues(alpha: 0.12),
                                   borderRadius: BorderRadius.circular(20),
                                 ),
                                 child: Text(
@@ -289,7 +288,7 @@ class _AdminModelManagementScreenState
                                   style: GoogleFonts.spaceGrotesk(
                                     fontSize: 11,
                                     fontWeight: FontWeight.w600,
-                                    color: _kGuidePrimary,
+                                    color: AppColors.brandAccent,
                                   ),
                                 ),
                               ),
@@ -474,7 +473,7 @@ class _SearchField extends StatelessWidget {
         ),
         prefixIcon: Icon(
           Icons.search_rounded,
-          color: _kGuidePrimary.withValues(alpha: 0.65),
+          color: AppColors.brandAccent.withValues(alpha: 0.65),
         ),
         filled: true,
         fillColor: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
@@ -485,12 +484,12 @@ class _SearchField extends StatelessWidget {
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
           borderSide: BorderSide(
-            color: _kGuidePrimary.withValues(alpha: 0.15),
+            color: AppColors.brandAccent.withValues(alpha: 0.15),
           ),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: _kGuidePrimary, width: 2),
+          borderSide: const BorderSide(color: AppColors.brandAccent, width: 2),
         ),
         contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 14),
       ),
@@ -506,10 +505,10 @@ class _UploadBannerButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: _kGuidePrimary,
+      color: AppColors.brandAccent,
       borderRadius: BorderRadius.circular(14),
       elevation: 3,
-      shadowColor: _kGuidePrimary.withValues(alpha: 0.35),
+      shadowColor: AppColors.brandAccent.withValues(alpha: 0.35),
       child: InkWell(
         onTap: onPressed,
         borderRadius: BorderRadius.circular(14),
@@ -565,10 +564,10 @@ class _GuideModelCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final cardBg = isDark ? AppColors.surfaceDark : AppColors.surfaceLight;
     final borderC = isActive
-        ? _kGuidePrimary.withValues(alpha: 0.12)
+        ? AppColors.brandAccent.withValues(alpha: 0.12)
         : (isDark ? AppColors.borderDark : const Color(0xFFE2E8F0));
 
-    final metricBgActive = _kGuidePrimary.withValues(alpha: isDark ? 0.14 : 0.06);
+    final metricBgActive = AppColors.brandAccent.withValues(alpha: isDark ? 0.14 : 0.06);
     final metricBgIdle = isDark
         ? AppColors.borderDark.withValues(alpha: 0.45)
         : const Color(0xFFF8FAFC);
@@ -576,7 +575,7 @@ class _GuideModelCard extends StatelessWidget {
     final titleColor =
         isActive ? textPrimary : textPrimary.withValues(alpha: 0.55);
     final valueColor =
-        isActive ? _kGuidePrimary : textMuted.withValues(alpha: 0.85);
+        isActive ? AppColors.brandAccent : textMuted.withValues(alpha: 0.85);
 
     return Opacity(
       opacity: isActive ? 1 : 0.88,
@@ -625,8 +624,8 @@ class _GuideModelCard extends StatelessWidget {
                   ),
                   Switch.adaptive(
                     value: isActive,
-                    activeColor: _kGuidePrimary,
-                    activeTrackColor: _kGuidePrimary.withValues(alpha: 0.45),
+                    activeColor: AppColors.brandAccent,
+                    activeTrackColor: AppColors.brandAccent.withValues(alpha: 0.45),
                     onChanged: onToggle,
                   ),
                 ],
@@ -690,7 +689,7 @@ class _GuideModelCard extends StatelessWidget {
                     onPressed: onDetail,
                     style: TextButton.styleFrom(
                       foregroundColor:
-                          isActive ? _kGuidePrimary : textMuted,
+                          isActive ? AppColors.brandAccent : textMuted,
                     ),
                     icon: const Icon(Icons.chevron_right_rounded, size: 18),
                     iconAlignment: IconAlignment.end,

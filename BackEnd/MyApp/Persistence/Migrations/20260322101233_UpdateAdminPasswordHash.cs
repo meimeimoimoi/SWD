@@ -4,13 +4,8 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace MyApp.Persistence.Migrations
 {
-    /// <summary>
-    /// Sets admin password_hash to BCrypt (BCrypt.Net-Next 4.0.3) for plaintext Admin123!.
-    /// Matches SeedInitialMasterData and DataSeeder defaults.
-    /// </summary>
     public partial class UpdateAdminPasswordHash : Migration
     {
-        /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.Sql(
@@ -21,7 +16,6 @@ namespace MyApp.Persistence.Migrations
                 """);
         }
 
-        /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.Sql(

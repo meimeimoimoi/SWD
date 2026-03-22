@@ -1,4 +1,4 @@
-﻿using MyApp.Application.Features.Users.DTOs;
+using MyApp.Application.Features.Users.DTOs;
 using MyApp.Application.Interfaces;
 using MyApp.Domain.Entities;
 using MyApp.Persistence.Repositories;
@@ -14,10 +14,9 @@ namespace MyApp.Infrastructure.Services
         private readonly IWebHostEnvironment _environment;
         private readonly string _uploadPath;
 
-        //Allowed image types
         private readonly string[] _allowedExtensions = { ".jpg", ".jpeg", ".png", ".gif", ".bmp" };
         private readonly string[] _allowedMimeTypes = { "image/jpeg", "image/png", "image/gif", "image/bmp" };
-        private const long MaxFileSize = 10 * 1024 * 1024; // 10 MB
+        private const long MaxFileSize = 10 * 1024 * 1024;
 
         public ImageUploadService(ImageUploadRepository imageUploadRepository, 
             ILogger<ImageUploadService> logger,
@@ -27,7 +26,6 @@ namespace MyApp.Infrastructure.Services
             _logger = logger;
             _environment = environment;
 
-            //Create uploads directory if it doesn't exist
             _uploadPath = Path.Combine(_environment.ContentRootPath, "uploads", "images");
             if(!Directory.Exists(_uploadPath))
             {
@@ -40,41 +38,34 @@ namespace MyApp.Infrastructure.Services
         {
             try
             {
-                //Validate file 
                 ValidateImageFile(imageFile);
 
                 _logger.LogInformation("Uploading image for user {UserId}: {FileName}", userId, imageFile.FileName);
 
-                //Generate unique filename
                 var fileExtension = Path.GetExtension(imageFile.FileName).ToLowerInvariant();
                 var storedFilename = $"{Guid.NewGuid()}{fileExtension}";
                 var filePath = Path.Combine(_uploadPath, storedFilename);
 
-                //Get image dimensions and save
                 int width = 0, height = 0;
                 using (var image = await Image.LoadAsync(imageFile.OpenReadStream()))
                 {
                     width = image.Width;
                     height = image.Height;
 
-                    //Optionally resize if too large
                     if(width >2048 || height > 2048)
                     {
                         _logger.LogInformation("Resizing large image from {Width}x{Height}", width, height);
-                        // Mutate(): directly edit the image
                         image.Mutate(x => x.Resize(new ResizeOptions
                         {
                             Size = new Size(2048, 2048),
-                            Mode = ResizeMode.Max // ResizeMode.Max: Resize the image so that it does not exceed 2048x2048 pixels,but still maintain the original aspect ratio.
+                            Mode = ResizeMode.Max
                         }));
                         width = image.Width;
                         height = image.Height;
                     }
 
-                    //Save image
                     await image.SaveAsync(filePath);
                 }
-                //Create database record
                 var imageUpload = new ImageUpload
                 {
                     UserId = userId,

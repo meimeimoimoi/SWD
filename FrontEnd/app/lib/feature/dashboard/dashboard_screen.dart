@@ -20,13 +20,6 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
-  static const Color _primary = Color(0xFF2D7B31);
-  static const Color _darkCard = Color(0xFF2D322B);
-  static const Color _primaryFixed = Color(0xFFA4F69C);
-  static const Color _secondaryContainer = Color(0xFFC9ECC1);
-  static const Color _urgentTint = Color(0xFFB45309);
-  static const Color _urgentBg = Color(0xFFFFF7ED);
-
   final HistoryService _historyService = HistoryService();
   final PredictionService _predictionService = PredictionService();
 
@@ -51,7 +44,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     if (mounted) setState(() => _username = u);
   }
 
-  /// No trees, no urgent flags, no scans — show one compact card instead of three blocks.
   bool get _dashboardFullyEmpty {
     if (!_insightsReady) return false;
     if (_insightsError != null) return false;
@@ -156,7 +148,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
       bottomNavigationBar: const UserBottomNavBar(),
       body: RefreshIndicator(
-        color: _primary,
+        color: AppColors.brandAccentReadable(context),
         onRefresh: () => _loadInsights(silentRefresh: true),
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
@@ -482,7 +474,11 @@ class _CompactDashboardEmpty extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(Icons.dashboard_outlined, color: _DashboardScreenState._primary, size: 22),
+              Icon(
+                Icons.dashboard_outlined,
+                color: AppColors.brandAccentReadable(context),
+                size: 22,
+              ),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
@@ -510,7 +506,7 @@ class _CompactDashboardEmpty extends StatelessWidget {
               ElevatedButton(
                 onPressed: onScan,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: _DashboardScreenState._primary,
+                  backgroundColor: AppColors.brandAccent,
                   foregroundColor: AppColors.onPrimary,
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   elevation: 0,
@@ -520,7 +516,7 @@ class _CompactDashboardEmpty extends StatelessWidget {
               TextButton(
                 onPressed: onTrees,
                 style: TextButton.styleFrom(
-                  foregroundColor: _DashboardScreenState._primary,
+                  foregroundColor: AppColors.brandAccentReadable(context),
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                 ),
                 child: const Text('My plant'),
@@ -567,12 +563,12 @@ class _TreeIllnessOverviewCard extends StatelessWidget {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: _DashboardScreenState._secondaryContainer,
+                color: AppColors.softGreenContainer,
                 borderRadius: BorderRadius.circular(10),
               ),
               child: const Icon(
                 Icons.forest_outlined,
-                color: _DashboardScreenState._primary,
+                color: AppColors.brandAccent,
                 size: 22,
               ),
             ),
@@ -639,7 +635,7 @@ class _TreeIllnessOverviewCard extends StatelessWidget {
               Icon(
                 Icons.insights_outlined,
                 size: 22,
-                color: _DashboardScreenState._primary,
+                color: AppColors.brandAccentReadable(context),
               ),
               const SizedBox(width: 8),
               Expanded(
@@ -656,7 +652,7 @@ class _TreeIllnessOverviewCard extends StatelessWidget {
                 onPressed: onViewAllTrees,
                 style: TextButton.styleFrom(
                   padding: const EdgeInsets.symmetric(horizontal: 8),
-                  foregroundColor: _DashboardScreenState._primary,
+                  foregroundColor: AppColors.brandAccentReadable(context),
                   textStyle: const TextStyle(
                     fontWeight: FontWeight.w700,
                     fontSize: 12,
@@ -904,7 +900,7 @@ class _InsightsPanel extends StatelessWidget {
   static ButtonStyle _linkButtonStyle(BuildContext context) =>
       TextButton.styleFrom(
         padding: const EdgeInsets.symmetric(horizontal: 8),
-        foregroundColor: _DashboardScreenState._primary,
+        foregroundColor: AppColors.brandAccentReadable(context),
         textStyle: const TextStyle(
           fontWeight: FontWeight.w700,
           fontSize: 12,
@@ -914,7 +910,7 @@ class _InsightsPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (blockingLoader) {
-      return const SizedBox(
+      return SizedBox(
         height: 140,
         child: Center(
           child: SizedBox(
@@ -922,7 +918,7 @@ class _InsightsPanel extends StatelessWidget {
             height: 32,
             child: CircularProgressIndicator(
               strokeWidth: 2.5,
-              color: _DashboardScreenState._primary,
+              color: AppColors.brandAccentReadable(context),
             ),
           ),
         ),
@@ -937,7 +933,7 @@ class _InsightsPanel extends StatelessWidget {
             Icon(
               Icons.warning_amber_rounded,
               size: 18,
-              color: _DashboardScreenState._urgentTint,
+              color: AppColors.urgentTint,
             ),
             const SizedBox(width: 6),
             Expanded(
@@ -946,7 +942,7 @@ class _InsightsPanel extends StatelessWidget {
                 style: Theme.of(context).textTheme.labelSmall?.copyWith(
                       letterSpacing: 1.0,
                       fontWeight: FontWeight.w800,
-                      color: _DashboardScreenState._urgentTint,
+                      color: AppColors.urgentTint,
                     ),
               ),
             ),
@@ -1169,7 +1165,7 @@ class _RecentScanTile extends StatelessWidget {
                         fontSize: 10,
                         fontWeight: FontWeight.w800,
                         color: healthy
-                            ? _DashboardScreenState._primary
+                            ? AppColors.brandAccentReadable(context)
                             : const Color(0xFFCA8A04),
                       ),
                     ),
@@ -1233,7 +1229,7 @@ class _RecentScansEmpty extends StatelessWidget {
                     padding: EdgeInsets.zero,
                     minimumSize: Size.zero,
                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    foregroundColor: _DashboardScreenState._primary,
+                    foregroundColor: AppColors.brandAccentReadable(context),
                   ),
                   child: const Text('Open full history'),
                 ),
@@ -1260,7 +1256,7 @@ class _UrgentPlantTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final summary = row.summary;
     return Material(
-      color: _DashboardScreenState._urgentBg,
+      color: AppColors.urgentSurface,
       borderRadius: BorderRadius.circular(14),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
@@ -1269,7 +1265,7 @@ class _UrgentPlantTile extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
-              color: _DashboardScreenState._urgentTint.withValues(alpha: 0.35),
+              color: AppColors.urgentTint.withValues(alpha: 0.35),
             ),
           ),
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
@@ -1325,7 +1321,7 @@ class _UrgentPlantTile extends StatelessWidget {
                       Text(
                         row.timeLabel,
                         style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                              color: _DashboardScreenState._urgentTint,
+                              color: AppColors.urgentTint,
                               fontWeight: FontWeight.w600,
                             ),
                       ),
@@ -1372,7 +1368,7 @@ class _UrgentAllClearCard extends StatelessWidget {
         children: [
           Icon(
             Icons.check_circle_outline,
-            color: _DashboardScreenState._primary,
+            color: AppColors.brandAccentReadable(context),
             size: 20,
           ),
           const SizedBox(width: 8),
@@ -1445,16 +1441,20 @@ class _ArgivisionAppBar extends StatelessWidget implements PreferredSizeWidget {
       backgroundColor: Theme.of(context).brightness == Brightness.dark
           ? Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.92)
           : AppColors.scrimLight(0.92),
-      surfaceTintColor: _DashboardScreenState._primary.withValues(alpha: 0.08),
+      surfaceTintColor: AppColors.brandAccent.withValues(alpha: 0.08),
       title: Row(
         children: [
-          const Icon(Icons.eco, color: _DashboardScreenState._primary, size: 26),
+          Icon(
+            Icons.eco,
+            color: AppColors.brandAccentReadable(context),
+            size: 26,
+          ),
           const SizedBox(width: 10),
           Text(
             AppBrand.homeHeader,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w700,
-                  color: _DashboardScreenState._primary,
+                  color: AppColors.brandAccentReadable(context),
                   letterSpacing: -0.2,
                 ),
           ),
@@ -1477,11 +1477,11 @@ class _ArgivisionAppBar extends StatelessWidget implements PreferredSizeWidget {
               borderRadius: BorderRadius.circular(20),
               child: CircleAvatar(
                 radius: 18,
-                backgroundColor: _DashboardScreenState._secondaryContainer,
+                backgroundColor: AppColors.softGreenContainer,
                 child: Text(
                   initials,
                   style: const TextStyle(
-                    color: _DashboardScreenState._primary,
+                    color: AppColors.brandAccent,
                     fontWeight: FontWeight.w700,
                     fontSize: 14,
                   ),
@@ -1503,7 +1503,7 @@ class _OwnerScanHero extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: _DashboardScreenState._darkCard,
+      color: AppColors.forestCardDark,
       borderRadius: BorderRadius.circular(20),
       clipBehavior: Clip.antiAlias,
       elevation: 0,
@@ -1533,7 +1533,7 @@ class _OwnerScanHero extends StatelessWidget {
                           vertical: 5,
                         ),
                         decoration: BoxDecoration(
-                          color: _DashboardScreenState._primary
+                          color: AppColors.brandAccent
                               .withValues(alpha: 0.35),
                           borderRadius: BorderRadius.circular(8),
                         ),
@@ -1543,7 +1543,7 @@ class _OwnerScanHero extends StatelessWidget {
                             fontSize: 10,
                             fontWeight: FontWeight.w800,
                             letterSpacing: 0.8,
-                            color: _DashboardScreenState._primaryFixed,
+                            color: AppColors.brandAccentOnDark,
                           ),
                         ),
                       ),
@@ -1580,7 +1580,7 @@ class _OwnerScanHero extends StatelessWidget {
                       ),
                     ),
                     style: FilledButton.styleFrom(
-                      backgroundColor: _DashboardScreenState._primaryFixed,
+                      backgroundColor: AppColors.brandAccentOnDark,
                       foregroundColor: const Color(0xFF1A3D16),
                       padding: const EdgeInsets.symmetric(
                         horizontal: 20,
@@ -1612,6 +1612,7 @@ class _ScanTipsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final accent = AppColors.brandAccentReadable(context);
     return Container(
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
@@ -1631,7 +1632,7 @@ class _ScanTipsCard extends StatelessWidget {
               Icon(
                 Icons.tips_and_updates_outlined,
                 size: 22,
-                color: _DashboardScreenState._primary,
+                color: accent,
               ),
               const SizedBox(width: 10),
               Text(
@@ -1652,7 +1653,7 @@ class _ScanTipsCard extends StatelessWidget {
                   '${i + 1}.',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         fontWeight: FontWeight.w700,
-                        color: _DashboardScreenState._primary,
+                        color: accent,
                       ),
                 ),
                 const SizedBox(width: 8),
@@ -1687,9 +1688,6 @@ class _PopularDiseasesCard extends StatelessWidget {
   final VoidCallback onSeeAll;
   final VoidCallback onDiseaseTap;
 
-  static const _darkCardFill = Color(0xFF2D322B);
-  static const _darkBorder = Color(0xFF3D433B);
-
   @override
   Widget build(BuildContext context) {
     if (!insightsReady) {
@@ -1701,16 +1699,16 @@ class _PopularDiseasesCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: Theme.of(context).brightness == Brightness.dark
-                ? _darkBorder
+                ? AppColors.forestCardBorder
                 : Colors.black.withValues(alpha: 0.06),
           ),
         ),
-        child: const SizedBox(
+        child: SizedBox(
           width: 28,
           height: 28,
           child: CircularProgressIndicator(
             strokeWidth: 2.5,
-            color: _DashboardScreenState._primary,
+            color: AppColors.brandAccentReadable(context),
           ),
         ),
       );
@@ -1718,10 +1716,10 @@ class _PopularDiseasesCard extends StatelessWidget {
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final cardColor =
-        isDark ? _darkCardFill : Theme.of(context).colorScheme.surface;
-    final dividerColor = isDark ? _darkBorder : Colors.grey.shade200;
+        isDark ? AppColors.forestCardDark : Theme.of(context).colorScheme.surface;
+    final dividerColor = isDark ? AppColors.forestCardBorder : Colors.grey.shade200;
     final borderColor =
-        isDark ? _darkBorder : Colors.black.withValues(alpha: 0.06);
+        isDark ? AppColors.forestCardBorder : Colors.black.withValues(alpha: 0.06);
 
     if (items.isEmpty) {
       return Container(
@@ -1779,7 +1777,7 @@ class _PopularDiseasesCard extends StatelessWidget {
                   style: TextStyle(
                     fontWeight: FontWeight.w700,
                     fontSize: 13,
-                    color: _DashboardScreenState._primary,
+                    color: AppColors.brandAccentReadable(context),
                   ),
                 ),
               ),
@@ -1823,7 +1821,7 @@ class _CommonThreatTile extends StatelessWidget {
       color: panelColor,
       child: InkWell(
         onTap: onTap,
-        splashColor: _DashboardScreenState._primary.withValues(alpha: 0.12),
+        splashColor: AppColors.brandAccent.withValues(alpha: 0.12),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           child: Row(

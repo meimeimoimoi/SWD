@@ -8,7 +8,7 @@ namespace MyApp.Domain.Entities
         public string Key { get; set; } = null!;
         public string Value { get; set; } = null!;
         public string? Description { get; set; }
-        public string? Group { get; set; } // e.g., "General", "AI", "Notification"
+        public string? Group { get; set; }
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
     }
 }

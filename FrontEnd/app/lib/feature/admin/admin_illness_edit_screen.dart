@@ -16,7 +16,6 @@ class AdminIllnessEditScreen extends StatefulWidget {
   State<AdminIllnessEditScreen> createState() => _AdminIllnessEditScreenState();
 }
 
-const Color _kPrimary = Color(0xFF2D7B31);
 const Color _kBg = Color(0xFFF6F8F6);
 
 const List<String> _kSeverityLevels = [
@@ -134,7 +133,7 @@ class _AdminIllnessEditScreenState extends State<AdminIllnessEditScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(ok ? 'Saved' : 'Save failed'),
-        backgroundColor: ok ? _kPrimary : Colors.red,
+        backgroundColor: ok ? AppColors.brandAccent : Colors.red,
         behavior: SnackBarBehavior.floating,
       ),
     );
@@ -152,7 +151,7 @@ class _AdminIllnessEditScreenState extends State<AdminIllnessEditScreen> {
         isDark
             ? const Color(0xFF1E2320).withValues(alpha: 0.9)
             : AppColors.surfaceLight;
-    final borderColor = _kPrimary.withValues(alpha: 0.12);
+    final borderColor = AppColors.brandAccent.withValues(alpha: 0.12);
 
     if (_loadExisting) {
       return Scaffold(
@@ -165,7 +164,7 @@ class _AdminIllnessEditScreenState extends State<AdminIllnessEditScreen> {
           ),
         ),
         body: const Center(
-          child: CircularProgressIndicator(color: _kPrimary),
+          child: CircularProgressIndicator(color: AppColors.brandAccent),
         ),
       );
     }
@@ -178,7 +177,7 @@ class _AdminIllnessEditScreenState extends State<AdminIllnessEditScreen> {
       appBar: AppBar(
         elevation: 0,
         scrolledUnderElevation: 0.5,
-        surfaceTintColor: _kPrimary.withValues(alpha: 0.08),
+        surfaceTintColor: AppColors.brandAccent.withValues(alpha: 0.08),
         backgroundColor: isDark
             ? Colors.black.withValues(alpha: 0.2)
             : AppColors.scrimLight(0.92),
@@ -329,7 +328,7 @@ class _AdminIllnessEditScreenState extends State<AdminIllnessEditScreen> {
                   child: FilledButton(
                     onPressed: _saving ? null : _save,
                     style: FilledButton.styleFrom(
-                      backgroundColor: _kPrimary,
+                      backgroundColor: AppColors.brandAccent,
                       foregroundColor: AppColors.onPrimary,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14),
@@ -385,7 +384,7 @@ class _LabeledField extends StatelessWidget {
               style: GoogleFonts.spaceGrotesk(
                 fontWeight: FontWeight.w600,
                 fontSize: 14,
-                color: _kPrimary,
+                color: AppColors.brandAccent,
               ),
             ),
             if (requiredMark) ...[
@@ -428,8 +427,8 @@ class _GuideTextField extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final fill = isDark
         ? const Color(0xFF2A322E)
-        : _kPrimary.withValues(alpha: 0.05);
-    final border = _kPrimary.withValues(alpha: 0.2);
+        : AppColors.brandAccent.withValues(alpha: 0.05);
+    final border = AppColors.brandAccent.withValues(alpha: 0.2);
 
     return TextFormField(
       controller: controller,
@@ -459,7 +458,7 @@ class _GuideTextField extends StatelessWidget {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: _kPrimary, width: 2),
+          borderSide: const BorderSide(color: AppColors.brandAccent, width: 2),
         ),
       ),
     );
@@ -480,14 +479,14 @@ class _SeverityDropdown extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final fill = isDark
         ? const Color(0xFF2A322E)
-        : _kPrimary.withValues(alpha: 0.05);
-    final border = _kPrimary.withValues(alpha: 0.2);
+        : AppColors.brandAccent.withValues(alpha: 0.05);
+    final border = AppColors.brandAccent.withValues(alpha: 0.2);
 
     return DropdownButtonFormField<String>(
       value: value,
       onChanged: onChanged,
       isExpanded: true,
-      icon: const Icon(Icons.expand_more_rounded, color: _kPrimary),
+      icon: const Icon(Icons.expand_more_rounded, color: AppColors.brandAccent),
       style: GoogleFonts.spaceGrotesk(
         fontSize: 15,
         color: isDark ? AppColors.textPrimaryDark : const Color(0xFF181D17),
@@ -506,7 +505,7 @@ class _SeverityDropdown extends StatelessWidget {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: _kPrimary, width: 2),
+          borderSide: const BorderSide(color: AppColors.brandAccent, width: 2),
         ),
       ),
       items: _kSeverityLevels
@@ -573,21 +572,21 @@ class _AddTile extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: _kPrimary.withValues(alpha: 0.35),
+              color: AppColors.brandAccent.withValues(alpha: 0.35),
               width: 2,
             ),
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.add_a_photo_outlined, color: _kPrimary.withValues(alpha: 0.7)),
+              Icon(Icons.add_a_photo_outlined, color: AppColors.brandAccent.withValues(alpha: 0.7)),
               const SizedBox(height: 4),
               Text(
                 'Add image',
                 style: GoogleFonts.spaceGrotesk(
                   fontSize: 10,
                   fontWeight: FontWeight.w600,
-                  color: _kPrimary.withValues(alpha: 0.65),
+                  color: AppColors.brandAccent.withValues(alpha: 0.65),
                 ),
               ),
             ],

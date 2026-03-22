@@ -22,7 +22,6 @@ namespace MyApp.Application.Features.Users.DTOs
 
         public int? UserId { get; set; }
 
-        /// <summary>Relative URL served under static files, e.g. /uploads/images/{file}.</summary>
         public string? ImageUrl { get; set; }
     }
 }

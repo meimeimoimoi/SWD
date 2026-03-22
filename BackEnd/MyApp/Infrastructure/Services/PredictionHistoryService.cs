@@ -65,7 +65,6 @@ namespace MyApp.Infrastructure.Services
             return predictions.Select(MapToDto).ToList();
         }
 
-        // ── Private helper ──────────────────
 
         private static PredictionHistoryDto MapToDto(Domain.Entities.Prediction p) => new()
         {

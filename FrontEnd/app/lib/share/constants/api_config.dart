@@ -3,15 +3,44 @@ import 'dart:io';
 class ApiConfig {
   static const String envBaseUrl = String.fromEnvironment('API_BASE_URL');
 
+  static const int defaultDevPort = 5299;
+
   static String get baseUrl {
     final c = envBaseUrl.trim();
     if (c.isNotEmpty) {
       return c.endsWith('/') ? c.substring(0, c.length - 1) : c;
     }
     if (Platform.isAndroid) {
-      return 'http://10.0.2.2:5299';
+      return 'http://10.0.2.2:$defaultDevPort';
     }
-    return 'http://localhost:5299';
+    return 'http://localhost:$defaultDevPort';
+  }
+
+  static const String uploadsImagesPath = '/uploads/images/';
+
+  static String resolveMediaUrl(String rawUrl) {
+    if (rawUrl.isEmpty) return '';
+    final trimmed = rawUrl.trim();
+    if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+      final uri = Uri.tryParse(trimmed);
+      if (uri == null) return trimmed;
+      return _rewriteBackendHostForClient(uri).toString();
+    }
+    final normalized = trimmed.startsWith('/') ? trimmed : '/$trimmed';
+    final path = normalized.contains('uploads')
+        ? normalized
+        : '$uploadsImagesPath${normalized.startsWith('/') ? normalized.substring(1) : normalized}';
+    return '$baseUrl$path';
+  }
+
+  static Uri _rewriteBackendHostForClient(Uri uri) {
+    if (uri.host != 'localhost' && uri.host != '127.0.0.1') return uri;
+    final client = Uri.parse(baseUrl);
+    return uri.replace(
+      scheme: client.scheme,
+      host: client.host,
+      port: client.hasPort ? client.port : uri.port,
+    );
   }
 }
 

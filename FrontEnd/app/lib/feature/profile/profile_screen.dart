@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../share/services/storage_service.dart';
+import '../../share/theme/app_colors.dart';
 import 'unified_account_screen.dart';
-
-const Color _kPrimary = Color(0xFF2D7B31);
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -16,7 +15,7 @@ class ProfileScreen extends StatelessWidget {
         if (snap.connectionState != ConnectionState.done) {
           return const Scaffold(
             body: Center(
-              child: CircularProgressIndicator(color: _kPrimary),
+              child: CircularProgressIndicator(color: AppColors.brandAccent),
             ),
           );
         }

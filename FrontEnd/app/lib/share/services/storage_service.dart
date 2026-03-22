@@ -79,7 +79,6 @@ class StorageService {
     }
   }
 
-  /// Admin or Technician — same console, except user management (Admin only).
   static Future<bool> hasElevatedStaffRole() async {
     final r = (await getRole())?.toLowerCase().trim() ?? '';
     return r == 'admin' || r == 'technician';

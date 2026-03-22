@@ -20,7 +20,6 @@ namespace MyApp.Infrastructure
             services.AddScoped<IPredictionService, PredictionService>();
             services.AddScoped<ApiResponse>();
 
-            // New services
             services.AddScoped<ITechnicianService, TechnicianService>();
             services.AddScoped<ITreatmentService, TreatmentService>();
             services.AddHttpClient();

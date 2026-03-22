@@ -67,7 +67,6 @@ namespace MyApp.Api.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] ResgisterRequestDTO request)
         {
-            // 1. Kiểm tra Model (Validation từ DTO)
             if (!ModelState.IsValid)
             {
                 return BadRequest(new
@@ -80,10 +79,8 @@ namespace MyApp.Api.Controllers
 
             try
             {
-                // 2. Gọi Service và nhận kết quả ApiResponse
                 var result = await _authService.RegisterAsync(request);
 
-                // 3. Kiểm tra kết quả trả về từ Service
                 if (!result.Success)
                 {
                     return BadRequest(new
@@ -156,10 +153,6 @@ namespace MyApp.Api.Controllers
                 });
             }
         }
-        /// <summary>
-        /// Logout. Accepts JWT via standard <c>Authorization: Bearer &lt;token&gt;</c>
-        /// or optional legacy header <c>token: &lt;jwt&gt;</c> (matches OpenAPI).
-        /// </summary>
         [HttpPost("logout")]
         [Authorize]
         [ProducesResponseType(StatusCodes.Status200OK)]

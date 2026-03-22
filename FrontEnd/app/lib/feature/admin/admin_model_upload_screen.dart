@@ -16,7 +16,6 @@ class AdminModelUploadScreen extends StatefulWidget {
   State<AdminModelUploadScreen> createState() => _AdminModelUploadScreenState();
 }
 
-const Color _kPrimary = Color(0xFF2D7B31);
 const Color _kBgLight = Color(0xFFF6F8F6);
 
 class _ModelTypeOption {
@@ -99,7 +98,7 @@ class _AdminModelUploadScreenState extends State<AdminModelUploadScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(ok ? 'Upload succeeded' : 'Upload failed'),
-        backgroundColor: ok ? _kPrimary : Colors.red,
+        backgroundColor: ok ? AppColors.brandAccent : Colors.red,
         behavior: SnackBarBehavior.floating,
       ),
     );
@@ -114,8 +113,8 @@ class _AdminModelUploadScreenState extends State<AdminModelUploadScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bg = isDark ? AppColors.darkBackground : _kBgLight;
     final surface = isDark ? AppColors.surfaceDark : AppColors.surfaceLight;
-    final fill = isDark ? AppColors.borderDark : _kPrimary.withValues(alpha: 0.05);
-    final border = _kPrimary.withValues(alpha: 0.2);
+    final fill = isDark ? AppColors.borderDark : AppColors.brandAccent.withValues(alpha: 0.05);
+    final border = AppColors.brandAccent.withValues(alpha: 0.2);
 
     return AdminPopScope(
       child: Scaffold(
@@ -130,7 +129,7 @@ class _AdminModelUploadScreenState extends State<AdminModelUploadScreen> {
                   children: [
                     IconButton(
                       onPressed: () => Navigator.pop(context),
-                      icon: const Icon(Icons.arrow_back_rounded, color: _kPrimary),
+                      icon: const Icon(Icons.arrow_back_rounded, color: AppColors.brandAccent),
                     ),
                     Expanded(
                       child: Text(
@@ -161,7 +160,7 @@ class _AdminModelUploadScreenState extends State<AdminModelUploadScreen> {
                             color: surface,
                             borderRadius: BorderRadius.circular(16),
                             border: Border.all(
-                              color: _kPrimary.withValues(alpha: 0.06),
+                              color: AppColors.brandAccent.withValues(alpha: 0.06),
                             ),
                             boxShadow: isDark
                                 ? null
@@ -224,7 +223,7 @@ class _AdminModelUploadScreenState extends State<AdminModelUploadScreen> {
                                     isDark: isDark,
                                   ).copyWith(contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14)),
                                   dropdownColor: surface,
-                                  icon: const Icon(Icons.expand_more_rounded, color: _kPrimary),
+                                  icon: const Icon(Icons.expand_more_rounded, color: AppColors.brandAccent),
                                   items: _kModelTypes
                                       .map(
                                         (e) => DropdownMenuItem(
@@ -276,7 +275,7 @@ class _AdminModelUploadScreenState extends State<AdminModelUploadScreen> {
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(16),
                               border: Border.all(
-                                color: _kPrimary.withValues(alpha: 0.06),
+                                color: AppColors.brandAccent.withValues(alpha: 0.06),
                               ),
                             ),
                             padding: const EdgeInsets.all(8),
@@ -291,10 +290,10 @@ class _AdminModelUploadScreenState extends State<AdminModelUploadScreen> {
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(12),
                                   border: Border.all(
-                                    color: _kPrimary.withValues(alpha: 0.35),
+                                    color: AppColors.brandAccent.withValues(alpha: 0.35),
                                     width: 2,
                                   ),
-                                  color: _kPrimary.withValues(alpha: 0.05),
+                                  color: AppColors.brandAccent.withValues(alpha: 0.05),
                                 ),
                                 child: Column(
                                   children: [
@@ -302,12 +301,12 @@ class _AdminModelUploadScreenState extends State<AdminModelUploadScreen> {
                                       width: 64,
                                       height: 64,
                                       decoration: BoxDecoration(
-                                        color: _kPrimary.withValues(alpha: 0.2),
+                                        color: AppColors.brandAccent.withValues(alpha: 0.2),
                                         shape: BoxShape.circle,
                                       ),
                                       child: const Icon(
                                         Icons.cloud_upload_rounded,
-                                        color: _kPrimary,
+                                        color: AppColors.brandAccent,
                                         size: 36,
                                       ),
                                     ),
@@ -341,7 +340,7 @@ class _AdminModelUploadScreenState extends State<AdminModelUploadScreen> {
                                         style: GoogleFonts.spaceGrotesk(
                                           fontWeight: FontWeight.w600,
                                           fontSize: 13,
-                                          color: _kPrimary,
+                                          color: AppColors.brandAccent,
                                         ),
                                       ),
                                     ],
@@ -357,7 +356,7 @@ class _AdminModelUploadScreenState extends State<AdminModelUploadScreen> {
                                             : AppColors.surfaceLight,
                                         borderRadius: BorderRadius.circular(20),
                                         border: Border.all(
-                                          color: _kPrimary.withValues(alpha: 0.2),
+                                          color: AppColors.brandAccent.withValues(alpha: 0.2),
                                         ),
                                       ),
                                       child: Row(
@@ -366,7 +365,7 @@ class _AdminModelUploadScreenState extends State<AdminModelUploadScreen> {
                                           Icon(
                                             Icons.info_outline_rounded,
                                             size: 16,
-                                            color: _kPrimary.withValues(alpha: 0.9),
+                                            color: AppColors.brandAccent.withValues(alpha: 0.9),
                                           ),
                                           const SizedBox(width: 8),
                                           Flexible(
@@ -396,7 +395,7 @@ class _AdminModelUploadScreenState extends State<AdminModelUploadScreen> {
                           child: FilledButton(
                             onPressed: _submitting ? null : _submit,
                             style: FilledButton.styleFrom(
-                              backgroundColor: _kPrimary,
+                              backgroundColor: AppColors.brandAccent,
                               foregroundColor: AppColors.onPrimary,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(14),
@@ -466,7 +465,7 @@ class _AdminModelUploadScreenState extends State<AdminModelUploadScreen> {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: _kPrimary, width: 2),
+        borderSide: const BorderSide(color: AppColors.brandAccent, width: 2),
       ),
     );
   }

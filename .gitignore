@@ -452,3 +452,7 @@ pubspec.lock
 **/windows/runner/flutter_window.cpp
 *.g.dart
 *.freezed.dart
+
+**/_build_out/**
+**/_build_out/*
+_build_out

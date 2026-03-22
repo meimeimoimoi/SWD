@@ -11,8 +11,6 @@ import '../../share/utils/disease_mapper.dart';
 import 'user_illness_detail_screen.dart';
 import 'user_tree_models.dart';
 
-const Color _primary = Color(0xFF2D7B31);
-
 class TreeDetailScreen extends StatefulWidget {
   const TreeDetailScreen({super.key, required this.summary});
 
@@ -194,7 +192,7 @@ class _TreeDetailScreenState extends State<TreeDetailScreen> {
               const Center(
                 child: Padding(
                   padding: EdgeInsets.all(16),
-                  child: CircularProgressIndicator(color: _primary),
+                  child: CircularProgressIndicator(color: AppColors.brandAccent),
                 ),
               )
             else if (_allHealingSteps.isEmpty)
@@ -268,7 +266,7 @@ class _IllnessSolutionCard extends StatelessWidget {
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(14),
-        side: BorderSide(color: _primary.withValues(alpha: 0.12)),
+        side: BorderSide(color: AppColors.brandAccent.withValues(alpha: 0.12)),
       ),
       child: InkWell(
         onTap: onOpenDetail,
@@ -299,7 +297,7 @@ class _IllnessSolutionCard extends StatelessWidget {
               Text(
                 sci,
                 style: theme.textTheme.bodySmall?.copyWith(
-                  color: _primary,
+                  color: AppColors.brandAccent,
                   fontStyle: FontStyle.italic,
                 ),
               ),
@@ -338,7 +336,7 @@ class _IllnessSolutionCard extends StatelessWidget {
               ),
               const SizedBox(height: 6),
               if (loading)
-                const LinearProgressIndicator(minHeight: 2, color: _primary)
+                const LinearProgressIndicator(minHeight: 2, color: AppColors.brandAccent)
               else if (recommendations.isEmpty)
                 Text(
                   item.illnessId == null
@@ -355,7 +353,7 @@ class _IllnessSolutionCard extends StatelessWidget {
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Icon(Icons.check_circle_outline, size: 18, color: _primary),
+                        Icon(Icons.check_circle_outline, size: 18, color: AppColors.brandAccent),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Column(
@@ -515,16 +513,16 @@ class _HealingStepCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: _primary.withValues(alpha: 0.06),
+        color: AppColors.brandAccent.withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: _primary.withValues(alpha: 0.15)),
+        border: Border.all(color: AppColors.brandAccent.withValues(alpha: 0.15)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           CircleAvatar(
             radius: 16,
-            backgroundColor: _primary,
+            backgroundColor: AppColors.brandAccent,
             child: Text(
               '$index',
               style: const TextStyle(

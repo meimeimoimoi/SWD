@@ -11,7 +11,6 @@ namespace MyApp.Api
         public static IServiceCollection AddApplicationSerivce(this IServiceCollection service)
         {
 
-          // Services
             service.AddScoped<IAuthService, AuthService>();
             service.AddScoped<IAdminService, AdminService>();
             service.AddScoped<IMessageService, MessageService>();
@@ -19,16 +18,13 @@ namespace MyApp.Api
             service.AddScoped<IUserService, UserService>();
             service.AddScoped<IRatingService, RatingService>();
 
-            // Repositories
             service.AddScoped<UserRepository>();
             service.AddScoped<ImageUploadRepository>();
             service.AddScoped<RatingRepository>();
             
-            // Utilities
             service.AddScoped<JwtTokenGeneratior>();
             service.AddScoped<IPasswordHasher, BCryptPasswordHasher>();
             
-            // Data Seeder
             service.AddScoped<DataSeeder>();
 
             service.AddTransient<ApiResponse>();

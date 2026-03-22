@@ -5,7 +5,6 @@ import '../../share/services/user_tree_service.dart';
 import '../../share/theme/app_colors.dart';
 import 'prediction_screen.dart';
 
-/// After a scan, link the prediction to a [Tree] (existing or newly created).
 class AssignScanToTreeScreen extends StatefulWidget {
   const AssignScanToTreeScreen({super.key, required this.result});
 
@@ -186,10 +185,10 @@ class _AssignScanToTreeScreenState extends State<AssignScanToTreeScreen>
                   const SizedBox(height: 16),
                   TabBar(
                     controller: _tabController,
-                    labelColor: const Color(0xFF2D7B31),
+                    labelColor: AppColors.brandAccent,
                     unselectedLabelColor:
                         isDark ? Colors.white54 : Colors.black54,
-                    indicatorColor: const Color(0xFF2D7B31),
+                    indicatorColor: AppColors.brandAccent,
                     tabs: const [
                       Tab(text: 'Choose existing'),
                       Tab(text: 'New plant'),
@@ -260,7 +259,7 @@ class _AssignScanToTreeScreenState extends State<AssignScanToTreeScreen>
               ? null
               : () => _assignToTree(_selectedTreeId!),
           style: FilledButton.styleFrom(
-            backgroundColor: const Color(0xFF2D7B31),
+            backgroundColor: AppColors.brandAccent,
             foregroundColor: Colors.white,
             padding: const EdgeInsets.symmetric(vertical: 14),
           ),
@@ -315,7 +314,7 @@ class _AssignScanToTreeScreenState extends State<AssignScanToTreeScreen>
           FilledButton(
             onPressed: _submitting ? null : _createAndAssign,
             style: FilledButton.styleFrom(
-              backgroundColor: const Color(0xFF2D7B31),
+              backgroundColor: AppColors.brandAccent,
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 14),
             ),
@@ -408,15 +407,19 @@ class _LinkedBanner extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
-        color: const Color(0xFF2D7B31).withValues(alpha: 0.12),
+        color: AppColors.brandAccent.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(10),
         border: Border.all(
-          color: const Color(0xFF2D7B31).withValues(alpha: 0.35),
+          color: AppColors.brandAccent.withValues(alpha: 0.35),
         ),
       ),
       child: Row(
         children: [
-          const Icon(Icons.park, color: Color(0xFF2D7B31), size: 20),
+          Icon(
+            Icons.park,
+            color: AppColors.brandAccentReadable(context),
+            size: 20,
+          ),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
