@@ -3,15 +3,15 @@ import '../../routes/app_router.dart';
 import '../../share/services/history_service.dart';
 import '../../share/services/prediction_service.dart';
 import '../../share/utils/disease_mapper.dart';
+import '../../share/widgets/user_bottom_nav_bar.dart';
 
-/// Model for prediction result data
 class PredictionResult {
   static const String _imageBaseUrl = 'http://10.0.2.2:5299';
   static const String _imagePathPrefix = '/uploads/images/';
 
   final int predictionId;
   final String diseaseName;
-  final String vietnameseName;
+  final String displayName;
   final String scientificName;
   final String imageUrl;
   final double confidence;
@@ -26,7 +26,7 @@ class PredictionResult {
   const PredictionResult({
     required this.predictionId,
     required this.diseaseName,
-    required this.vietnameseName,
+    required this.displayName,
     required this.scientificName,
     required this.imageUrl,
     required this.confidence,
@@ -39,10 +39,9 @@ class PredictionResult {
     required this.isHealthy,
   });
 
-  /// Create PredictionResult from API response
   static PredictionResult fromApiResponse(PredictionData data) {
     final englishName = data.diseaseName;
-    final vietnameseName = DiseaseMapper.toVietnamese(englishName);
+    final displayName = DiseaseMapper.toDisplayName(englishName);
     final isHealthy = DiseaseMapper.isHealthy(englishName);
     final scientificName = DiseaseMapper.getScientificName(englishName);
     final imageUrl = _buildImageUrl(data.imageUrl);
@@ -50,7 +49,7 @@ class PredictionResult {
     return PredictionResult(
       predictionId: data.predictionId,
       diseaseName: englishName,
-      vietnameseName: vietnameseName,
+      displayName: displayName,
       scientificName: scientificName,
       imageUrl: imageUrl,
       confidence: data.confidence,
@@ -64,14 +63,13 @@ class PredictionResult {
     );
   }
 
-  /// Rebuild a result screen from stored history (partial detail vs live API).
   static PredictionResult fromHistoryItem(HistoryItem item) {
     final d = item.diseaseName;
     final sci = item.scientificName?.trim();
     return PredictionResult(
       predictionId: item.predictionId,
       diseaseName: d,
-      vietnameseName: DiseaseMapper.toVietnamese(d),
+      displayName: DiseaseMapper.toDisplayName(d),
       scientificName:
           (sci != null && sci.isNotEmpty) ? sci : DiseaseMapper.getScientificName(d),
       imageUrl: item.imageUrl,
@@ -123,9 +121,6 @@ class PredictionResult {
   }
 }
 
-final List<String> _tags = const ['Care', 'Medicine'];
-
-/// Model for treatment product
 class TreatmentProduct {
   final String name;
   final String imageUrl;
@@ -154,14 +149,12 @@ class PredictionScreen extends StatefulWidget {
 }
 
 class _PredictionScreenState extends State<PredictionScreen> {
-  // 0 = Care (treatments), 1 = Medicine (medicines)
   int _selectedTab = 0;
 
-  // Sample data for demonstration
   static const _sampleResult = PredictionResult(
     predictionId: 0,
     diseaseName: 'Leaf Blast',
-    vietnameseName: 'Rice blast (fungal leaf blight)',
+    displayName: 'Rice blast (fungal leaf blight)',
     scientificName: 'Magnaporthe oryzae',
     imageUrl:
         'https://lh3.googleusercontent.com/aida-public/AB6AXuA998KIbzaAWHJSTjnx-DfsJtgPMFNyeETxvOnpYgoua7rzPHly7c4NTeriJVTVkEJH_CjMXLxDMjzZxHXzgQKmmv-E_NzGBnWIPOn8_kVsF5a2eQ34JF-a-ZsFk9EU4DS78O1ZIp9y85lKfIPp6snaGQ_rpTjBuKD6_ngh-DPVUeIynJXCTN07eXgLJgGzepqSgf07FPym-d3zP_EGCU8_skAI4DWlvzYEaj8RIvEuwTiBRwv2XaNc0GdSayp2myoLHrmXx2YXzdY',
@@ -212,38 +205,8 @@ class _PredictionScreenState extends State<PredictionScreen> {
           ],
         ),
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 1, // Defaulting to scan/result context
-        type: BottomNavigationBarType.fixed,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.camera_alt), label: 'Scan'),
-          BottomNavigationBarItem(icon: Icon(Icons.history), label: 'History'),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.account_circle_outlined),
-            label: 'Profile',
-          ),
-        ],
-        onTap: (index) {
-          switch (index) {
-            case 0:
-              Navigator.of(context).pushNamedAndRemoveUntil(
-                AppRouter.dashboard,
-                (route) => false,
-              );
-              break;
-            case 1:
-              Navigator.of(context).pushNamed(AppRouter.scan);
-              break;
-            case 2:
-              Navigator.of(context).pushNamed(AppRouter.history);
-              break;
-            case 3:
-              Navigator.of(context).pushNamed(AppRouter.profile);
-              break;
-          }
-        },
-      ),
+      bottomNavigationBar:
+          const UserBottomNavBar(selectedIndexOverride: 1),
     );
   }
 
@@ -337,7 +300,6 @@ class _PredictionScreenState extends State<PredictionScreen> {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          // Image with grayscale filter
           ColorFiltered(
             colorFilter: const ColorFilter.matrix([
               0.2126,
@@ -395,9 +357,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
               },
             ),
           ),
-          // Brightness overlay
           Container(color: Colors.black.withOpacity(0.25)),
-          // Gradient overlay
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -420,7 +380,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  data.vietnameseName,
+                  data.displayName,
                   style: const TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
@@ -667,7 +627,6 @@ class _PredictionScreenState extends State<PredictionScreen> {
           ],
         ),
         const SizedBox(height: 12),
-        // Tab buttons
         Container(
           padding: const EdgeInsets.all(4),
           decoration: BoxDecoration(
@@ -812,7 +771,6 @@ class _PredictionScreenState extends State<PredictionScreen> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Product image
           Container(
             width: 80,
             height: 80,
@@ -858,7 +816,6 @@ class _PredictionScreenState extends State<PredictionScreen> {
             ),
           ),
           const SizedBox(width: 16),
-          // Product details
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -1016,7 +973,6 @@ class _PredictionScreenState extends State<PredictionScreen> {
     );
   }
 
-  // Action methods
   void _showOptionsMenu(BuildContext context) {
     showModalBottomSheet(
       context: context,
@@ -1030,7 +986,6 @@ class _PredictionScreenState extends State<PredictionScreen> {
               title: const Text('Share result'),
               onTap: () {
                 Navigator.pop(context);
-                // TODO: Implement share
               },
             ),
             ListTile(
@@ -1038,7 +993,6 @@ class _PredictionScreenState extends State<PredictionScreen> {
               title: const Text('Download report'),
               onTap: () {
                 Navigator.pop(context);
-                // TODO: Implement download
               },
             ),
             ListTile(
@@ -1046,7 +1000,6 @@ class _PredictionScreenState extends State<PredictionScreen> {
               title: const Text('Help'),
               onTap: () {
                 Navigator.pop(context);
-                // TODO: Implement help
               },
             ),
           ],
@@ -1074,7 +1027,6 @@ class _PredictionScreenState extends State<PredictionScreen> {
               padding: const EdgeInsets.all(24),
               child: Column(
                 children: [
-                  /// Drag Handle
                   Center(
                     child: Container(
                       width: 40,
@@ -1090,13 +1042,11 @@ class _PredictionScreenState extends State<PredictionScreen> {
 
                   const SizedBox(height: 20),
 
-                  /// CONTENT
                   Expanded(
                     child: SingleChildScrollView(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          /// Product name
                           Text(
                             product.name,
                             style: TextStyle(
@@ -1110,7 +1060,6 @@ class _PredictionScreenState extends State<PredictionScreen> {
 
                           const SizedBox(height: 10),
 
-                          /// Badge
                           Container(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 8,
@@ -1146,7 +1095,6 @@ class _PredictionScreenState extends State<PredictionScreen> {
 
                           const SizedBox(height: 24),
 
-                          /// Description title
                           Text(
                             'Description',
                             style: TextStyle(
@@ -1171,7 +1119,6 @@ class _PredictionScreenState extends State<PredictionScreen> {
                             ),
                           ),
 
-                          /// Ingredient section (medicine only)
                           if (product.isPrimary) ...[
                             const SizedBox(height: 24),
 
@@ -1206,7 +1153,6 @@ class _PredictionScreenState extends State<PredictionScreen> {
 
                   const SizedBox(height: 16),
 
-                  /// CLOSE BUTTON
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
@@ -1249,35 +1195,6 @@ class _PredictionScreenState extends State<PredictionScreen> {
     Navigator.of(context).pushNamed(
       AppRouter.feedback,
       arguments: widget.result ?? _sampleResult,
-    );
-  }
-
-  Widget _buildFeedbackOption({
-    required IconData icon,
-    required String label,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          children: [
-            Icon(icon, color: color, size: 32),
-            const SizedBox(height: 8),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-                color: color,
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

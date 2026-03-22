@@ -19,7 +19,6 @@ class DashboardProvider with ChangeNotifier {
   List<dynamic> _adminUsers = [];
   List<dynamic> get adminUsers => _adminUsers;
 
-  /// Last filters for GET /api/Admin/users (search, role, sort).
   String? _adminUsersSearch;
   String? _adminUsersRole;
   String _adminUsersSortBy = 'email';
@@ -67,7 +66,6 @@ class DashboardProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  /// Updates user list filters and refetches (OpenAPI query params).
   Future<void> setAdminUsersFilters({
     String? search,
     String? role,

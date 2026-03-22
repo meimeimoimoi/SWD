@@ -1,15 +1,13 @@
-/// Disease display names and impact text (English UI).
 class DiseaseMapper {
-  static const Map<String, String> _englishToVietnamese = {
+  static const Map<String, String> _displayNames = {
     'Leaf Blast': 'Leaf blast',
     'Bacterial Leaf Blight': 'Bacterial leaf blight',
     'Brown Spot': 'Brown spot',
     'Healthy Rice Leaf': 'Healthy rice leaf',
   };
 
-  /// Display label for disease (English).
-  static String toVietnamese(String englishName) {
-    return _englishToVietnamese[englishName] ?? englishName;
+  static String toDisplayName(String englishName) {
+    return _displayNames[englishName] ?? englishName;
   }
 
   static bool isHealthy(String diseaseName) {

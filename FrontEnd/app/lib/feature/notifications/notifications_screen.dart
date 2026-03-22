@@ -8,8 +8,6 @@ import '../../share/services/dashboard_service.dart';
 import '../../share/services/storage_service.dart';
 import '../../share/widgets/user_bottom_nav_bar.dart';
 
-/// Guide-aligned notifications: admin uses activity logs + operational filters;
-/// end users use `/api/User/notifications` + severity filters.
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
 
@@ -44,9 +42,7 @@ class _UiNotification {
   final DateTime createdAt;
   final bool isRead;
   final _UiVisualKind visualKind;
-  /// system | model | illness | user | feedback
   final String adminCategory;
-  /// info | warning | error
   final String userTypeKey;
 
   _UiNotification copyWith({bool? isRead}) => _UiNotification(
@@ -152,7 +148,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Đã đánh dấu đã đọc (trên thiết bị).'),
+            content: Text('Marked as read (on this device).'),
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -162,7 +158,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text(
-          'Nhật ký hoạt động không có trạng thái đã đọc — tạm thời không áp dụng.',
+          'Activity logs have no read state — not applied for now.',
         ),
         behavior: SnackBarBehavior.floating,
       ),
@@ -193,8 +189,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   children: [
                     Text(
                       _isAdmin
-                          ? 'TRUNG TÂM ĐIỀU KHIỂN'
-                          : 'CẬP NHẬT CỦA BẠN',
+                          ? 'CONTROL CENTER'
+                          : 'YOUR UPDATES',
                       style: GoogleFonts.spaceGrotesk(
                         fontSize: 10,
                         fontWeight: FontWeight.w700,
@@ -204,7 +200,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Thông báo gần đây',
+                      'Recent notifications',
                       style: GoogleFonts.spaceGrotesk(
                         fontSize: 22,
                         fontWeight: FontWeight.w700,
@@ -217,7 +213,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               TextButton(
                 onPressed: _items.isEmpty ? null : _markAllRead,
                 child: Text(
-                  'Đánh dấu đã đọc',
+                  'Mark all read',
                   style: GoogleFonts.spaceGrotesk(
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
@@ -287,12 +283,12 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
   Widget _buildAdminFilters(bool isDark) {
     const options = <(_AdminFilter, String)>[
-      (_AdminFilter.all, 'Tất cả'),
-      (_AdminFilter.system, 'Hệ thống'),
-      (_AdminFilter.model, 'Mô hình AI'),
-      (_AdminFilter.illness, 'Bệnh & DB'),
-      (_AdminFilter.user, 'Tài khoản'),
-      (_AdminFilter.feedback, 'Phản hồi'),
+      (_AdminFilter.all, 'All'),
+      (_AdminFilter.system, 'System'),
+      (_AdminFilter.model, 'AI models'),
+      (_AdminFilter.illness, 'Diseases & DB'),
+      (_AdminFilter.user, 'Accounts'),
+      (_AdminFilter.feedback, 'Feedback'),
     ];
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
@@ -322,10 +318,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
   Widget _buildUserFilters(bool isDark) {
     const options = <(_UserFilter, String)>[
-      (_UserFilter.all, 'Tất cả'),
-      (_UserFilter.info, 'Thông tin'),
-      (_UserFilter.warning, 'Cảnh báo'),
-      (_UserFilter.error, 'Lỗi'),
+      (_UserFilter.all, 'All'),
+      (_UserFilter.info, 'Info'),
+      (_UserFilter.warning, 'Warning'),
+      (_UserFilter.error, 'Error'),
     ];
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
@@ -366,8 +362,8 @@ class _EmptyState extends StatelessWidget {
         padding: const EdgeInsets.all(32),
         child: Text(
           isAdmin
-              ? 'Không có mục nào trong bộ lọc này.'
-              : 'Chưa có thông báo trong bộ lọc này.',
+              ? 'Nothing in this filter.'
+              : 'No notifications in this filter.',
           textAlign: TextAlign.center,
           style: GoogleFonts.spaceGrotesk(
             fontSize: 14,
@@ -638,7 +634,7 @@ class _AdminOptimizationBanner extends StatelessWidget {
               Icon(Icons.auto_awesome, color: _kPrimary.withValues(alpha: 0.9)),
               const SizedBox(width: 8),
               Text(
-                'Tối ưu hóa hệ thống',
+                'System optimization',
                 style: GoogleFonts.spaceGrotesk(
                   fontWeight: FontWeight.w700,
                   fontSize: 15,
@@ -649,7 +645,7 @@ class _AdminOptimizationBanner extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'Theo dõi phiên bản mô hình và dữ liệu bệnh để duy trì độ chính xác.',
+            'Track model versions and disease data to maintain accuracy.',
             style: GoogleFonts.spaceGrotesk(
               fontSize: 13,
               height: 1.35,
@@ -669,7 +665,7 @@ class _AdminOptimizationBanner extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(vertical: 12),
               ),
               child: Text(
-                'Cập nhật ngay',
+                'Update now',
                 style: GoogleFonts.spaceGrotesk(fontWeight: FontWeight.w700),
               ),
             ),
@@ -683,11 +679,11 @@ class _AdminOptimizationBanner extends StatelessWidget {
 String _relativeTime(DateTime t) {
   final now = DateTime.now();
   final d = now.difference(t);
-  if (d.inSeconds < 60) return 'Vừa xong';
-  if (d.inMinutes < 60) return '${d.inMinutes} phút trước';
-  if (d.inHours < 24) return '${d.inHours} giờ trước';
-  if (d.inDays == 1) return 'Hôm qua';
-  if (d.inDays < 7) return '${d.inDays} ngày trước';
+  if (d.inSeconds < 60) return 'Just now';
+  if (d.inMinutes < 60) return '${d.inMinutes} min ago';
+  if (d.inHours < 24) return '${d.inHours} h ago';
+  if (d.inDays == 1) return 'Yesterday';
+  if (d.inDays < 7) return '${d.inDays} days ago';
   return DateFormat('dd/MM/yyyy').format(t);
 }
 

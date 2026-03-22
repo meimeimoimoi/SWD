@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../../routes/app_router.dart';
 import '../theme/app_colors.dart';
 
-/// Admin shell: users, models, server, illnesses, profile (Cá nhân).
 class AdminBottomNav extends StatelessWidget {
   const AdminBottomNav({super.key, required this.currentIndex});
 
@@ -34,12 +33,12 @@ class AdminBottomNav extends StatelessWidget {
         route: AppRouter.adminServer,
       ),
       const _AdminNavItem(
-        label: 'Bệnh',
+        label: 'Diseases',
         icon: Icons.coronavirus_outlined,
         route: AppRouter.adminIllnesses,
       ),
       const _AdminNavItem(
-        label: 'Cá nhân',
+        label: 'Profile',
         icon: Icons.account_circle_outlined,
         route: AppRouter.adminProfile,
       ),

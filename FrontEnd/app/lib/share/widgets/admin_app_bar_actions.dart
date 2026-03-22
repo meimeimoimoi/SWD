@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../../routes/app_router.dart';
 
-/// Secondary entry points (feedback, settings) while using the 4-tab admin shell.
 List<Widget> adminSecondaryAppBarActions(BuildContext context) {
   return [
     IconButton(

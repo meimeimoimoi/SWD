@@ -11,7 +11,6 @@ import 'user_tree_models.dart';
 
 const Color _primary = Color(0xFF2D7B31);
 
-/// Per-tree view: illnesses, solutions, scan timeline, suggested healing steps.
 class TreeDetailScreen extends StatefulWidget {
   const TreeDetailScreen({super.key, required this.summary});
 
@@ -47,7 +46,6 @@ class _TreeDetailScreenState extends State<TreeDetailScreen> {
     });
   }
 
-  /// One row per distinct illness (newest prediction as representative).
   List<HistoryItem> get _illnessRows {
     final seen = <String>{};
     final out = <HistoryItem>[];
@@ -79,7 +77,7 @@ class _TreeDetailScreenState extends State<TreeDetailScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Chi tiết cây',
+          'Tree details',
           style: GoogleFonts.spaceGrotesk(fontWeight: FontWeight.w700),
         ),
       ),
@@ -137,11 +135,11 @@ class _TreeDetailScreenState extends State<TreeDetailScreen> {
               ),
             ],
             const SizedBox(height: 24),
-            _sectionTitle(context, 'Bệnh & điều trị'),
+            _sectionTitle(context, 'Disease & treatment'),
             const SizedBox(height: 10),
             if (_illnessRows.isEmpty)
               Text(
-                'Chưa ghi nhận bệnh từ các lần quét.',
+                'No disease recorded from scans yet.',
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
                 ),
@@ -167,14 +165,14 @@ class _TreeDetailScreenState extends State<TreeDetailScreen> {
                     },
                   )),
             const SizedBox(height: 28),
-            _sectionTitle(context, 'Lịch sử theo dõi'),
+            _sectionTitle(context, 'Monitoring history'),
             const SizedBox(height: 10),
             ...s.predictions.map((p) => _TimelineTile(item: p)),
             const SizedBox(height: 28),
-            _sectionTitle(context, 'Gợi ý phục hồi'),
+            _sectionTitle(context, 'Recovery suggestions'),
             const SizedBox(height: 8),
             Text(
-              'Gợi ý từ thư viện điều trị ${AppBrand.name} (khi có mã bệnh liên kết).',
+              'Suggestions from the ${AppBrand.name} treatment library (when a disease code is linked).',
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
               ),
@@ -190,8 +188,8 @@ class _TreeDetailScreenState extends State<TreeDetailScreen> {
             else if (_allHealingSteps.isEmpty)
               Text(
                 s.illnessIds.isEmpty
-                    ? 'Chưa liên kết mã bệnh — cần ghi nhận trong hệ thống để có bước chi tiết.'
-                    : 'Chưa có phương án điều trị trong cơ sở dữ liệu cho (các) bệnh này.',
+                    ? 'Disease code not linked — record it in the system for detailed steps.'
+                    : 'No treatment options in the database for this disease (these diseases).',
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
                 ),
@@ -205,7 +203,7 @@ class _TreeDetailScreenState extends State<TreeDetailScreen> {
               onPressed: () =>
                   Navigator.pushNamed(context, AppRouter.history),
               icon: const Icon(Icons.history),
-              label: const Text('Xem toàn bộ lịch sử quét'),
+              label: const Text('View full scan history'),
             ),
           ],
         ),

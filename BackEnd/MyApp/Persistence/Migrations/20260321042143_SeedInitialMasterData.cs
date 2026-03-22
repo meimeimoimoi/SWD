@@ -19,7 +19,7 @@ namespace MyApp.Persistence.Migrations
                 IF NOT EXISTS (SELECT 1 FROM [users] WHERE [username] = N'admin')
                 BEGIN
                     INSERT INTO [users] ([username], [email], [password_hash], [first_name], [last_name], [phone], [profile_image_path], [account_status], [last_login_at], [role], [created_at], [updated_at])
-                    VALUES (N'admin', N'admin@swd.com', N'$2a$11$pWXwU3T/GT232Oj7JblhmunBP0J91XV4SvS1FEnEH753kNZMuxn.2', N'System', N'Administrator', NULL, NULL, N'Active', NULL, N'Admin', GETUTCDATE(), GETUTCDATE());
+                    VALUES (N'admin', N'admin@swd.com', N'$2a$11$61GJCQQAT3CQOcv4hIRdAeTmRUYOKaqoSxz/ID/iyP7xEdotkWe76', N'System', N'Administrator', NULL, NULL, N'Active', NULL, N'Admin', GETUTCDATE(), GETUTCDATE());
                 END
 
                 IF NOT EXISTS (SELECT 1 FROM [users] WHERE [username] = N'user1')

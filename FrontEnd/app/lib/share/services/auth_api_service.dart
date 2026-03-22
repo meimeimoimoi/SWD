@@ -7,10 +7,6 @@ import 'package:http/http.dart' as http;
 import '../constants/api_config.dart';
 import 'storage_service.dart';
 
-/// HTTP client for authentication API calls.
-/// Contracts directly match backend DTOs:
-/// - RegisterRequestDTO: {username, email, password}
-/// - LoginRequestDTO: {usernameOrEmail, password}
 class AuthApiService {
   static String get baseUrl => ApiConfig.baseUrl;
 
@@ -24,9 +20,6 @@ class AuthApiService {
   static Future<String?>? _refreshFuture;
   static void Function()? onSessionExpired;
 
-  /// Register new user with username, email and password.
-  /// Request JSON: username, email, password.
-  /// Response (200/201): message, etc.
   static Future<Map<String, dynamic>> register(
     String username,
     String email,
@@ -93,9 +86,6 @@ class AuthApiService {
     }
   }
 
-  /// Login with username or email and password.
-  /// Request JSON: usernameOrEmail, password.
-  /// Response (200): token payload, etc.
   static Future<Map<String, dynamic>> login(
     String usernameOrEmail,
     String password,
@@ -161,12 +151,10 @@ class AuthApiService {
     }
   }
 
-  /// Get current user profile (authorized).
   static Future<Map<String, dynamic>> getProfile() async {
     return _authorizedJsonRequest(method: 'GET', endpoint: profileEndpoint);
   }
 
-  /// Update current user profile (authorized).
   static Future<Map<String, dynamic>> updateProfile(
     Map<String, dynamic> payload,
   ) async {
@@ -177,7 +165,6 @@ class AuthApiService {
     );
   }
 
-  /// Server logout ([Authorize] + Bearer). Clears server-side state if implemented.
   static Future<Map<String, dynamic>> logout() async {
     return _authorizedJsonRequest(
       method: 'POST',
@@ -186,7 +173,6 @@ class AuthApiService {
     );
   }
 
-  /// Refresh token (matches [RefreshTokenRequestDTO]: accessToken + refreshToken).
   static Future<Map<String, dynamic>> refreshToken(String refreshToken) async {
     if (refreshToken.trim().isEmpty) {
       return {'success': false, 'message': 'Refresh token is missing'};

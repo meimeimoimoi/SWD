@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
 
-/// Compact marketing strip used on login and register.
 class AuthHeroBanner extends StatelessWidget {
   const AuthHeroBanner({
     super.key,

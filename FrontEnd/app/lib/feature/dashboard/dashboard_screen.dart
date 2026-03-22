@@ -9,7 +9,6 @@ import '../../share/widgets/user_bottom_nav_bar.dart';
 import '../prediction/prediction_screen.dart';
 import '../trees/user_tree_models.dart';
 
-/// Owner home: scan-first plant disease check, quick links, and education.
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
 
@@ -48,7 +47,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     if (mounted) setState(() => _username = u);
   }
 
-  /// [silentRefresh]: pull-to-refresh — keep showing previous data until new data arrives.
   Future<void> _loadInsights({required bool silentRefresh}) async {
     if (!silentRefresh) {
       setState(() {
@@ -220,7 +218,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 }
 
-/// Single [now] avoids calling `DateTime.now()` per row on each load.
 String _dashboardRelativeTime(DateTime dt, DateTime now) {
   final diff = now.difference(dt);
   if (diff.inSeconds < 60) return 'Just now';
@@ -230,7 +227,6 @@ String _dashboardRelativeTime(DateTime dt, DateTime now) {
   return '${dt.day}/${dt.month}/${dt.year}';
 }
 
-/// Higher = worse concern (for trend: decreasing over time = improving).
 int _predictionConcernScore(HistoryItem p) {
   if (DiseaseMapper.isHealthy(p.diseaseName)) return 0;
   final sev = (p.illnessSeverity ?? '').toLowerCase();

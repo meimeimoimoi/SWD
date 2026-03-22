@@ -3,7 +3,6 @@ import '../../share/utils/disease_mapper.dart';
 
 enum TreeHealthLevel { healthy, low, medium, high }
 
-/// One logical tree (or unassigned scans) aggregated from prediction history.
 class UserTreeSummary {
   const UserTreeSummary({
     required this.treeId,
@@ -28,7 +27,6 @@ class UserTreeSummary {
 
   int get scanCount => predictions.length;
 
-  /// Unique illness ids from history (non-null only).
   Set<int> get illnessIds => predictions
       .map((e) => e.illnessId)
       .whereType<int>()

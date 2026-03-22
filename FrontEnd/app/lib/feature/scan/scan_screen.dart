@@ -11,7 +11,6 @@ import '../../share/widgets/app_button.dart';
 import '../../share/widgets/app_scaffold.dart';
 import '../prediction/prediction_screen.dart';
 
-/// Matches [DashboardScreen] owner hub palette.
 const Color _kBrandGreen = Color(0xFF2D7B31);
 const Color _kPageBgLight = Color(0xFFF6F8F6);
 const Color _kDarkCard = Color(0xFF2D322B);
@@ -222,7 +221,6 @@ class _ScanScreenState extends State<ScanScreen> {
     }
   }
 
-  /// Gallery or file picker (used by Upload button / empty-state tap).
   void _showUploadFromDeviceSheet() {
     if (_isUploading) return;
     final theme = Theme.of(context);
@@ -322,7 +320,6 @@ class _ScanScreenState extends State<ScanScreen> {
     });
   }
 
-  /// Predict disease from selected image and navigate to prediction screen
   Future<void> _predictImage() async {
     if (_selectedImage == null || _isUploading) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -342,12 +339,10 @@ class _ScanScreenState extends State<ScanScreen> {
       if (!mounted) return;
 
       if (response.success && response.data != null) {
-        // Convert API response to PredictionResult
         final predictionResult = PredictionResult.fromApiResponse(
           response.data!,
         );
 
-        // Navigate to prediction screen with the result
         await Navigator.pushNamed(
           context,
           AppRouter.prediction,
@@ -411,6 +406,14 @@ class _ScanScreenState extends State<ScanScreen> {
       showUserBottomNav: true,
       selectedNavIndex: 1,
       title: 'Scan',
+      actions: [
+        IconButton(
+          tooltip: 'Scan history',
+          onPressed: () =>
+              Navigator.pushNamed(context, AppRouter.history),
+          icon: const Icon(Icons.history_rounded),
+        ),
+      ],
       backgroundColor: bg,
       contentPadding: const EdgeInsets.fromLTRB(16, 8, 16, 28),
       child: LayoutBuilder(
@@ -803,7 +806,6 @@ class _WorkbenchOutlineButton extends StatelessWidget {
   }
 }
 
-/// Same tips as dashboard [dashboard_screen.dart] `_ScanTipsCard`.
 class _ScanPageTipsCard extends StatelessWidget {
   const _ScanPageTipsCard();
 
@@ -904,7 +906,7 @@ class _RecentActivityCard extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
-          'RECENT ACTIVITY',
+          'SCAN HISTORY',
           style: Theme.of(context).textTheme.labelSmall?.copyWith(
                 letterSpacing: 1.2,
                 fontWeight: FontWeight.w700,
@@ -944,7 +946,7 @@ class _RecentActivityCard extends StatelessWidget {
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    'Queue snapshot',
+                    'Recent scans',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.w800,
                         ),
@@ -953,19 +955,28 @@ class _RecentActivityCard extends StatelessWidget {
               ),
               const SizedBox(height: 14),
               ...uploads.map((item) => _ScanTile(item: item)),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: TextButton(
+              const SizedBox(height: 8),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton.tonal(
                   onPressed: () =>
                       Navigator.pushNamed(context, AppRouter.history),
-                  style: TextButton.styleFrom(
+                  style: FilledButton.styleFrom(
                     foregroundColor: _kBrandGreen,
-                    textStyle: const TextStyle(
-                      fontWeight: FontWeight.w700,
-                      fontSize: 13,
-                    ),
+                    backgroundColor: _kBrandGreen.withValues(alpha: 0.12),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
-                  child: const Text('View full history'),
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.history_rounded, size: 20),
+                      SizedBox(width: 8),
+                      Text(
+                        'View all scan history',
+                        style: TextStyle(fontWeight: FontWeight.w700),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],

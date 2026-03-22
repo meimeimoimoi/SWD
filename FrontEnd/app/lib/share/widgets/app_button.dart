@@ -16,11 +16,9 @@ class AppButton extends StatelessWidget {
   final String label;
   final VoidCallback? onPressed;
   final IconData? icon;
-  /// Shown before the label; overrides [icon] when both are set.
   final Widget? leading;
   final AppButtonVariant variant;
   final bool expand;
-  /// When set, used as [ButtonStyle.minimumSize] height (full width when [expand]).
   final double? minimumHeight;
 
   @override

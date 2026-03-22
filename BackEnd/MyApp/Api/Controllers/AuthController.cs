@@ -156,7 +156,6 @@ namespace MyApp.Api.Controllers
                 });
             }
         }
-
         /// <summary>
         /// Logout. Accepts JWT via standard <c>Authorization: Bearer &lt;token&gt;</c>
         /// or optional legacy header <c>token: &lt;jwt&gt;</c> (matches OpenAPI).

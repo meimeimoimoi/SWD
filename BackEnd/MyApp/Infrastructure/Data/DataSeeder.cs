@@ -82,7 +82,7 @@ namespace MyApp.Infrastructure.Data
                 return;
             }
 
-            // Must match SeedInitialMasterData migration when both use the same default (BCrypt hash, not plaintext).
+            // Must match SeedInitialMasterData + UpdateAdminPasswordHash (BCrypt for Admin123!, not plaintext).
             var adminEmail = _configuration["SuperAdminSettings:Email"] ?? "admin@swd.com";
             var adminPassword = _configuration["SuperAdminSettings:Password"] ?? "Admin123!";
 

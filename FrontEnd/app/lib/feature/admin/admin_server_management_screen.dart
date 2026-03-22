@@ -11,7 +11,6 @@ import '../../share/widgets/admin_bottom_nav.dart';
 import '../../share/widgets/admin_pop_scope.dart';
 import '../../share/widgets/app_card.dart';
 
-/// Server / API health: ASP.NET health checks (live, ready, root).
 class AdminServerManagementScreen extends StatefulWidget {
   const AdminServerManagementScreen({super.key});
 

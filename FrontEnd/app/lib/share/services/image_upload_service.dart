@@ -195,7 +195,6 @@ class ImageUploadService {
     return {'message': body};
   }
 
-  /// GET /api/ImageUpload/{uploadId}
   Future<Map<String, dynamic>> getUploadStatus(int uploadId) async {
     try {
       final token = await StorageService.getAccessToken();
@@ -225,7 +224,6 @@ class ImageUploadService {
     }
   }
 
-  /// GET /api/ImageUpload/my-images
   Future<Map<String, dynamic>> getMyImages() async {
     try {
       final token = await StorageService.getAccessToken();

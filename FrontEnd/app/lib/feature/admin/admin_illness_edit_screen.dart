@@ -7,11 +7,9 @@ import 'package:image_picker/image_picker.dart';
 import '../../share/services/dashboard_service.dart';
 import '../../share/theme/app_colors.dart';
 
-/// Guide: `.guide/th_m_b_nh_m_i_form` — Space Grotesk, primary #2d7b31, card form.
 class AdminIllnessEditScreen extends StatefulWidget {
   const AdminIllnessEditScreen({super.key, this.illnessId});
 
-  /// null = create new
   final int? illnessId;
 
   @override
@@ -22,17 +20,21 @@ const Color _kPrimary = Color(0xFF2D7B31);
 const Color _kBg = Color(0xFFF6F8F6);
 
 const List<String> _kSeverityLevels = [
-  'Thấp',
-  'Trung bình',
-  'Cao',
-  'Nguy hiểm',
+  'Low',
+  'Medium',
+  'High',
+  'Critical',
 ];
 
 const Map<String, String> _kLegacySeverity = {
-  'Low': 'Thấp',
-  'Medium': 'Trung bình',
-  'High': 'Cao',
-  'Critical': 'Nguy hiểm',
+  'Low': 'Low',
+  'Medium': 'Medium',
+  'High': 'High',
+  'Critical': 'Critical',
+  'Thấp': 'Low',
+  'Trung bình': 'Medium',
+  'Cao': 'High',
+  'Nguy hiểm': 'Critical',
 };
 
 String _normalizeSeverity(String raw) {
@@ -131,7 +133,7 @@ class _AdminIllnessEditScreenState extends State<AdminIllnessEditScreen> {
     setState(() => _saving = false);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(ok ? 'Đã lưu' : 'Lưu thất bại'),
+        content: Text(ok ? 'Saved' : 'Save failed'),
         backgroundColor: ok ? _kPrimary : Colors.red,
         behavior: SnackBarBehavior.floating,
       ),
@@ -156,7 +158,7 @@ class _AdminIllnessEditScreenState extends State<AdminIllnessEditScreen> {
         appBar: AppBar(
           backgroundColor: isDark ? const Color(0xFF141E15) : _kBg,
           title: Text(
-            'Đang tải…',
+            'Loading…',
             style: GoogleFonts.spaceGrotesk(color: textPrimary),
           ),
         ),
@@ -166,7 +168,8 @@ class _AdminIllnessEditScreenState extends State<AdminIllnessEditScreen> {
       );
     }
 
-    final title = widget.illnessId == null ? 'Thêm bệnh mới' : 'Chỉnh sửa bệnh';
+    final title =
+        widget.illnessId == null ? 'Add new disease' : 'Edit disease';
 
     return Scaffold(
       backgroundColor: isDark ? const Color(0xFF141E15) : _kBg,
@@ -218,22 +221,22 @@ class _AdminIllnessEditScreenState extends State<AdminIllnessEditScreen> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       _LabeledField(
-                        label: 'Tên bệnh',
+                        label: 'Disease name',
                         requiredMark: true,
                         child: _GuideTextField(
                           controller: _name,
-                          hint: 'VD: Đốm lá vi khuẩn',
+                          hint: 'e.g. Bacterial leaf spot',
                           validator: (v) => v == null || v.trim().isEmpty
-                              ? 'Vui lòng nhập tên bệnh'
+                              ? 'Please enter a disease name'
                               : null,
                         ),
                       ),
                       const SizedBox(height: 20),
                       _LabeledField(
-                        label: 'Tên khoa học',
+                        label: 'Scientific name',
                         child: _GuideTextField(
                           controller: _sci,
-                          hint: 'VD: Xanthomonas campestris',
+                          hint: 'e.g. Xanthomonas campestris',
                           style: GoogleFonts.spaceGrotesk(
                             fontStyle: FontStyle.italic,
                             fontSize: 15,
@@ -242,7 +245,7 @@ class _AdminIllnessEditScreenState extends State<AdminIllnessEditScreen> {
                       ),
                       const SizedBox(height: 20),
                       _LabeledField(
-                        label: 'Mức độ nghiêm trọng',
+                        label: 'Severity',
                         child: _SeverityDropdown(
                           value: _severity,
                           onChanged: (v) =>
@@ -251,41 +254,41 @@ class _AdminIllnessEditScreenState extends State<AdminIllnessEditScreen> {
                       ),
                       const SizedBox(height: 20),
                       _LabeledField(
-                        label: 'Mô tả chi tiết',
+                        label: 'Detailed description',
                         child: _GuideTextField(
                           controller: _desc,
-                          hint: 'Nhập thông tin tổng quan về bệnh…',
+                          hint: 'Enter an overview of the disease…',
                           maxLines: 3,
                         ),
                       ),
                       const SizedBox(height: 20),
                       _LabeledField(
-                        label: 'Triệu chứng nhận biết',
+                        label: 'Recognizable symptoms',
                         child: _GuideTextField(
                           controller: _symptoms,
                           hint:
-                              'Mô tả các dấu hiệu trên lá, thân, quả…',
+                              'Describe signs on leaves, stems, fruit…',
                           maxLines: 3,
                         ),
                       ),
                       const SizedBox(height: 20),
                       _LabeledField(
-                        label: 'Nguyên nhân gây bệnh',
+                        label: 'Causes',
                         child: _GuideTextField(
                           controller: _causes,
                           hint:
-                              'Do nấm, vi khuẩn hay điều kiện môi trường?',
+                              'Fungal, bacterial, or environmental conditions?',
                           maxLines: 3,
                         ),
                       ),
                       const SizedBox(height: 20),
                       _LabeledField(
-                        label: 'Hình ảnh minh họa',
+                        label: 'Illustration images',
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Ảnh chỉ hiển thị trên thiết bị — API hiện chưa lưu file đính kèm.',
+                              'Images are shown on device only — the API does not save attachments yet.',
                               style: GoogleFonts.spaceGrotesk(
                                 fontSize: 11,
                                 height: 1.3,
@@ -340,7 +343,7 @@ class _AdminIllnessEditScreenState extends State<AdminIllnessEditScreen> {
                             ),
                           )
                         : Text(
-                            'Lưu',
+                            'Save',
                             style: GoogleFonts.spaceGrotesk(
                               fontWeight: FontWeight.w700,
                               fontSize: 16,
@@ -578,7 +581,7 @@ class _AddTile extends StatelessWidget {
               Icon(Icons.add_a_photo_outlined, color: _kPrimary.withValues(alpha: 0.7)),
               const SizedBox(height: 4),
               Text(
-                'Thêm ảnh',
+                'Add image',
                 style: GoogleFonts.spaceGrotesk(
                   fontSize: 10,
                   fontWeight: FontWeight.w600,

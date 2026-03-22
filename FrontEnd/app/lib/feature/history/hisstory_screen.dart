@@ -48,7 +48,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
     setState(() {
       _loading = false;
       if (response.success) {
-        // Newest first
         _items = response.data
           ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
         _error = null;
@@ -58,10 +57,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
     });
   }
 
-  // ── date helpers ──────────────────────────────────────────────────────────
 
   String _dateGroupKey(DateTime dt) {
-    // Use date part only as a stable key for grouping
     return '${dt.year}-${dt.month}-${dt.day}';
   }
 
@@ -80,7 +77,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
   String _timeOf(DateTime dt) =>
       '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
 
-  // ── grouping ──────────────────────────────────────────────────────────────
 
   List<MapEntry<String, List<HistoryItem>>> _grouped() {
     final map = <String, List<HistoryItem>>{};
@@ -91,7 +87,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
     return map.entries.toList();
   }
 
-  // ── build ─────────────────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
@@ -111,6 +106,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
       ],
       centerContent: false,
       showUserBottomNav: true,
+      selectedNavIndex: 1,
       child: Column(
         children: [
           Expanded(
@@ -128,67 +124,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
       ),
     );
   }
-
-  // ── header ────────────────────────────────────────────────────────────────
-
-  Widget _buildHeader(bool isDark) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-      decoration: BoxDecoration(
-        color: isDark
-            ? AppColors.darkBackground.withOpacity(0.95)
-            : AppColors.lightBackground.withOpacity(0.95),
-        border: Border(
-          bottom: BorderSide(
-            color: isDark ? AppColors.borderDark : AppColors.borderLight,
-          ),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            'Scan history',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: isDark
-                  ? AppColors.textPrimaryDark
-                  : AppColors.textPrimaryLight,
-            ),
-          ),
-          Material(
-            color: isDark ? AppColors.surfaceDark : Colors.white,
-            borderRadius: BorderRadius.circular(20),
-            child: InkWell(
-              onTap: _loadHistory,
-              borderRadius: BorderRadius.circular(20),
-              child: SizedBox(
-                width: 40,
-                height: 40,
-                child: Icon(
-                  Icons.refresh,
-                  size: 20,
-                  color: isDark
-                      ? AppColors.textSecondaryDark
-                      : AppColors.textSecondaryLight,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ── list ──────────────────────────────────────────────────────────────────
 
   Widget _buildList(bool isDark) {
     final groups = _grouped();
@@ -238,11 +173,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
     );
   }
 
-  // ── card ──────────────────────────────────────────────────────────────────
 
   Widget _buildCard(HistoryItem item, bool isDark) {
     final severity = _severityOf(item.diseaseName);
-    final vietName = DiseaseMapper.toVietnamese(item.diseaseName);
+    final displayName = DiseaseMapper.toDisplayName(item.diseaseName);
 
     return Material(
       color: isDark ? AppColors.surfaceDark : Colors.white,
@@ -268,7 +202,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Thumbnail
               ClipRRect(
                 borderRadius: BorderRadius.circular(12),
                 child: SizedBox(
@@ -299,7 +232,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 ),
               ),
               const SizedBox(width: 14),
-              // Content
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -312,7 +244,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                vietName,
+                                displayName,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
@@ -461,7 +393,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
     );
   }
 
-  // ── empty / error states ──────────────────────────────────────────────────
 
   Widget _buildEmptyState(bool isDark) {
     return Center(
@@ -560,7 +491,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
     );
   }
 
-  // ── navigation ────────────────────────────────────────────────────────────
 
   void _openDetail(HistoryItem item) {
     final result = PredictionResult.fromHistoryItem(item);

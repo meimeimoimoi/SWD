@@ -20,7 +20,6 @@ class RatingService {
             ),
           );
 
-  /// Post rating and comment for a prediction
   Future<Map<String, dynamic>> submitRating({
     required int predictionId,
     required int score,
@@ -104,7 +103,6 @@ class RatingService {
     return 'Bearer $trimmed';
   }
 
-  /// GET /api/rating/prediction/{predictionId}
   Future<Map<String, dynamic>?> getRatingForPrediction(int predictionId) async {
     try {
       final accessToken = await StorageService.getAccessToken();
@@ -125,7 +123,6 @@ class RatingService {
     }
   }
 
-  /// GET /api/rating/all
   Future<List<dynamic>> getAllRatings() async {
     try {
       final accessToken = await StorageService.getAccessToken();

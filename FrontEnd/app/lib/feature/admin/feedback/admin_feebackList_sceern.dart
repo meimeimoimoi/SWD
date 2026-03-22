@@ -39,7 +39,6 @@ class _AdminFeedbackListScreenState extends State<AdminFeedbackListScreen> {
     final provider = context.watch<DashboardProvider>();
     final feedbackList = provider.feedbackList;
 
-    // Calculate dynamic stats from real data
     int totalCount = feedbackList.length;
     double avgRating = 0;
     if (totalCount > 0) {
@@ -143,7 +142,6 @@ class _AdminFeedbackListScreenState extends State<AdminFeedbackListScreen> {
                       final username = user['username'] ?? 'User';
                       final illness = prediction['illness']?['name'] ?? 'Unknown';
                       
-                      // Format relative time (naive)
                       String timeAgo = 'Just now';
                       if (data['createdAt'] != null) {
                         try {

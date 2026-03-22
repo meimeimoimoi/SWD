@@ -146,7 +146,7 @@ class _AdminUserScreenState extends State<AdminUserScreen> {
                       final success = await provider.createUser(
                         _emailController.text,
                         _passwordController.text,
-                        'User', // Default role for new accounts
+                        'User',
                       );
                       
                       if (mounted) {
@@ -197,18 +197,17 @@ class _AdminUserScreenState extends State<AdminUserScreen> {
       final email = u['email'] ?? '';
       final statusStr = u['accountStatus'] ?? 'Active';
       
-      // Normalize role for UI consistency and to match dropdown items
       String role = u['role']?.toString() ?? 'User';
       if (role == 'Tech') role = 'Technician';
       final allowedRoles = ['Admin', 'Technician', 'User', 'Farmer', 'Staff'];
       if (!allowedRoles.contains(role)) {
-        role = 'User'; // Fallback to avoid dropdown crash
+        role = 'User';
       }
       
       _UserStatus status = _UserStatus.active;
       if (statusStr == 'Locked') status = _UserStatus.locked;
       if (statusStr == 'Pending') status = _UserStatus.pending;
-      if (statusStr == 'Deleted') status = _UserStatus.locked; // Treat deleted as locked for UI
+      if (statusStr == 'Deleted') status = _UserStatus.locked;
 
       return _UserItem(
         userId: u['userId'] ?? 0,

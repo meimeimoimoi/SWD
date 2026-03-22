@@ -48,7 +48,6 @@ class _LoginScreenState extends State<LoginScreen> {
       if (!mounted) return;
 
       if (result['success'] == true) {
-        // Extract token data from response
         final tokenData = result['data']?['token'];
         final username = tokenData?['username'] as String?;
         final role = tokenData?['role'] as String?;
@@ -57,7 +56,6 @@ class _LoginScreenState extends State<LoginScreen> {
         final expiresIn = tokenData?['expiresIn'] as String?;
 
         if (accessToken != null) {
-          // Save token and user info
           await StorageService.saveAuthToken(
             accessToken: accessToken,
             refreshToken: refreshToken,
@@ -66,7 +64,6 @@ class _LoginScreenState extends State<LoginScreen> {
             expiresIn: expiresIn,
           );
 
-          // Show success message
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Welcome back, ${username ?? "User"}!'),
@@ -89,10 +86,8 @@ class _LoginScreenState extends State<LoginScreen> {
           );
         }
       } else {
-        // Show error message
         String errorMessage = result['message'] ?? 'Login failed';
 
-        // Handle specific validation errors
         if (result['data'] != null && result['data']['errors'] != null) {
           final errors = result['data']['errors'] as Map<String, dynamic>;
           final firstError = errors.entries.firstOrNull;

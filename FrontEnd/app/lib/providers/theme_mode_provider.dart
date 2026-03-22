@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// Persists [ThemeMode] for the whole app (system / light / dark).
 class ThemeModeProvider extends ChangeNotifier {
   ThemeModeProvider() {
     _load();
@@ -25,7 +24,6 @@ class ThemeModeProvider extends ChangeNotifier {
       }
       notifyListeners();
     } catch (_) {
-      // keep default
     }
   }
 

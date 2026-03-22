@@ -21,7 +21,6 @@ class DashboardStats {
   });
 
   factory DashboardStats.fromJson(Map<String, dynamic> json) {
-    // API returns data wrapped in a 'data' field
     final d = json['data'] ?? json;
     return DashboardStats(
       totalUsers: d['totalUsers'] ?? 0,
@@ -335,7 +334,6 @@ class DashboardService {
     }
   }
 
-  /// Per-model predictions, confidence, and positive rating rate (admin).
   Future<List<Map<String, dynamic>>> getModelAccuracy() async {
     try {
       final response = await _authorizedGet(ApiPaths.adminModelsAccuracy);
@@ -406,7 +404,6 @@ class DashboardService {
     }
   }
 
-  /// Public health endpoints (no JWT).
   Future<Map<String, dynamic>> getHealthChecks() async {
     final out = <String, dynamic>{};
     try {

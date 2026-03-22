@@ -62,7 +62,6 @@ class HistoryItem {
   factory HistoryItem.fromJson(Map<String, dynamic> json) {
     final rawUrl = (json['imageUrl'] ?? '') as String;
     final imageUrl = rawUrl.isEmpty ? '' : HistoryItem.resolveImageUrl(rawUrl);
-    // Pick disease name from several possible fields returned by backend
     final diseaseName =
         (json['diseaseName'] ??
                 json['predictedClass'] ??
@@ -70,8 +69,6 @@ class HistoryItem {
                 '')
             as String;
 
-    // Support multiple possible confidence fields (backend might send
-    // `confidenceScore` as in the example). Be robust to number or string.
     final rawConfidence = json['confidenceScore'] ?? json['confidence'];
     double confidence;
     if (rawConfidence is num) {
@@ -157,7 +154,6 @@ class HistoryService {
     return _fetch(retryOnUnauthorized: true);
   }
 
-  /// GET /api/predictions/history/{id}
   Future<Map<String, dynamic>?> getPredictionById(int id) async {
     return _fetchDetail(id, retryOnUnauthorized: true);
   }

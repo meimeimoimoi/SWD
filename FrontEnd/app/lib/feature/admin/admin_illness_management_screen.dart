@@ -8,7 +8,6 @@ import '../../share/widgets/admin_bottom_nav.dart';
 import '../../share/widgets/admin_pop_scope.dart';
 import 'admin_illness_edit_screen.dart';
 
-/// Guide-aligned list + entry to `.guide/th_m_b_nh_m_i_form` editor.
 class AdminIllnessManagementScreen extends StatefulWidget {
   const AdminIllnessManagementScreen({super.key});
 
@@ -70,25 +69,25 @@ class _AdminIllnessManagementScreenState
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(
-          'Xóa bệnh?',
+          'Delete disease?',
           style: GoogleFonts.spaceGrotesk(fontWeight: FontWeight.w700),
         ),
         content: Text(
-          'Xóa "$name"? Hành động này không thể hoàn tác.',
+          'Delete "$name"? This cannot be undone.',
           style: GoogleFonts.spaceGrotesk(),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
             child: Text(
-              'Hủy',
+              'Cancel',
               style: GoogleFonts.spaceGrotesk(color: Colors.grey.shade700),
             ),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: FilledButton.styleFrom(backgroundColor: Colors.red.shade700),
-            child: Text('Xóa', style: GoogleFonts.spaceGrotesk()),
+            child: Text('Delete', style: GoogleFonts.spaceGrotesk()),
           ),
         ],
       ),
@@ -98,7 +97,7 @@ class _AdminIllnessManagementScreenState
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(success ? 'Đã xóa' : 'Xóa thất bại'),
+        content: Text(success ? 'Deleted' : 'Delete failed'),
         backgroundColor: success ? _kPrimary : Colors.red,
         behavior: SnackBarBehavior.floating,
       ),
@@ -141,7 +140,7 @@ class _AdminIllnessManagementScreenState
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Quản lý bệnh',
+                'Manage diseases',
                 style: GoogleFonts.spaceGrotesk(
                   fontWeight: FontWeight.w700,
                   fontSize: 20,
@@ -150,7 +149,7 @@ class _AdminIllnessManagementScreenState
                 ),
               ),
               Text(
-                'Thêm và chỉnh sửa bệnh trong thư viện',
+                'Add and edit diseases in the library',
                 style: GoogleFonts.spaceGrotesk(
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
@@ -162,7 +161,7 @@ class _AdminIllnessManagementScreenState
           actions: [
             ...adminSecondaryAppBarActions(context),
             IconButton(
-              tooltip: 'Làm mới',
+              tooltip: 'Refresh',
               onPressed: _load,
               icon: Icon(Icons.refresh_rounded, color: textSecondary),
             ),
@@ -185,7 +184,7 @@ class _AdminIllnessManagementScreenState
                           color: textPrimary,
                         ),
                         decoration: InputDecoration(
-                          hintText: 'Tìm theo tên, tên khoa học…',
+                          hintText: 'Search by name or scientific name…',
                           hintStyle: GoogleFonts.spaceGrotesk(
                             color: textSecondary,
                             fontSize: 14,
@@ -244,8 +243,8 @@ class _AdminIllnessManagementScreenState
                                   const SizedBox(height: 16),
                                   Text(
                                     _rows.isEmpty
-                                        ? 'Chưa có bệnh nào. Nhấn nút bên dưới để thêm.'
-                                        : 'Không tìm thấy kết quả phù hợp.',
+                                        ? 'No diseases yet. Use the button below to add one.'
+                                        : 'No matching results.',
                                     textAlign: TextAlign.center,
                                     style: GoogleFonts.spaceGrotesk(
                                       fontSize: 15,
@@ -271,7 +270,7 @@ class _AdminIllnessManagementScreenState
                                       r['illnessId'] ?? r['IllnessId'];
                                   final iid = _asInt(idRaw);
                                   final name =
-                                      '${r['illnessName'] ?? r['IllnessName'] ?? 'Bệnh'}';
+                                      '${r['illnessName'] ?? r['IllnessName'] ?? 'Disease'}';
                                   final sci =
                                       '${r['scientificName'] ?? r['ScientificName'] ?? ''}'
                                           .trim();
@@ -303,7 +302,7 @@ class _AdminIllnessManagementScreenState
           elevation: 3,
           icon: const Icon(Icons.add_rounded),
           label: Text(
-            'Thêm bệnh',
+            'Add disease',
             style: GoogleFonts.spaceGrotesk(fontWeight: FontWeight.w700),
           ),
         ),
@@ -428,7 +427,7 @@ class _IllnessCard extends StatelessWidget {
                 ),
               ),
               IconButton(
-                tooltip: 'Xóa',
+                tooltip: 'Delete',
                 onPressed: onDelete,
                 icon: Icon(
                   Icons.delete_outline_rounded,

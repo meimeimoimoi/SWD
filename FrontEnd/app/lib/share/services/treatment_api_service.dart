@@ -53,7 +53,6 @@ class TreatmentApiService {
     return t.toLowerCase().startsWith('bearer ') ? t : 'Bearer $t';
   }
 
-  /// GET /api/treatments/recommendations (illnessId, illnessStageId, and/or treeStageId).
   Future<List<TreatmentRecommendationItem>> getRecommendations({
     int? illnessId,
     int? illnessStageId,
@@ -90,14 +89,12 @@ class TreatmentApiService {
     }
   }
 
-  /// GET /api/treatments/recommendations?illnessId=
   Future<List<TreatmentRecommendationItem>> getRecommendationsForIllness(
     int illnessId,
   ) {
     return getRecommendations(illnessId: illnessId);
   }
 
-  /// GET /api/diseases/{id}/detail ([AllowAnonymous] on server).
   Future<Map<String, dynamic>?> getDiseaseDetail(int id) async {
     try {
       final response = await _dio.get<Map<String, dynamic>>(
@@ -113,7 +110,6 @@ class TreatmentApiService {
     }
   }
 
-  /// GET /api/treatments/solutions/{id}
   Future<Map<String, dynamic>?> getSolutionDetail(int solutionId) async {
     try {
       final token = await StorageService.getAccessToken();

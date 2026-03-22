@@ -8,7 +8,6 @@ import '../../share/services/dashboard_service.dart' show DashboardService;
 import '../../share/widgets/admin_bottom_nav.dart';
 import '../../share/widgets/admin_pop_scope.dart';
 
-/// Guide: `.guide/t_i_l_n_model_m_i_onnx` — form + vùng chọn file .onnx.
 class AdminModelUploadScreen extends StatefulWidget {
   const AdminModelUploadScreen({super.key});
 
@@ -27,9 +26,9 @@ class _ModelTypeOption {
 }
 
 const List<_ModelTypeOption> _kModelTypes = [
-  _ModelTypeOption(apiValue: 'mobilenetv3', label: 'Phân loại ảnh'),
-  _ModelTypeOption(apiValue: 'yolov8', label: 'Phát hiện vật thể'),
-  _ModelTypeOption(apiValue: 'segmentation', label: 'Phân đoạn'),
+  _ModelTypeOption(apiValue: 'mobilenetv3', label: 'Image classification'),
+  _ModelTypeOption(apiValue: 'yolov8', label: 'Object detection'),
+  _ModelTypeOption(apiValue: 'segmentation', label: 'Segmentation'),
 ];
 
 class _AdminModelUploadScreenState extends State<AdminModelUploadScreen> {
@@ -61,7 +60,7 @@ class _AdminModelUploadScreenState extends State<AdminModelUploadScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Chỉ chấp nhận file .onnx'),
+            content: Text('Only .onnx files are accepted'),
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -80,7 +79,7 @@ class _AdminModelUploadScreenState extends State<AdminModelUploadScreen> {
     if (path == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Vui lòng chọn file .onnx'),
+          content: Text('Please select an .onnx file'),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -99,7 +98,7 @@ class _AdminModelUploadScreenState extends State<AdminModelUploadScreen> {
     setState(() => _submitting = false);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(ok ? 'Tải lên thành công' : 'Tải lên thất bại'),
+        content: Text(ok ? 'Upload succeeded' : 'Upload failed'),
         backgroundColor: ok ? _kPrimary : Colors.red,
         behavior: SnackBarBehavior.floating,
       ),
@@ -135,7 +134,7 @@ class _AdminModelUploadScreenState extends State<AdminModelUploadScreen> {
                     ),
                     Expanded(
                       child: Text(
-                        'Tải lên Model mới',
+                        'Upload new model',
                         style: GoogleFonts.spaceGrotesk(
                           fontSize: 20,
                           fontWeight: FontWeight.w700,
@@ -176,7 +175,7 @@ class _AdminModelUploadScreenState extends State<AdminModelUploadScreen> {
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
                               _LabeledField(
-                                label: 'Tên model',
+                                label: 'Model name',
                                 child: TextFormField(
                                   controller: _name,
                                   style: _inputStyle(isDark),
@@ -188,13 +187,13 @@ class _AdminModelUploadScreenState extends State<AdminModelUploadScreen> {
                                   ),
                                   validator: (v) =>
                                       v == null || v.trim().isEmpty
-                                          ? 'Bắt buộc'
+                                          ? 'Required'
                                           : null,
                                 ),
                               ),
                               const SizedBox(height: 18),
                               _LabeledField(
-                                label: 'Phiên bản',
+                                label: 'Version',
                                 child: TextFormField(
                                   controller: _version,
                                   style: _inputStyle(isDark),
@@ -206,13 +205,13 @@ class _AdminModelUploadScreenState extends State<AdminModelUploadScreen> {
                                   ),
                                   validator: (v) =>
                                       v == null || v.trim().isEmpty
-                                          ? 'Bắt buộc'
+                                          ? 'Required'
                                           : null,
                                 ),
                               ),
                               const SizedBox(height: 18),
                               _LabeledField(
-                                label: 'Loại model',
+                                label: 'Model type',
                                 child: DropdownButtonFormField<_ModelTypeOption>(
                                   value: _selectedType,
                                   isExpanded: true,
@@ -249,7 +248,7 @@ class _AdminModelUploadScreenState extends State<AdminModelUploadScreen> {
                               ),
                               const SizedBox(height: 18),
                               _LabeledField(
-                                label: 'Chi tiết mô tả',
+                                label: 'Description',
                                 child: TextFormField(
                                   controller: _desc,
                                   maxLines: 5,
@@ -257,7 +256,7 @@ class _AdminModelUploadScreenState extends State<AdminModelUploadScreen> {
                                   style: _inputStyle(isDark),
                                   decoration: _inputDeco(
                                     hint:
-                                        'Nhập thông tin chi tiết về model…',
+                                        'Enter detailed information about the model…',
                                     fill: fill,
                                     border: border,
                                     isDark: isDark,
@@ -312,7 +311,7 @@ class _AdminModelUploadScreenState extends State<AdminModelUploadScreen> {
                                     ),
                                     const SizedBox(height: 14),
                                     Text(
-                                      'Tải lên file model (.onnx)',
+                                      'Upload model file (.onnx)',
                                       style: GoogleFonts.spaceGrotesk(
                                         fontSize: 17,
                                         fontWeight: FontWeight.w700,
@@ -323,7 +322,7 @@ class _AdminModelUploadScreenState extends State<AdminModelUploadScreen> {
                                     ),
                                     const SizedBox(height: 8),
                                     Text(
-                                      'Kéo thả hoặc nhấn để chọn tập tin từ thiết bị',
+                                      'Drag and drop or tap to pick a file from your device',
                                       textAlign: TextAlign.center,
                                       style: GoogleFonts.spaceGrotesk(
                                         fontSize: 13,
@@ -370,7 +369,7 @@ class _AdminModelUploadScreenState extends State<AdminModelUploadScreen> {
                                           const SizedBox(width: 8),
                                           Flexible(
                                             child: Text(
-                                              'Hệ thống chỉ chấp nhận định dạng .onnx',
+                                              'Only .onnx format is accepted',
                                               style: GoogleFonts.spaceGrotesk(
                                                 fontSize: 11,
                                                 fontWeight: FontWeight.w600,
@@ -411,7 +410,7 @@ class _AdminModelUploadScreenState extends State<AdminModelUploadScreen> {
                                     ),
                                   )
                                 : Text(
-                                    'Hoàn tất tải lên',
+                                    'Finish upload',
                                     style: GoogleFonts.spaceGrotesk(
                                       fontWeight: FontWeight.w700,
                                       fontSize: 16,

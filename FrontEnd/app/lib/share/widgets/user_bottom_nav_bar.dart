@@ -2,11 +2,9 @@ import 'package:flutter/material.dart';
 
 import '../../routes/app_router.dart';
 
-/// Bottom navigation for Argivision (overview, models, trees, profile).
 class UserBottomNavBar extends StatelessWidget {
   const UserBottomNavBar({super.key, this.selectedIndexOverride});
 
-  /// Use when [ModalRoute.settings.name] does not match tab routes.
   final int? selectedIndexOverride;
 
   static int indexForRoute(String? name) {
@@ -14,6 +12,7 @@ class UserBottomNavBar extends StatelessWidget {
       case AppRouter.dashboard:
         return 0;
       case AppRouter.scan:
+      case AppRouter.history:
         return 1;
       case AppRouter.trees:
         return 2;
@@ -61,9 +60,9 @@ class UserBottomNavBar extends StatelessWidget {
           label: 'Overview',
         ),
         NavigationDestination(
-          icon: Icon(Icons.model_training_outlined),
-          selectedIcon: Icon(Icons.model_training),
-          label: 'Models',
+          icon: Icon(Icons.document_scanner_outlined),
+          selectedIcon: Icon(Icons.document_scanner),
+          label: 'Scan',
         ),
         NavigationDestination(
           icon: Icon(Icons.park_outlined),

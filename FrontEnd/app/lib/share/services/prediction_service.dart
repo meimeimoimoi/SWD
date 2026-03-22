@@ -4,7 +4,6 @@ import '../constants/api_config.dart';
 import 'auth_api_service.dart';
 import 'storage_service.dart';
 
-/// Model for API prediction response
 class PredictionResponse {
   final bool success;
   final String message;
@@ -21,7 +20,6 @@ class PredictionResponse {
   }
 }
 
-/// Model for prediction data
 class PredictionData {
   final int predictionId;
   final String imageUrl;
@@ -63,7 +61,6 @@ class PredictionData {
   }
 }
 
-/// Service to handle predictions
 class PredictionService {
   final Dio _dio;
 
@@ -80,8 +77,6 @@ class PredictionService {
             ),
           );
 
-  /// Upload image and get prediction
-  /// [imageFile] - File path to the image
   Future<PredictionResponse> predict(String imagePath) async {
     return _predictInternal(imagePath, retryOnUnauthorized: true);
   }
@@ -100,7 +95,6 @@ class PredictionService {
         );
       }
 
-      // Matches OpenAPI + PredictionController (IFormFile image).
       final formData = FormData.fromMap({
         'image': await MultipartFile.fromFile(imagePath),
       });
@@ -154,7 +148,6 @@ class PredictionService {
     return 'Bearer $trimmed';
   }
 
-  /// GET /api/Prediction/classes
   Future<dynamic> getPredictionClasses() async {
     try {
       final response = await _dio.get(ApiPaths.predictionClasses);
@@ -164,7 +157,6 @@ class PredictionService {
     }
   }
 
-  /// GET /api/Prediction/health
   Future<bool> isPredictionServiceHealthy() async {
     try {
       final response = await _dio.get(ApiPaths.predictionHealth);

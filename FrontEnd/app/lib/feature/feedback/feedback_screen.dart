@@ -63,7 +63,6 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Thanks for your feedback!')),
         );
-        // Navigate back to prediction screen
         Navigator.pop(context);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -177,7 +176,7 @@ class _SummaryCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  predictionResult?.vietnameseName ?? 'Leaf spot',
+                  predictionResult?.displayName ?? 'Leaf spot',
                   style: theme.textTheme.titleLarge,
                 ),
                 const SizedBox(height: 4),

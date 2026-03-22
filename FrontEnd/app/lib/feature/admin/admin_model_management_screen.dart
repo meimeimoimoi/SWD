@@ -9,7 +9,6 @@ import '../../share/theme/app_colors.dart';
 import '../../share/widgets/admin_bottom_nav.dart';
 import '../../share/widgets/admin_pop_scope.dart';
 
-/// Guide: `.guide/qu_n_l_m_h_nh_models` — Quản lý Models, tìm kiếm, upload, thẻ có toggle & chỉ số.
 class AdminModelManagementScreen extends StatefulWidget {
   const AdminModelManagementScreen({super.key});
 
@@ -94,7 +93,7 @@ class _AdminModelManagementScreenState
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(ok ? 'Đã kích hoạt mô hình' : 'Kích hoạt thất bại'),
+        content: Text(ok ? 'Model activated' : 'Activation failed'),
         backgroundColor: ok ? _kGuidePrimary : Colors.red,
         behavior: SnackBarBehavior.floating,
       ),
@@ -128,7 +127,7 @@ class _AdminModelManagementScreenState
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text(
-          'Để đổi mô hình đang chạy, hãy kích hoạt một phiên bản khác trong danh sách.',
+          'To switch the running model, activate another version from the list.',
         ),
         behavior: SnackBarBehavior.floating,
       ),
@@ -170,7 +169,7 @@ class _AdminModelManagementScreenState
             ),
             const SizedBox(height: 4),
             Text(
-              'Phiên bản: $ver · ID: $id',
+              'Version: $ver · ID: $id',
               style: GoogleFonts.spaceGrotesk(
                 fontSize: 13,
                 color: Colors.grey.shade600,
@@ -178,7 +177,7 @@ class _AdminModelManagementScreenState
             ),
             const SizedBox(height: 16),
             Text(
-              'Dự đoán: $preds\nĐộ tin cậy TB: ${_pct(conf)}\nĐánh giá tích cực: ${_pct(rate)}',
+              'Predictions: $preds\nAvg confidence: ${_pct(conf)}\nPositive ratings: ${_pct(rate)}',
               style: GoogleFonts.spaceGrotesk(fontSize: 14, height: 1.45),
             ),
           ],
@@ -268,7 +267,7 @@ class _AdminModelManagementScreenState
                                   ),
                                   const SizedBox(width: 8),
                                   Text(
-                                    'Danh sách Models',
+                                    'Model list',
                                     style: GoogleFonts.spaceGrotesk(
                                       fontSize: 17,
                                       fontWeight: FontWeight.w700,
@@ -287,7 +286,7 @@ class _AdminModelManagementScreenState
                                   borderRadius: BorderRadius.circular(20),
                                 ),
                                 child: Text(
-                                  '$_runningCount Đang chạy',
+                                  '$_runningCount Running',
                                   style: GoogleFonts.spaceGrotesk(
                                     fontSize: 11,
                                     fontWeight: FontWeight.w600,
@@ -305,8 +304,8 @@ class _AdminModelManagementScreenState
                           sliver: SliverToBoxAdapter(
                             child: Text(
                               _models.isEmpty && _accuracy.isEmpty
-                                  ? 'Chưa có mô hình.'
-                                  : 'Không có kết quả tìm kiếm.',
+                                  ? 'No models yet.'
+                                  : 'No search results.',
                               textAlign: TextAlign.center,
                               style: TextStyle(color: textMuted),
                             ),
@@ -344,7 +343,7 @@ class _AdminModelManagementScreenState
                                   child: _GuideModelCard(
                                     name: name.isEmpty ? 'Model #$id' : name,
                                     versionLine:
-                                        'Phiên bản: ${ver.isEmpty ? '—' : ver} • ONNX Runtime'
+                                        'Version: ${ver.isEmpty ? '—' : ver} • ONNX Runtime'
                                         '${desc.isNotEmpty ? ' • $desc' : ''}',
                                     accuracyPct: _pct(conf),
                                     latencyLabel: '—',
@@ -416,13 +415,13 @@ class _ModelsAppBar extends StatelessWidget {
           IconButton(
             onPressed: () => Navigator.of(context).pop(),
             icon: Icon(Icons.arrow_back_rounded, color: textMuted),
-            tooltip: 'Quay lại',
+            tooltip: 'Back',
           )
         else
           const SizedBox(width: 8),
         Expanded(
           child: Text(
-            'Quản lý Models',
+            'Manage models',
             style: GoogleFonts.spaceGrotesk(
               fontSize: 20,
               fontWeight: FontWeight.w700,
@@ -435,14 +434,14 @@ class _ModelsAppBar extends StatelessWidget {
           icon: Icon(Icons.more_vert_rounded, color: textMuted),
           onSelected: onMenuSelected,
           itemBuilder: (ctx) => [
-            const PopupMenuItem(value: 'refresh', child: Text('Làm mới')),
+            const PopupMenuItem(value: 'refresh', child: Text('Refresh')),
             const PopupMenuItem(
               value: 'feedback',
-              child: Text('Phản hồi'),
+              child: Text('Feedback'),
             ),
             const PopupMenuItem(
               value: 'settings',
-              child: Text('Cài đặt'),
+              child: Text('Settings'),
             ),
           ],
         ),
@@ -469,7 +468,7 @@ class _SearchField extends StatelessWidget {
         color: isDark ? Colors.white : const Color(0xFF0F172A),
       ),
       decoration: InputDecoration(
-        hintText: 'Tìm kiếm model…',
+        hintText: 'Search models…',
         hintStyle: GoogleFonts.spaceGrotesk(
           fontSize: 14,
           color: isDark ? Colors.white38 : Colors.grey.shade500,
@@ -523,7 +522,7 @@ class _UploadBannerButton extends StatelessWidget {
               const Icon(Icons.upload_file_rounded, color: Colors.white),
               const SizedBox(width: 10),
               Text(
-                'Tải lên Model mới (.onnx)',
+                'Upload new model (.onnx)',
                 style: GoogleFonts.spaceGrotesk(
                   color: Colors.white,
                   fontWeight: FontWeight.w700,
@@ -638,7 +637,7 @@ class _GuideModelCard extends StatelessWidget {
                 children: [
                   Expanded(
                     child: _MetricBox(
-                      label: 'ĐỘ CHÍNH XÁC',
+                      label: 'ACCURACY',
                       value: accuracyPct,
                       background: isActive ? metricBgActive : metricBgIdle,
                       valueColor: valueColor,
@@ -649,7 +648,7 @@ class _GuideModelCard extends StatelessWidget {
                   const SizedBox(width: 12),
                   Expanded(
                     child: _MetricBox(
-                      label: 'ĐỘ TRỄ (LATENCY)',
+                      label: 'LATENCY',
                       value: latencyLabel,
                       background: isActive ? metricBgActive : metricBgIdle,
                       valueColor: valueColor,
@@ -677,7 +676,7 @@ class _GuideModelCard extends StatelessWidget {
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        isActive ? 'Đang hoạt động' : 'Tạm dừng',
+                        isActive ? 'Active' : 'Paused',
                         style: GoogleFonts.spaceGrotesk(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
@@ -697,7 +696,7 @@ class _GuideModelCard extends StatelessWidget {
                     icon: const Icon(Icons.chevron_right_rounded, size: 18),
                     iconAlignment: IconAlignment.end,
                     label: Text(
-                      'Chi tiết',
+                      'Details',
                       style: GoogleFonts.spaceGrotesk(
                         fontWeight: FontWeight.w700,
                         fontSize: 13,

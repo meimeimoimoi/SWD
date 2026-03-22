@@ -5,7 +5,6 @@ import 'unified_account_screen.dart';
 
 const Color _kPrimary = Color(0xFF2D7B31);
 
-/// Hồ sơ + cài đặt (user & admin) — [UnifiedAccountScreen].
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 

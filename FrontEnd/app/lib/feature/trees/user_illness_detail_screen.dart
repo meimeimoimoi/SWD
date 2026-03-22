@@ -11,7 +11,6 @@ const Color _kPrimary = Color(0xFF2D7B31);
 const Color _kBgLight = Color(0xFFF6F8F6);
 const Color _kBgDark = Color(0xFF141E15);
 
-/// Route arguments for [UserIllnessDetailScreen].
 class UserIllnessDetailArgs {
   const UserIllnessDetailArgs({
     required this.item,
@@ -22,7 +21,6 @@ class UserIllnessDetailArgs {
   final List<TreatmentRecommendationItem> recommendations;
 }
 
-/// Guide: `.guide/chi_ti_t_b_nh_bacterial_leaf_blight` — read-only chi tiết bệnh (user).
 class UserIllnessDetailScreen extends StatefulWidget {
   const UserIllnessDetailScreen({
     super.key,
@@ -151,7 +149,7 @@ class _UserIllnessDetailScreenState extends State<UserIllnessDetailScreen> {
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: Text(
-          'Chi tiết Bệnh',
+          'Disease details',
           style: GoogleFonts.spaceGrotesk(
             fontWeight: FontWeight.w700,
             fontSize: 18,
@@ -181,7 +179,7 @@ class _UserIllnessDetailScreenState extends State<UserIllnessDetailScreen> {
                   ),
                   const SizedBox(height: 20),
                   if (desc != null && desc.isNotEmpty) ...[
-                    _sectionTitle('Mô tả chi tiết', isDark),
+                    _sectionTitle('Detailed description', isDark),
                     const SizedBox(height: 8),
                     _CardShell(
                       isDark: isDark,
@@ -210,7 +208,7 @@ class _UserIllnessDetailScreenState extends State<UserIllnessDetailScreen> {
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        'Triệu chứng & Nguyên nhân',
+                        'Symptoms & causes',
                         style: GoogleFonts.spaceGrotesk(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
@@ -223,7 +221,7 @@ class _UserIllnessDetailScreenState extends State<UserIllnessDetailScreen> {
                   if (symptoms != null && symptoms.isNotEmpty)
                     _labelCard(
                       isDark,
-                      'TRIỆU CHỨNG',
+                      'SYMPTOMS',
                       symptoms,
                     ),
                   if (symptoms != null && symptoms.isNotEmpty)
@@ -231,7 +229,7 @@ class _UserIllnessDetailScreenState extends State<UserIllnessDetailScreen> {
                   if (causes != null && causes.isNotEmpty)
                     _labelCard(
                       isDark,
-                      'NGUYÊN NHÂN',
+                      'CAUSES',
                       causes,
                     ),
                   if ((symptoms == null || symptoms.isEmpty) &&
@@ -239,7 +237,7 @@ class _UserIllnessDetailScreenState extends State<UserIllnessDetailScreen> {
                     Padding(
                       padding: const EdgeInsets.only(top: 4),
                       child: Text(
-                        'Chưa có mô tả triệu chứng/nguyên nhân chi tiết.',
+                        'No detailed symptom or cause description yet.',
                         style: GoogleFonts.spaceGrotesk(
                           fontSize: 13,
                           color: isDark
@@ -249,7 +247,7 @@ class _UserIllnessDetailScreenState extends State<UserIllnessDetailScreen> {
                       ),
                     ),
                   const SizedBox(height: 20),
-                  _sectionTitle('Thông tin hệ thống', isDark),
+                  _sectionTitle('System information', isDark),
                   const SizedBox(height: 8),
                   _CardShell(
                     isDark: isDark,
@@ -259,7 +257,7 @@ class _UserIllnessDetailScreenState extends State<UserIllnessDetailScreen> {
                         children: [
                           if (createdApi != null)
                             _metaRow(
-                              'Ngày tạo',
+                              'Created',
                               _formatDt(createdApi),
                               isDark,
                             ),
@@ -272,13 +270,13 @@ class _UserIllnessDetailScreenState extends State<UserIllnessDetailScreen> {
                             ),
                           if (updatedApi != null)
                             _metaRow(
-                              'Cập nhật cuối',
+                              'Last updated',
                               _formatDt(updatedApi),
                               isDark,
                             ),
                           if (createdApi == null && updatedApi == null)
                             _metaRow(
-                              'Ghi nhận từ quét',
+                              'Recorded from scan',
                               _formatDateTime(u.createdAt),
                               isDark,
                             ),
@@ -287,13 +285,13 @@ class _UserIllnessDetailScreenState extends State<UserIllnessDetailScreen> {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  _sectionTitle('Giải pháp liên kết', isDark),
+                  _sectionTitle('Linked solutions', isDark),
                   const SizedBox(height: 8),
                   if (widget.recommendations.isEmpty)
                     Text(
                       u.illnessId == null
-                          ? 'Chưa liên kết mã bệnh trong hệ thống — không có gợi ý tự động.'
-                          : 'Chưa có giải pháp gắn với bệnh này trong thư viện.',
+                          ? 'Disease code not linked in the system — no automatic suggestions.'
+                          : 'No solutions linked to this disease in the library.',
                       style: GoogleFonts.spaceGrotesk(
                         fontSize: 13,
                         height: 1.4,
@@ -323,7 +321,7 @@ class _UserIllnessDetailScreenState extends State<UserIllnessDetailScreen> {
   }
 
   static String _subtitleEnglishSci(String diseaseName, String sci) {
-    final en = DiseaseMapper.toVietnamese(diseaseName);
+    final en = DiseaseMapper.toDisplayName(diseaseName);
     if (sci.isEmpty || sci == 'Unknown' || sci == 'N/A') {
       return en;
     }
@@ -332,17 +330,21 @@ class _UserIllnessDetailScreenState extends State<UserIllnessDetailScreen> {
 
   static String _severityBadgeText(String? severity) {
     if (severity == null || severity.trim().isEmpty) {
-      return 'MỨC ĐỘ: CHƯA XÁC ĐỊNH';
+      return 'LEVEL: UNKNOWN';
     }
     final t = severity.trim();
     const map = {
-      'Low': 'Thấp (Low)',
-      'Medium': 'Trung bình (Medium)',
-      'High': 'Cao (High)',
-      'Critical': 'Nguy hiểm (Critical)',
+      'Low': 'Low',
+      'Medium': 'Medium',
+      'High': 'High',
+      'Critical': 'Critical',
+      'Thấp': 'Low',
+      'Trung bình': 'Medium',
+      'Cao': 'High',
+      'Nguy hiểm': 'Critical',
     };
     final mapped = map[t] ?? t;
-    return 'MỨC ĐỘ: ${mapped.toUpperCase()}';
+    return 'LEVEL: ${mapped.toUpperCase()}';
   }
 
   static String _formatDateTime(DateTime d) {
@@ -448,7 +450,7 @@ class _UserIllnessDetailScreenState extends State<UserIllnessDetailScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                r.solutionName ?? 'Giải pháp',
+                r.solutionName ?? 'Solution',
                 style: GoogleFonts.spaceGrotesk(
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
@@ -469,7 +471,7 @@ class _UserIllnessDetailScreenState extends State<UserIllnessDetailScreen> {
                 Padding(
                   padding: const EdgeInsets.only(top: 8),
                   child: Text(
-                    'Giai đoạn cây: ${r.treeStageName}',
+                    'Tree stage: ${r.treeStageName}',
                     style: GoogleFonts.spaceGrotesk(
                       fontSize: 12,
                       color: Color(0xFF64748B),
@@ -655,7 +657,7 @@ class _HeroCard extends StatelessWidget {
                   children: [
                     Expanded(
                       child: _miniCol(
-                        'LOẠI TÁC NHÂN',
+                        'AGENT TYPE',
                         agentType,
                         isDark,
                       ),
@@ -663,7 +665,7 @@ class _HeroCard extends StatelessWidget {
                     const SizedBox(width: 16),
                     Expanded(
                       child: _miniCol(
-                        'KÝ CHỦ CHÍNH',
+                        'PRIMARY HOST',
                         host,
                         isDark,
                       ),
@@ -752,7 +754,9 @@ class _SolutionTile extends StatelessWidget {
         .toLowerCase();
     final icon = label.contains('nước') ||
             label.contains('water') ||
-            label.contains('tưới')
+            label.contains('tưới') ||
+            label.contains('irrigation') ||
+            label.contains('drip')
         ? Icons.water_drop_outlined
         : Icons.medication_outlined;
 
@@ -770,7 +774,7 @@ class _SolutionTile extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  item.solutionName ?? 'Giải pháp #${item.solutionId}',
+                  item.solutionName ?? 'Solution #${item.solutionId}',
                   style: GoogleFonts.spaceGrotesk(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,

@@ -11,7 +11,6 @@ const Color _kPrimary = Color(0xFF2D7B31);
 const Color _kBgLight = Color(0xFFF6F8F6);
 const Color _kBgDark = Color(0xFF141E15);
 
-/// Danh sách cây — bố cục theo `.guide/danh_m_c_b_nh_technical_view` (thẻ ảnh, chip lọc, nút Sửa/Chi tiết).
 class TreesScreen extends StatefulWidget {
   const TreesScreen({super.key});
 
@@ -89,7 +88,7 @@ class _TreesScreenState extends State<TreesScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             _TreesAppBar(
-              title: 'Cây của tôi',
+              title: 'My trees',
               onSurface: onSurface,
               onSettings: () =>
                   Navigator.pushNamed(context, AppRouter.appSettings),
@@ -226,11 +225,11 @@ class _TreesScreenState extends State<TreesScreen> {
 String _filterLabelVi(TreeListFilter f) {
   switch (f) {
     case TreeListFilter.all:
-      return 'Tất cả';
+      return 'All';
     case TreeListFilter.concern:
-      return 'Cần chú ý';
+      return 'Needs attention';
     case TreeListFilter.healthy:
-      return 'Khỏe mạnh';
+      return 'Healthy';
   }
 }
 
@@ -255,7 +254,7 @@ class _TreesAppBar extends StatelessWidget {
             IconButton(
               onPressed: () => Navigator.of(context).pop(),
               icon: Icon(Icons.arrow_back_rounded, color: _kPrimary),
-              tooltip: 'Quay lại',
+              tooltip: 'Back',
             )
           else
             const SizedBox(width: 8),
@@ -276,7 +275,7 @@ class _TreesAppBar extends StatelessWidget {
             ),
             onPressed: onSettings,
             icon: const Icon(Icons.settings_outlined, color: _kPrimary),
-            tooltip: 'Cài đặt',
+            tooltip: 'Settings',
           ),
         ],
       ),
@@ -302,7 +301,7 @@ class _SearchField extends StatelessWidget {
         color: isDark ? Colors.white : const Color(0xFF0F172A),
       ),
       decoration: InputDecoration(
-        hintText: 'Tìm kiếm tên cây hoặc bệnh…',
+        hintText: 'Search tree or disease name…',
         hintStyle: GoogleFonts.spaceGrotesk(
           fontSize: 14,
           color: isDark ? Colors.white38 : Colors.grey.shade500,
@@ -364,7 +363,7 @@ class _ErrorBody extends StatelessWidget {
                 foregroundColor: Colors.white,
               ),
               child: Text(
-                'Thử lại',
+                'Retry',
                 style: GoogleFonts.spaceGrotesk(fontWeight: FontWeight.w700),
               ),
             ),
@@ -401,8 +400,8 @@ class _EmptyBody extends StatelessWidget {
         const SizedBox(height: 16),
         Text(
           hasNoTrees
-              ? 'Chưa có cây. Quét lá để bắt đầu theo dõi trên ${AppBrand.name}.'
-              : 'Không có cây phù hợp bộ lọc.',
+              ? 'No trees yet. Scan leaves to start tracking on ${AppBrand.name}.'
+              : 'No trees match this filter.',
           textAlign: TextAlign.center,
           style: GoogleFonts.spaceGrotesk(
             fontSize: 15,
@@ -421,7 +420,7 @@ class _EmptyBody extends StatelessWidget {
             ),
             icon: const Icon(Icons.document_scanner_outlined),
             label: Text(
-              'Quét ngay',
+              'Scan now',
               style: GoogleFonts.spaceGrotesk(fontWeight: FontWeight.w700),
             ),
           ),
@@ -446,13 +445,13 @@ class _TreeCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final latest = summary.predictions.first;
     final diseaseLine = latest.diseaseName.trim().isEmpty
-        ? 'Chưa xác định'
+        ? 'Unknown'
         : latest.diseaseName;
     final sci = (summary.scientificName ?? latest.scientificName ?? '').trim();
     final desc = (latest.treeDescription ?? latest.illnessDescription ?? '')
         .trim();
     final snippet = desc.isEmpty
-        ? '${summary.scanCount} lần quét · cập nhật ${_fmtDate(summary.latestScan)}'
+        ? '${summary.scanCount} scans · updated ${_fmtDate(summary.latestScan)}'
         : (desc.length > 120 ? '${desc.substring(0, 117)}…' : desc);
 
     final cardBg = isDark ? const Color(0xFF1E293B) : Colors.white;
@@ -539,7 +538,7 @@ class _TreeCard extends StatelessWidget {
                             PopupMenuItem(
                               value: 'detail',
                               child: Text(
-                                'Chi tiết',
+                                'Details',
                                 style: GoogleFonts.spaceGrotesk(),
                               ),
                             ),
@@ -612,7 +611,7 @@ class _TreeCard extends StatelessWidget {
                             ),
                           ),
                           child: Text(
-                            'Sửa',
+                            'Edit',
                             style: GoogleFonts.spaceGrotesk(
                               fontWeight: FontWeight.w700,
                               fontSize: 13,
@@ -634,7 +633,7 @@ class _TreeCard extends StatelessWidget {
                             ),
                           ),
                           child: Text(
-                            'Chi tiết',
+                            'Details',
                             style: GoogleFonts.spaceGrotesk(
                               fontWeight: FontWeight.w700,
                               fontSize: 13,
@@ -675,28 +674,28 @@ class _SeverityBadge extends StatelessWidget {
             ? const Color(0xFF14532D).withValues(alpha: 0.85)
             : Colors.green.shade100;
         fg = isDark ? const Color(0xFF86EFAC) : Colors.green.shade800;
-        text = 'KHỎE MẠNH';
+        text = 'HEALTHY';
         break;
       case TreeHealthLevel.low:
         bg = isDark
             ? const Color(0xFF14532D).withValues(alpha: 0.5)
             : Colors.lightGreen.shade100;
         fg = isDark ? const Color(0xFFBBF7D0) : Colors.green.shade900;
-        text = 'MỨC ĐỘ: THẤP';
+        text = 'LEVEL: LOW';
         break;
       case TreeHealthLevel.medium:
         bg = isDark
             ? const Color(0xFF7C2D12).withValues(alpha: 0.45)
             : Colors.orange.shade100;
         fg = isDark ? const Color(0xFFFDBA74) : Colors.orange.shade900;
-        text = 'MỨC ĐỘ: TRUNG BÌNH';
+        text = 'LEVEL: MEDIUM';
         break;
       case TreeHealthLevel.high:
         bg = isDark
             ? const Color(0xFF7F1D1D).withValues(alpha: 0.55)
             : Colors.red.shade100;
         fg = isDark ? const Color(0xFFFECACA) : Colors.red.shade900;
-        text = 'MỨC ĐỘ: CAO';
+        text = 'LEVEL: HIGH';
         break;
     }
     return Container(
