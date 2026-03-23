@@ -1,31 +1,19 @@
-/// Utility class to map disease names between English and Vietnamese
 class DiseaseMapper {
-  static const Map<String, String> _englishToVietnamese = {
-    'Leaf Blast': 'Đạo ôn (cháy lá do nấm)',
-    'Bacterial Leaf Blight': 'Bạc lá (cháy bìa lá do vi khuẩn)',
-    'Brown Spot': 'Đốm nâu',
-    'Healthy Rice Leaf': 'Lá gạo khỏe',
+  static const Map<String, String> _displayNames = {
+    'Leaf Blast': 'Leaf blast',
+    'Bacterial Leaf Blight': 'Bacterial leaf blight',
+    'Brown Spot': 'Brown spot',
+    'Healthy Rice Leaf': 'Healthy rice leaf',
   };
 
-  static const Map<String, String> _impactMapping = {
-    'Leaf Blast':
-        'Làm giảm năng suất ~10–30%, bùng phát nặng có thể 40–50% Làm giảm năng suất ~20–50%, nặng có thể hơn 70%',
-    'Bacterial Leaf Blight': ' Làm giảm năng suất ~20–50%, nặng có thể hơn 70%',
-    'Brown Spot': 'Thường giảm năng suất ~5–20%.',
-    'Healthy Rice Leaf': 'Không ảnh hưởng, năng suất bình thường',
-  };
-
-  /// Convert English disease name to Vietnamese
-  static String toVietnamese(String englishName) {
-    return _englishToVietnamese[englishName] ?? englishName;
+  static String toDisplayName(String englishName) {
+    return _displayNames[englishName] ?? englishName;
   }
 
-  /// Check if it's a healthy condition
   static bool isHealthy(String diseaseName) {
     return diseaseName.toLowerCase().contains('healthy');
   }
 
-  /// Get scientific name based on disease name
   static String getScientificName(String englishDiseaseName) {
     const Map<String, String> scientificNames = {
       'Leaf Blast': 'Magnaporthe oryzae',
@@ -37,13 +25,14 @@ class DiseaseMapper {
   }
 
   static String getImpact(String englishDiseaseName) {
-    const Map<String, String> _impactMapping = {
-      'Leaf Blast': 'Làm giảm năng suất ~10–30%, bùng phát nặng có thể 40–50% ',
+    const Map<String, String> impact = {
+      'Leaf Blast':
+          'Can reduce yield ~10–30%; severe outbreaks may reach 40–50%.',
       'Bacterial Leaf Blight':
-          ' Làm giảm năng suất ~20–50%, nặng có thể hơn 70%',
-      'Brown Spot': 'Thường giảm năng suất ~5–20%.',
-      'Healthy Rice Leaf': 'Không ảnh hưởng, năng suất bình thường',
+          'Can reduce yield ~20–50%; severe cases may exceed 70%.',
+      'Brown Spot': 'Often reduces yield ~5–20%.',
+      'Healthy Rice Leaf': 'No negative impact; normal yield expected.',
     };
-    return _impactMapping[englishDiseaseName] ?? 'Unknown';
+    return impact[englishDiseaseName] ?? 'Unknown';
   }
 }

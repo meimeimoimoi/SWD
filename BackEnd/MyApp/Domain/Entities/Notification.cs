@@ -8,7 +8,7 @@ namespace MyApp.Domain.Entities
         public int UserId { get; set; }
         public string Title { get; set; } = null!;
         public string Message { get; set; } = null!;
-        public string? Type { get; set; } // e.g., "Info", "Warning", "Error"
+        public string? Type { get; set; }
         public bool IsRead { get; set; } = false;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 

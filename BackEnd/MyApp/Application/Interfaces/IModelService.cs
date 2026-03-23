@@ -7,5 +7,6 @@ namespace MyApp.Application.Interfaces
         Task<List<ModelVersionDto>> GetAllModelsAsync();
         Task<(bool success, string message, ModelVersionDto? data)> UploadModelAsync(UploadModelDto dto);
         Task<ModelVersionDto?> ActivateModelAsync(int modelVersionId);
+        Task<ModelVersionDetailDto?> GetModelVersionDetailAsync(int modelVersionId);
     }
 }

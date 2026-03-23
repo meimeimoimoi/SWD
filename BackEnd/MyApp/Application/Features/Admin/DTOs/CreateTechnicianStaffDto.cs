@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace MyApp.Application.Features.Admin.DTOs
 {
@@ -25,6 +25,6 @@ namespace MyApp.Application.Features.Admin.DTOs
 
         [Required]
         [MaxLength(50)]
-        public string Role { get; set; } = null!; // "Technician" or "Staff"
+        public string Role { get; set; } = null!;
     }
 }

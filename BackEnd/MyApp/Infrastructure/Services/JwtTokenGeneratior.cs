@@ -1,4 +1,4 @@
-﻿using Microsoft.IdentityModel.Tokens;
+using Microsoft.IdentityModel.Tokens;
 using MyApp.Domain.Entities;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -20,15 +20,18 @@ namespace MyApp.Infrastructure.Services
         {
             jti = Guid.NewGuid().ToString();
 
+            var role = user.Role?.ToString() ?? string.Empty;
             var claims = new[]
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.UserId.ToString()),
                 new Claim(JwtRegisteredClaimNames.UniqueName, user.Username),
                 new Claim(JwtRegisteredClaimNames.Jti, jti),
-                new Claim(ClaimTypes.Role, user.Role),
+                new Claim(ClaimTypes.Role, role),
             };
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
+            var jwtKey = _config["Jwt:Key"]
+                ?? throw new InvalidOperationException("Configuration Jwt:Key is required.");
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(
@@ -57,6 +60,8 @@ namespace MyApp.Infrastructure.Services
 
         public ClaimsPrincipal GetPrincipalFromExpiredToken(string token)
         {
+            var jwtKey = _config["Jwt:Key"]
+                ?? throw new InvalidOperationException("Configuration Jwt:Key is required.");
             var tokenValidationParameters = new TokenValidationParameters
             {
                 ValidateIssuer = true,
@@ -65,8 +70,7 @@ namespace MyApp.Infrastructure.Services
                 ValidateLifetime = false,
                 ValidIssuer = _config["Jwt:Issuer"],
                 ValidAudience = _config["Jwt:Audience"],
-                IssuerSigningKey = new SymmetricSecurityKey(
-                    Encoding.UTF8.GetBytes(_config["Jwt:Key"])),
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
                 ClockSkew = TimeSpan.Zero
             };
 

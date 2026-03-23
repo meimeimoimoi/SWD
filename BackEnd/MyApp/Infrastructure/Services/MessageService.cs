@@ -16,7 +16,6 @@ namespace MyApp.Infrastructure.Services
             _logger = logger;
         }
 
-        // For Technician/Staff created by Admin
         public async Task SendAccountCreatedByStaffEmailAsync(string toEmail, string firstName, string temporaryPassword, int userId, string confirmationToken)
         {
             try
@@ -129,7 +128,6 @@ namespace MyApp.Infrastructure.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to send account created by staff email to {Email}", toEmail);
-                // Don't throw - email failures shouldn't break the request flow
             }
         }
     }

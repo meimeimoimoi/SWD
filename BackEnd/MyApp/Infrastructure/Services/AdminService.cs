@@ -3,6 +3,7 @@ using MyApp.Application.Features.Admin.DTOs;
 using MyApp.Application.Features.Users.DTOs;
 using MyApp.Application.Interfaces;
 using MyApp.Domain.Entities;
+using MyApp.Domain.Enums;
 using MyApp.Persistence.Repositories;
 using System.Security.Cryptography;
 
@@ -33,7 +34,6 @@ namespace MyApp.Infrastructure.Services
             {
                 var query = _userRepository.GetAllUsersQuery();
 
-                // Apply search filter
                 if (!string.IsNullOrWhiteSpace(search))
                 {
                     query = query.Where(u => 
@@ -43,13 +43,11 @@ namespace MyApp.Infrastructure.Services
                         (u.LastName != null && u.LastName.Contains(search)));
                 }
 
-                // Apply role filter
-                if (!string.IsNullOrWhiteSpace(role))
+                if (!string.IsNullOrWhiteSpace(role) && UserRoles.TryParse(role, out var roleFilter))
                 {
-                    query = query.Where(u => u.Role == role);
+                    query = query.Where(u => u.Role == roleFilter);
                 }
 
-                // Apply sorting
                 query = sortBy?.ToLower() switch
                 {
                     "username" => sortOrder?.ToLower() == "desc" 
@@ -69,7 +67,6 @@ namespace MyApp.Infrastructure.Services
 
                 var users = await query.ToListAsync();
 
-                // Map to DTOs and return full list
                 var userDtos = users.Select(u => new UserDto
                 {
                     UserId = u.UserId,
@@ -80,7 +77,8 @@ namespace MyApp.Infrastructure.Services
                     Phone = u.Phone,
                     ProfileImagePath = u.ProfileImagePath,
                     LastLoginAt = u.LastLoginAt,
-                    Role = u.Role
+                    Role = u.Role?.ToString(),
+                    AccountStatus = u.AccountStatus
                 }).ToList();
 
                 _logger.LogInformation("Retrieved {Count} users", userDtos.Count);
@@ -113,7 +111,8 @@ namespace MyApp.Infrastructure.Services
                     Phone = user.Phone,
                     ProfileImagePath = user.ProfileImagePath,
                     LastLoginAt = user.LastLoginAt,
-                    Role = user.Role
+                    Role = user.Role?.ToString(),
+                    AccountStatus = user.AccountStatus
                 };
             }
             catch (Exception ex)
@@ -132,10 +131,8 @@ namespace MyApp.Infrastructure.Services
                 if (user == null)
                     return false;
 
-                // Update fields if provided
                 if (!string.IsNullOrWhiteSpace(updateDto.Email))
                 {
-                    // Check if email already exists for another user
                     var existingUser = await _userRepository.FindByEmail(updateDto.Email);
                     if (existingUser != null && existingUser.UserId != userId)
                     {
@@ -157,7 +154,7 @@ namespace MyApp.Infrastructure.Services
                     user.ProfileImagePath = updateDto.ProfileImagePath;
 
                 if (!string.IsNullOrWhiteSpace(updateDto.Role))
-                    user.Role = updateDto.Role;
+                    user.Role = UserRoles.ParseRequired(updateDto.Role);
 
                 user.UpdatedAt = DateTime.UtcNow;
 
@@ -182,12 +179,16 @@ namespace MyApp.Infrastructure.Services
                 if (user == null)
                     return false;
 
-                user.AccountStatus = status;
+                var normalized = NormalizeAccountStatus(status);
+                if (normalized == null)
+                    throw new ArgumentException($"Invalid account status: '{status}'");
+
+                user.AccountStatus = normalized;
                 user.UpdatedAt = DateTime.UtcNow;
 
                 await _userRepository.UpdateUserAsync(user);
                 
-                _logger.LogInformation("User {UserId} status updated to {Status}", userId, status);
+                _logger.LogInformation("User {UserId} status updated to {Status}", userId, normalized);
                 return true;
             }
             catch (Exception ex)
@@ -197,29 +198,42 @@ namespace MyApp.Infrastructure.Services
             }
         }
 
+        private static string? NormalizeAccountStatus(string status)
+        {
+            if (string.IsNullOrWhiteSpace(status))
+                return null;
+            var s = status.Trim();
+            if (string.Equals(s, "Active", StringComparison.OrdinalIgnoreCase))
+                return "Active";
+            if (string.Equals(s, "Locked", StringComparison.OrdinalIgnoreCase))
+                return "Locked";
+            if (string.Equals(s, "Pending", StringComparison.OrdinalIgnoreCase))
+                return "Pending";
+            if (string.Equals(s, "Deleted", StringComparison.OrdinalIgnoreCase))
+                return "Deleted";
+            return null;
+        }
+
         public async Task<UserDto> CreateStaffUserAsync(CreateTechnicianStaffDto createDto)
         {
             try
             {
-                // Validate username doesn't exist
                 if (await _userRepository.ExistByUsernameAsync(createDto.Username))
                 {
                     throw new InvalidOperationException($"Username '{createDto.Username}' already exists");
                 }
 
-                // Validate email doesn't exist
                 var existingEmail = await _userRepository.FindByEmail(createDto.Email);
                 if (existingEmail != null)
                 {
                     throw new InvalidOperationException($"Email '{createDto.Email}' already exists");
                 }
 
-                // Auto-generate secure password using BCryptPasswordHasher
                 string temporaryPassword = _passwordHasher.GenerateRandomPassword(12);
-                
+                var staffRole = UserRoles.ParseRequired(createDto.Role);
+
                 _logger.LogInformation("Creating staff user: {Username}, Auto-generated password", createDto.Username);
-                
-                // Create new user
+
                 var user = new User
                 {
                     Username = createDto.Username,
@@ -228,18 +242,16 @@ namespace MyApp.Infrastructure.Services
                     FirstName = createDto.FirstName,
                     LastName = createDto.LastName,
                     Phone = createDto.Phone,
-                    Role = createDto.Role,
+                    Role = staffRole,
                     AccountStatus = "Active",
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow
                 };
 
-                await _userRepository.CreateTechnicianStaff(user, createDto.Role);
+                await _userRepository.CreateTechnicianStaff(user, staffRole);
 
-                // Generate confirmation token
                 string confirmationToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
 
-                // Send welcome email with auto-generated credentials
                 await _messageService.SendAccountCreatedByStaffEmailAsync(
                     user.Email,
                     user.FirstName ?? user.Username,
@@ -261,7 +273,8 @@ namespace MyApp.Infrastructure.Services
                     Phone = user.Phone,
                     ProfileImagePath = user.ProfileImagePath,
                     LastLoginAt = user.LastLoginAt,
-                    Role = user.Role
+                    Role = user.Role?.ToString(),
+                    AccountStatus = user.AccountStatus
                 };
             }
             catch (Exception ex)
@@ -281,7 +294,6 @@ namespace MyApp.Infrastructure.Services
                     throw new InvalidOperationException("Email already exists");
                 }
 
-                // Generate a username from email if needed
                 string username = dto.Email.Split('@')[0];
                 int count = 1;
                 while (await _userRepository.ExistByUsernameAsync(username))
@@ -289,18 +301,19 @@ namespace MyApp.Infrastructure.Services
                     username = $"{dto.Email.Split('@')[0]}{count++}";
                 }
 
+                var newRole = UserRoles.ParseRequired(dto.Role);
                 var user = new User
                 {
                     Username = username,
                     Email = dto.Email,
                     PasswordHash = _passwordHasher.Hash(dto.Password),
-                    Role = dto.Role,
+                    Role = newRole,
                     AccountStatus = "Active",
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow
                 };
 
-                await _userRepository.CreateTechnicianStaff(user, dto.Role);
+                await _userRepository.CreateTechnicianStaff(user, newRole);
                 _logger.LogInformation("Admin created user {Email} with role {Role}", dto.Email, dto.Role);
                 return true;
             }
@@ -323,7 +336,7 @@ namespace MyApp.Infrastructure.Services
                     return false;
                 }
 
-                if (user.Role == "Admin")
+                if (user.Role == UserRole.Admin)
                 {
                     _logger.LogWarning("Delete failed - Cannot delete Admin user: {UserId}, Username: {Username}", 
                         userId, user.Username);

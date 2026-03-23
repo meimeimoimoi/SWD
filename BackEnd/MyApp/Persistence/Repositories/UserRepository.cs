@@ -1,5 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using MyApp.Domain.Entities;
+using MyApp.Domain.Enums;
 using MyApp.Persistence.Context;
 
 namespace MyApp.Persistence.Repositories
@@ -56,11 +57,8 @@ namespace MyApp.Persistence.Repositories
                 .FirstOrDefaultAsync(u => u.Email == email);
         }
 
-        public async Task CreateTechnicianStaff(User user, string role)
+        public async Task CreateTechnicianStaff(User user, UserRole role)
         {
-            if (string.IsNullOrWhiteSpace(role))
-                throw new ArgumentException("Role cannot be empty", nameof(role));
-
             if (await ExistByUsernameAsync(user.Username))
                 throw new InvalidOperationException($"User with username '{user.Username}' already exists");
 

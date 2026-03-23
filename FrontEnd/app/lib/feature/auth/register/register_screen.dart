@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import '../../../routes/app_router.dart';
 import '../../../share/services/auth_api_service.dart';
+import '../../../share/constants/app_brand.dart';
 import '../../../share/widgets/app_button.dart';
 import '../../../share/widgets/app_card.dart';
 import '../../../share/widgets/app_input.dart';
 import '../../../share/widgets/app_scaffold.dart';
+import '../../../share/widgets/auth_hero_banner.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -19,6 +21,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmController = TextEditingController();
+  bool _obscurePassword = true;
+  bool _obscureConfirm = true;
   bool _isLoading = false;
 
   @override
@@ -28,77 +32,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
     _passwordController.dispose();
     _confirmController.dispose();
     super.dispose();
-  }
-
-  Widget _buildUsernameField() {
-    return AppInput(
-      label: 'Username',
-      hint: 'john_doe',
-      controller: _usernameController,
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'Username required';
-        }
-        if (value.trim().length < 2) {
-          return 'Username must be at least 2 characters';
-        }
-        return null;
-      },
-    );
-  }
-
-  Widget _buildEmailField() {
-    return AppInput(
-      label: 'Email',
-      hint: 'john@example.com',
-      controller: _emailController,
-      keyboardType: TextInputType.emailAddress,
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'Email required';
-        }
-        if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
-          return 'Please enter a valid email';
-        }
-        return null;
-      },
-    );
-  }
-
-  Widget _buildPasswordField() {
-    return AppInput(
-      label: 'Password',
-      hint: '••••••••',
-      controller: _passwordController,
-      obscureText: true,
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'Password required';
-        }
-        if (value.length < 6) {
-          return 'At least 6 characters';
-        }
-        return null;
-      },
-    );
-  }
-
-  Widget _buildConfirmField() {
-    return AppInput(
-      label: 'Confirm password',
-      hint: '••••••••',
-      controller: _confirmController,
-      obscureText: true,
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'Confirm password required';
-        }
-        if (value != _passwordController.text) {
-          return 'Passwords do not match';
-        }
-        return null;
-      },
-    );
   }
 
   void _submit() async {
@@ -116,17 +49,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
       if (!mounted) return;
 
       if (result['success'] == true) {
-        // Show success message
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(result['message'] ?? 'Registration successful!'),
             backgroundColor: Colors.green,
           ),
         );
-        // Navigate to login
         Navigator.pushReplacementNamed(context, AppRouter.login);
       } else {
-        // Show error message
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(result['message'] ?? 'Registration failed'),
@@ -148,106 +78,293 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     return AppScaffold(
       centerContent: false,
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final bool isWide = constraints.maxWidth > 720;
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Create your account', style: theme.textTheme.displayMedium),
-              const SizedBox(height: 6),
-              Text(
-                'Join and start managing your trees smarter.',
-                style: theme.textTheme.bodyLarge,
-              ),
-              const SizedBox(height: 20),
-              AppCard(
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    children: [
-                      _buildUsernameField(),
-                      const SizedBox(height: 16),
-                      _buildEmailField(),
-                      const SizedBox(height: 16),
-                      isWide
-                          ? Row(
-                              children: [
-                                Expanded(child: _buildPasswordField()),
-                                const SizedBox(width: 16),
-                                Expanded(child: _buildConfirmField()),
-                              ],
-                            )
-                          : Column(
-                              children: [
-                                _buildPasswordField(),
-                                const SizedBox(height: 16),
-                                _buildConfirmField(),
-                              ],
-                            ),
-                      const SizedBox(height: 16),
-                      isWide
-                          ? Row(
-                              children: [
-                                Expanded(
-                                  child: AppButton(
-                                    label: _isLoading
-                                        ? 'Registering...'
-                                        : 'Sign up',
-                                    onPressed: _isLoading ? null : _submit,
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: AppButton(
-                                    label: 'Back to login',
-                                    variant: AppButtonVariant.outlined,
-                                    onPressed: _isLoading
-                                        ? null
-                                        : () => Navigator.pop(context),
-                                  ),
-                                ),
-                              ],
-                            )
-                          : Column(
-                              children: [
-                                AppButton(
-                                  label: _isLoading
-                                      ? 'Registering...'
-                                      : 'Sign up',
-                                  onPressed: _isLoading ? null : _submit,
-                                ),
-                                const SizedBox(height: 12),
-                                AppButton(
-                                  label: 'Back to login',
-                                  variant: AppButtonVariant.outlined,
-                                  onPressed: _isLoading
-                                      ? null
-                                      : () => Navigator.pop(context),
-                                ),
-                              ],
-                            ),
-                      const SizedBox(height: 12),
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: TextButton(
-                          onPressed: () => Navigator.pushReplacementNamed(
-                            context,
-                            AppRouter.login,
-                          ),
-                          child: const Text('Already have an account? Sign in'),
-                        ),
+          final bool isWide = constraints.maxWidth > 900;
+          final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
+
+          final Widget body = isWide
+              ? Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: AuthHeroBanner(
+                        title: 'Create your account',
+                        subtitle: AppBrand.registerHeroSubtitle,
+                        isWide: isWide,
+                        chipLabels: const [
+                          'Quick signup',
+                          'Secure',
+                          'Sync anywhere',
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(width: 24),
+                    Expanded(
+                      child: _RegisterFormCard(
+                        formKey: _formKey,
+                        usernameController: _usernameController,
+                        emailController: _emailController,
+                        passwordController: _passwordController,
+                        confirmController: _confirmController,
+                        obscurePassword: _obscurePassword,
+                        obscureConfirm: _obscureConfirm,
+                        isLoading: _isLoading,
+                        isWide: isWide,
+                        onTogglePassword: () => setState(
+                          () => _obscurePassword = !_obscurePassword,
+                        ),
+                        onToggleConfirm: () => setState(
+                          () => _obscureConfirm = !_obscureConfirm,
+                        ),
+                        onSubmit: _submit,
+                      ),
+                    ),
+                  ],
+                )
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    AuthHeroBanner(
+                      title: 'Create your account',
+                      subtitle: AppBrand.registerHeroSubtitle,
+                      isWide: isWide,
+                      chipLabels: const [
+                        'Quick signup',
+                        'Secure',
+                        'Sync anywhere',
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    _RegisterFormCard(
+                      formKey: _formKey,
+                      usernameController: _usernameController,
+                      emailController: _emailController,
+                      passwordController: _passwordController,
+                      confirmController: _confirmController,
+                      obscurePassword: _obscurePassword,
+                      obscureConfirm: _obscureConfirm,
+                      isLoading: _isLoading,
+                      isWide: isWide,
+                      onTogglePassword: () => setState(
+                        () => _obscurePassword = !_obscurePassword,
+                      ),
+                      onToggleConfirm: () => setState(
+                        () => _obscureConfirm = !_obscureConfirm,
+                      ),
+                      onSubmit: _submit,
+                    ),
+                  ],
+                );
+
+          return SingleChildScrollView(
+            keyboardDismissBehavior:
+                ScrollViewKeyboardDismissBehavior.onDrag,
+            padding: EdgeInsets.only(bottom: bottomInset + 8),
+            child: body,
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _RegisterFormCard extends StatelessWidget {
+  const _RegisterFormCard({
+    required GlobalKey<FormState> formKey,
+    required this.usernameController,
+    required this.emailController,
+    required this.passwordController,
+    required this.confirmController,
+    required this.obscurePassword,
+    required this.obscureConfirm,
+    required this.isLoading,
+    required this.isWide,
+    required this.onTogglePassword,
+    required this.onToggleConfirm,
+    required this.onSubmit,
+  }) : _formKey = formKey;
+
+  final GlobalKey<FormState> _formKey;
+  final TextEditingController usernameController;
+  final TextEditingController emailController;
+  final TextEditingController passwordController;
+  final TextEditingController confirmController;
+  final bool obscurePassword;
+  final bool obscureConfirm;
+  final bool isLoading;
+  final bool isWide;
+  final VoidCallback onTogglePassword;
+  final VoidCallback onToggleConfirm;
+  final VoidCallback onSubmit;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    final passwordField = AppInput(
+      label: 'Password',
+      hint: '••••••••',
+      controller: passwordController,
+      obscureText: obscurePassword,
+      validator: (value) {
+        if (value == null || value.isEmpty) return 'Password required';
+        if (value.length < 6) return 'At least 6 characters';
+        return null;
+      },
+      suffix: IconButton(
+        icon: Icon(
+          obscurePassword
+              ? Icons.visibility_outlined
+              : Icons.visibility_off_outlined,
+        ),
+        onPressed: onTogglePassword,
+      ),
+    );
+
+    final confirmField = AppInput(
+      label: 'Confirm password',
+      hint: '••••••••',
+      controller: confirmController,
+      obscureText: obscureConfirm,
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Confirm password required';
+        }
+        if (value != passwordController.text) {
+          return 'Passwords do not match';
+        }
+        return null;
+      },
+      suffix: IconButton(
+        icon: Icon(
+          obscureConfirm
+              ? Icons.visibility_outlined
+              : Icons.visibility_off_outlined,
+        ),
+        onPressed: onToggleConfirm,
+      ),
+    );
+
+    final primaryActions = isWide
+        ? Row(
+            children: [
+              Expanded(
+                child: AppButton(
+                  label: isLoading ? 'Registering...' : 'Sign up',
+                  onPressed: isLoading ? null : onSubmit,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: AppButton(
+                  label: 'Back to login',
+                  variant: AppButtonVariant.outlined,
+                  onPressed:
+                      isLoading ? null : () => Navigator.pop(context),
                 ),
               ),
             ],
+          )
+        : Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              AppButton(
+                label: isLoading ? 'Registering...' : 'Sign up',
+                onPressed: isLoading ? null : onSubmit,
+              ),
+              const SizedBox(height: 12),
+              AppButton(
+                label: 'Back to login',
+                variant: AppButtonVariant.outlined,
+                onPressed: isLoading ? null : () => Navigator.pop(context),
+              ),
+            ],
           );
-        },
+
+    return AppCard(
+      child: Form(
+        key: _formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Your details',
+              style: theme.textTheme.titleLarge,
+              softWrap: true,
+            ),
+            const SizedBox(height: 20),
+            AppInput(
+              label: 'Username',
+              hint: 'john_doe',
+              controller: usernameController,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Username required';
+                }
+                if (value.trim().length < 2) {
+                  return 'Username must be at least 2 characters';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 16),
+            AppInput(
+              label: 'Email',
+              hint: 'john@example.com',
+              controller: emailController,
+              keyboardType: TextInputType.emailAddress,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Email required';
+                }
+                if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
+                  return 'Please enter a valid email';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 16),
+            if (isWide)
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(child: passwordField),
+                  const SizedBox(width: 16),
+                  Expanded(child: confirmField),
+                ],
+              )
+            else ...[
+              passwordField,
+              const SizedBox(height: 16),
+              confirmField,
+            ],
+            const SizedBox(height: 20),
+            primaryActions,
+            const SizedBox(height: 8),
+            TextButton(
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 0),
+                minimumSize: Size.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+              onPressed: isLoading
+                  ? null
+                  : () => Navigator.pushReplacementNamed(
+                        context,
+                        AppRouter.login,
+                      ),
+              child: Text(
+                'Already have an account? Sign in',
+                style: theme.textTheme.bodyMedium,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

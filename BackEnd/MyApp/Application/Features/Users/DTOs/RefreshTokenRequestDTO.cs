@@ -1,8 +1,8 @@
-﻿namespace MyApp.Application.Features.Users.DTOs
+namespace MyApp.Application.Features.Users.DTOs
 {
     public class RefreshTokenRequestDTO
     {
-        public string AccessToken { get; set; } = null;
-        public string RefreshToken { get; set; } = null;
+        public required string AccessToken { get; set; }
+        public required string RefreshToken { get; set; }
     }
 }

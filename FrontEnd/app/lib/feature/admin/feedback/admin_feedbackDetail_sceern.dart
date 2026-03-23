@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../../../share/theme/app_colors.dart';
 import '../../../share/widgets/app_card.dart';
-import '../../../share/widgets/admin_bottom_nav.dart';
-
 class AdminFeedbackDetailScreen extends StatelessWidget {
   const AdminFeedbackDetailScreen({super.key});
 
@@ -55,7 +53,6 @@ class AdminFeedbackDetailScreen extends StatelessWidget {
           ),
         ),
       ),
-      bottomNavigationBar: const AdminBottomNav(currentIndex: 2),
     );
   }
 }
@@ -105,7 +102,7 @@ class _HeroSection extends StatelessWidget {
                 child: Text(
                   'High Alert',
                   style: theme.textTheme.labelSmall?.copyWith(
-                    color: Colors.white,
+                    color: AppColors.onPrimary,
                     fontWeight: FontWeight.w700,
                     letterSpacing: 0.6,
                   ),
@@ -163,9 +160,6 @@ class _ScanMetadataCard extends StatelessWidget {
     final textPrimary = isDark
         ? AppColors.textPrimaryDark
         : AppColors.textPrimaryLight;
-    final textSecondary = isDark
-        ? AppColors.textSecondaryDark
-        : AppColors.textSecondaryLight;
 
     return AppCard(
       padding: const EdgeInsets.all(16),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../theme/app_colors.dart';
+
+import '../theme/app_layout.dart';
 
 class AppCard extends StatelessWidget {
   const AppCard({
@@ -13,22 +14,17 @@ class AppCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final surface = theme.colorScheme.surface;
+    final outline = theme.colorScheme.outline.withValues(alpha: isDark ? 0.85 : 0.9);
     return Container(
       padding: padding,
       decoration: BoxDecoration(
-        color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: isDark ? AppColors.borderDark : AppColors.borderLight,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(isDark ? 0.35 : 0.08),
-            blurRadius: 14,
-            offset: const Offset(0, 10),
-          ),
-        ],
+        color: surface,
+        borderRadius: AppLayout.borderRadiusMd,
+        border: Border.all(color: outline),
+        boxShadow: AppLayout.cardShadows(context),
       ),
       child: child,
     );

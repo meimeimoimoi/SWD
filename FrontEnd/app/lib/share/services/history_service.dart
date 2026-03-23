@@ -1,4 +1,6 @@
 import 'package:dio/dio.dart';
+
+import '../constants/api_config.dart';
 import 'auth_api_service.dart';
 import 'storage_service.dart';
 
@@ -8,6 +10,17 @@ class HistoryItem {
   final String diseaseName;
   final double confidence;
   final DateTime createdAt;
+  final int? treeId;
+  final int? illnessId;
+  final String? illnessSeverity;
+  final String? scientificName;
+  final String? illnessDescription;
+  final String? symptoms;
+  final String? causes;
+  final String? treeName;
+  final String? treeScientificName;
+  final String? treeDescription;
+  final String? treeImageUrl;
 
   HistoryItem({
     required this.predictionId,
@@ -15,28 +28,24 @@ class HistoryItem {
     required this.diseaseName,
     required this.confidence,
     required this.createdAt,
+    this.treeId,
+    this.illnessId,
+    this.illnessSeverity,
+    this.scientificName,
+    this.illnessDescription,
+    this.symptoms,
+    this.causes,
+    this.treeName,
+    this.treeScientificName,
+    this.treeDescription,
+    this.treeImageUrl,
   });
+
+  static String resolveImageUrl(String rawUrl) => ApiConfig.resolveMediaUrl(rawUrl);
 
   factory HistoryItem.fromJson(Map<String, dynamic> json) {
     final rawUrl = (json['imageUrl'] ?? '') as String;
-    String imageUrl = rawUrl;
-    // If API returned an absolute URL, normalize localhost -> emulator address
-    if (rawUrl.startsWith('http')) {
-      imageUrl = rawUrl.replaceFirst(
-        'http://localhost:5299',
-        'http://10.0.2.2:5299',
-      );
-    } else if (rawUrl.isNotEmpty) {
-      // API returned only a filename or a relative path. Ensure we build
-      // a full URL pointing to the uploads/images endpoint.
-      final base = HistoryService._baseUrl; // http://10.0.2.2:5299
-      // If the raw value already contains 'uploads', treat it as a relative path.
-      final path = (rawUrl.contains('uploads'))
-          ? (rawUrl.startsWith('/') ? rawUrl : '/$rawUrl')
-          : '/uploads/images/${rawUrl.startsWith('/') ? rawUrl.substring(1) : rawUrl}';
-      imageUrl = '$base$path';
-    }
-    // Pick disease name from several possible fields returned by backend
+    final imageUrl = rawUrl.isEmpty ? '' : HistoryItem.resolveImageUrl(rawUrl);
     final diseaseName =
         (json['diseaseName'] ??
                 json['predictedClass'] ??
@@ -44,8 +53,6 @@ class HistoryItem {
                 '')
             as String;
 
-    // Support multiple possible confidence fields (backend might send
-    // `confidenceScore` as in the example). Be robust to number or string.
     final rawConfidence = json['confidenceScore'] ?? json['confidence'];
     double confidence;
     if (rawConfidence is num) {
@@ -56,6 +63,11 @@ class HistoryItem {
       confidence = 0.0;
     }
 
+    final treePath = json['treeImagePath'] as String?;
+    final treeImageUrl = (treePath == null || treePath.isEmpty)
+        ? null
+        : HistoryItem.resolveImageUrl(treePath);
+
     return HistoryItem(
       predictionId: json['predictionId'] ?? 0,
       imageUrl: imageUrl,
@@ -64,6 +76,17 @@ class HistoryItem {
       createdAt: json['createdAt'] != null
           ? DateTime.tryParse(json['createdAt'] as String) ?? DateTime.now()
           : DateTime.now(),
+      treeId: (json['treeId'] as num?)?.toInt(),
+      illnessId: (json['illnessId'] as num?)?.toInt(),
+      illnessSeverity: json['illnessSeverity'] as String?,
+      scientificName: json['scientificName'] as String?,
+      illnessDescription: json['illnessDescription'] as String?,
+      symptoms: json['symptoms'] as String?,
+      causes: json['causes'] as String?,
+      treeName: json['treeName'] as String?,
+      treeScientificName: json['treeScientificName'] as String?,
+      treeDescription: json['treeDescription'] as String?,
+      treeImageUrl: treeImageUrl,
     );
   }
 }
@@ -97,14 +120,13 @@ class HistoryListResponse {
 
 class HistoryService {
   final Dio _dio;
-  static const String _baseUrl = 'http://10.0.2.2:5299';
 
   HistoryService({Dio? dio})
     : _dio =
           dio ??
           Dio(
             BaseOptions(
-              baseUrl: _baseUrl,
+              baseUrl: ApiConfig.baseUrl,
               connectTimeout: const Duration(seconds: 30),
               receiveTimeout: const Duration(seconds: 30),
               headers: {'Accept': 'application/json'},
@@ -113,6 +135,52 @@ class HistoryService {
 
   Future<HistoryListResponse> getHistory() async {
     return _fetch(retryOnUnauthorized: true);
+  }
+
+  Future<Map<String, dynamic>?> getPredictionById(int id) async {
+    return _fetchDetail(id, retryOnUnauthorized: true);
+  }
+
+  Future<Map<String, dynamic>?> _fetchDetail(
+    int id, {
+    required bool retryOnUnauthorized,
+  }) async {
+    try {
+      final accessToken = await StorageService.getAccessToken();
+      if (accessToken == null || accessToken.isEmpty) {
+        return null;
+      }
+
+      final response = await _dio.get<Map<String, dynamic>>(
+        ApiPaths.predictionsHistoryItem(id),
+        options: Options(
+          headers: {'Authorization': _formatBearerToken(accessToken)},
+        ),
+      );
+
+      final body = response.data;
+      if (body != null &&
+          body['success'] == true &&
+          body['data'] is Map<String, dynamic>) {
+        return Map<String, dynamic>.from(body['data'] as Map);
+      }
+      return null;
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 401 && retryOnUnauthorized) {
+        final refreshToken = await StorageService.getRefreshToken();
+        if (refreshToken != null && refreshToken.isNotEmpty) {
+          final refresh = await AuthApiService.refreshToken(refreshToken);
+          if (refresh['success'] == true) {
+            return _fetchDetail(id, retryOnUnauthorized: false);
+          }
+        }
+        await StorageService.clearAuth();
+        AuthApiService.onSessionExpired?.call();
+      }
+      return null;
+    } catch (_) {
+      return null;
+    }
   }
 
   Future<HistoryListResponse> _fetch({
@@ -129,7 +197,7 @@ class HistoryService {
       }
 
       final response = await _dio.get(
-        '/api/predictions/history',
+        ApiPaths.predictionsHistory,
         options: Options(
           headers: {'Authorization': _formatBearerToken(accessToken)},
         ),
@@ -155,8 +223,8 @@ class HistoryService {
       }
       final statusCode = e.response?.statusCode;
       final msg = statusCode != null
-          ? 'Lỗi máy chủ ($statusCode). Vui lòng thử lại.'
-          : 'Không thể kết nối máy chủ. Kiểm tra kết nối mạng.';
+          ? 'Server error ($statusCode). Please try again.'
+          : 'Cannot reach the server. Check your network connection.';
       return HistoryListResponse(success: false, message: msg, data: []);
     } catch (e) {
       return HistoryListResponse(

@@ -1,4 +1,4 @@
-﻿using MyApp.Application.Features.Users.DTOs;
+using MyApp.Application.Features.Users.DTOs;
 using MyApp.Application.Interfaces;
 using MyApp.Domain.Entities;
 using MyApp.Persistence.Repositories;
@@ -67,6 +67,7 @@ namespace MyApp.Infrastructure.Services
         private static RatingResponseDto MapToDto(Rating rating)
         {
             int? score = int.TryParse(rating.Rating1, out var parsed) ? parsed : null;
+            var storedFilename = rating.Prediction?.Upload?.StoredFilename;
 
             return new RatingResponseDto
             {
@@ -75,11 +76,11 @@ namespace MyApp.Infrastructure.Services
                 Score = score,
                 ScoreLabel = score switch
                 {
-                    1 => "Rất không chính xác",
-                    2 => "Không chính xác",
-                    3 => "Trung bình",
-                    4 => "Chính xác",
-                    5 => "Rất chính xác",
+                    1 => "Very inaccurate",
+                    2 => "Inaccurate",
+                    3 => "Average",
+                    4 => "Accurate",
+                    5 => "Very accurate",
                     _ => null
                 },
                 Comment = rating.Comment,
@@ -91,7 +92,11 @@ namespace MyApp.Infrastructure.Services
                     : null,
                 IllnessName = rating.Prediction?.Illness?.IllnessName,
                 UserEmail = rating.Prediction?.Upload?.User?.Email,
-                UserName = rating.Prediction?.Upload?.User?.Username
+                UserName = rating.Prediction?.Upload?.User?.Username,
+                UserId = rating.Prediction?.Upload?.UserId,
+                ImageUrl = string.IsNullOrWhiteSpace(storedFilename)
+                    ? null
+                    : $"/uploads/images/{storedFilename}"
             };
         }
     }

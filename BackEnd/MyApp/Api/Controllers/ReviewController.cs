@@ -1,13 +1,14 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MyApp.Application.Features.Admin.DTOs;
 using MyApp.Application.Interfaces;
+using MyApp.Domain.Enums;
 
 namespace MyApp.Api.Controllers
 {
     [Route("api/admin/review")]
     [ApiController]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = RolePolicy.AdminOrTechnician)]
     public class ReviewController : ControllerBase
     {
         private readonly IReviewService _reviewService;
@@ -19,7 +20,6 @@ namespace MyApp.Api.Controllers
             _logger = logger;
         }
 
-        // ── Treatment content review ──────────────────
 
         [HttpGet("treatments")]
         public async Task<IActionResult> GetAllTreatments()
@@ -91,7 +91,6 @@ namespace MyApp.Api.Controllers
             }
         }
 
-        // ── Model control ──────────────────
 
         [HttpGet("models")]
         public async Task<IActionResult> GetAllModels()

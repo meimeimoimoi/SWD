@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../theme/app_colors.dart';
 
 class AppButton extends StatelessWidget {
   const AppButton({
@@ -7,29 +6,43 @@ class AppButton extends StatelessWidget {
     required this.label,
     this.onPressed,
     this.icon,
+    this.leading,
     this.variant = AppButtonVariant.primary,
     this.expand = true,
+    this.minimumHeight,
   });
 
   final String label;
   final VoidCallback? onPressed;
   final IconData? icon;
+  final Widget? leading;
   final AppButtonVariant variant;
   final bool expand;
+  final double? minimumHeight;
 
   @override
   Widget build(BuildContext context) {
-    final Widget child = icon != null
+    final Widget child = leading != null
         ? Row(
             mainAxisAlignment: MainAxisAlignment.center,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon, size: 18),
+              leading!,
               const SizedBox(width: 8),
               Text(label),
             ],
           )
-        : Text(label);
+        : icon != null
+            ? Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(icon, size: 18),
+                  const SizedBox(width: 8),
+                  Text(label),
+                ],
+              )
+            : Text(label);
 
     Widget button;
     if (variant == AppButtonVariant.ghost) {
@@ -42,12 +55,13 @@ class AppButton extends StatelessWidget {
         child: child,
       );
     } else if (variant == AppButtonVariant.outlined) {
+      final outline = Theme.of(context).colorScheme.outline;
       button = OutlinedButton(
         onPressed: onPressed,
         style: OutlinedButton.styleFrom(
-          minimumSize: const Size.fromHeight(52),
+          minimumSize: Size(0, minimumHeight ?? 52),
           foregroundColor: Theme.of(context).colorScheme.primary,
-          side: const BorderSide(color: AppColors.borderLight),
+          side: BorderSide(color: outline),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
@@ -55,7 +69,21 @@ class AppButton extends StatelessWidget {
         child: child,
       );
     } else {
-      button = ElevatedButton(onPressed: onPressed, child: child);
+      final cs = Theme.of(context).colorScheme;
+      button = ElevatedButton(
+        onPressed: onPressed,
+        style: ElevatedButton.styleFrom(
+          minimumSize: minimumHeight != null
+              ? Size(0, minimumHeight!)
+              : null,
+          elevation: 3,
+          shadowColor: cs.primary.withValues(alpha: 0.4),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+        child: child,
+      );
     }
 
     return LayoutBuilder(

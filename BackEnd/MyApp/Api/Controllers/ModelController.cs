@@ -2,12 +2,13 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MyApp.Application.Features.ModelManagement.DTOs;
 using MyApp.Application.Interfaces;
+using MyApp.Domain.Enums;
 
 namespace MyApp.Api.Controllers
 {
     [Route("api/admin/models")]
     [ApiController]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = RolePolicy.AdminOrTechnician)]
     public class ModelController : ControllerBase
     {
         private readonly IModelService _modelService;
@@ -17,6 +18,35 @@ namespace MyApp.Api.Controllers
         {
             _modelService = modelService;
             _logger = logger;
+        }
+
+        [HttpGet("{id:int}/detail")]
+        public async Task<IActionResult> GetModelDetail(int id)
+        {
+            try
+            {
+                var detail = await _modelService.GetModelVersionDetailAsync(id);
+                if (detail == null)
+                {
+                    return NotFound(new
+                    {
+                        success = false,
+                        message = $"Model with ID {id} not found."
+                    });
+                }
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "Model detail retrieved successfully.",
+                    data = detail
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting model detail Id={Id}.", id);
+                return StatusCode(500, new { success = false, message = "Internal server error." });
+            }
         }
 
         [HttpGet]

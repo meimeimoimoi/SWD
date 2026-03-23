@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using MyApp.Application.Features.Users.DTOs;
 using MyApp.Application.Interfaces;
 using MyApp.Domain.Entities;
+using MyApp.Domain.Enums;
 using MyApp.Infrastructure.Helpers;
 using MyApp.Persistence.Context;
 using MyApp.Persistence.Repositories;
@@ -59,7 +60,6 @@ namespace MyApp.Infrastructure.Services
                 user.UpdatedAt = DateTime.UtcNow;
                 await _userRepository.UpdateUserAsync(user);
 
-                // Log the activity
                 try 
                 {
                     var log = new ActivityLog
@@ -77,7 +77,6 @@ namespace MyApp.Infrastructure.Services
                 catch (Exception logEx)
                 {
                     _logger.LogError(logEx, "Failed to record activity log for user {Username}", user.Username);
-                    // We don't throw here so the user can still login even if logging fails
                 }
 
                 return new LoginResponseDTO 
@@ -86,7 +85,7 @@ namespace MyApp.Infrastructure.Services
                     RefreshToken = jti,
                     ExpiresIn = _tokenExpiration,
                     Username = user.Username,
-                    Role = user.Role ?? string.Empty
+                    Role = user.Role?.ToString() ?? string.Empty
                 };
                 
             }
@@ -166,7 +165,7 @@ namespace MyApp.Infrastructure.Services
                     RefreshToken = newJti,
                     ExpiresIn = _tokenExpiration,
                     Username = user.Username,
-                    Role = user.Role ?? string.Empty
+                    Role = user.Role?.ToString() ?? string.Empty
                 };
             }
             catch (UnauthorizedAccessException ex)
@@ -209,11 +208,10 @@ namespace MyApp.Infrastructure.Services
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow,
                     AccountStatus = "Active",
-                    Role = "User"
+                    Role = UserRole.User
                 };
 
                 await _userRepository.AddUserAsync(user);
-                //await _context.SaveChangesAsync();
 
                 _logger.LogInformation("User registered successfully: {Username}", user.Username);
 

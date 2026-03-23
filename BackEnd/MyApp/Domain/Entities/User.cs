@@ -1,5 +1,6 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using MyApp.Domain.Enums;
 
 namespace MyApp.Domain.Entities;
 
@@ -25,7 +26,7 @@ public partial class User
 
     public DateTime? LastLoginAt { get; set; }
 
-    public string? Role { get; set; }
+    public UserRole? Role { get; set; }
 
     public DateTime? CreatedAt { get; set; }
 

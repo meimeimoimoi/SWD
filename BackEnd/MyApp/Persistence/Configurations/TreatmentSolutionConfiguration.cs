@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using MyApp.Domain.Entities;
 
@@ -35,12 +35,12 @@ namespace MyApp.Persistence.Configurations
 
             entity.HasOne(d => d.Illness).WithMany(p => p.TreatmentSolutions)
                 .HasForeignKey(d => d.IllnessId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.Restrict)
                 .HasConstraintName("FK_treatment_illness");
 
             entity.HasOne(d => d.TreeStage).WithMany(p => p.TreatmentSolutions)
                 .HasForeignKey(d => d.TreeStageId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.Restrict)
                 .HasConstraintName("FK_treatment_stage");
         }
     }

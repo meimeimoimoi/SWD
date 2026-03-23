@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using MyApp.Application.Features.Admin.DTOs;
+using MyApp.Application.Features.ModelManagement.DTOs;
 using MyApp.Application.Interfaces;
 using MyApp.Domain.Entities;
 using MyApp.Persistence.Context;
@@ -57,7 +58,6 @@ namespace MyApp.Infrastructure.Services
                     .Average(p => p.ConfidenceScore!.Value)
                 : 0;
 
-            // Class distribution
             var classGroups = allPredictions
                 .Where(p => p.PredictedClass != null)
                 .GroupBy(p => p.PredictedClass!)
@@ -71,7 +71,6 @@ namespace MyApp.Infrastructure.Services
                 .OrderByDescending(x => x.Count)
                 .ToList();
 
-            // Daily trend
             var dailyTrend = Enumerable.Range(0, days)
                 .Select(i => since.AddDays(i))
                 .Select(date => new DailyPredictionDto
@@ -161,6 +160,143 @@ namespace MyApp.Infrastructure.Services
                 .OrderByDescending(a => a.CreatedAt)
                 .Take(count)
                 .ToListAsync();
+        }
+
+        public async Task<List<CommonThreatItemDto>> GetCommonThreatsAsync(int take = 5)
+        {
+            if (take < 1) take = 5;
+            if (take > 30) take = 30;
+
+            var illnesses = await _context.TreeIllnesses.AsNoTracking().ToListAsync();
+
+            var rows = await _context.Predictions
+                .AsNoTracking()
+                .Where(p => p.IllnessId != null ||
+                    (p.PredictedClass != null && p.PredictedClass.Trim() != ""))
+                .Select(p => new
+                {
+                    p.IllnessId,
+                    p.PredictedClass,
+                    p.CreatedAt,
+                    StoredFilename = p.Upload != null ? p.Upload.StoredFilename : null,
+                    IllnessName = p.Illness != null ? p.Illness.IllnessName : null,
+                    ScientificName = p.Illness != null ? p.Illness.ScientificName : null
+                })
+                .ToListAsync();
+
+            if (rows.Count == 0)
+                return new List<CommonThreatItemDto>();
+
+            var groups = rows
+                .GroupBy(p => p.IllnessId != null
+                    ? $"i:{p.IllnessId}"
+                    : $"c:{p.PredictedClass!.Trim()}")
+                .OrderByDescending(g => g.Count())
+                .Take(take)
+                .ToList();
+
+            var list = new List<CommonThreatItemDto>();
+            foreach (var g in groups)
+            {
+                var latest = g.OrderByDescending(x => x.CreatedAt).First();
+                var title = g.Select(x => x.IllnessName)
+                        .FirstOrDefault(x => x != null && x.Trim() != "")
+                    ?? latest.PredictedClass?.Trim()
+                    ?? "Unknown";
+
+                var sci = g.Select(x => x.ScientificName)
+                    .FirstOrDefault(x => x != null && x.Trim() != "");
+                int? illId = g.First().IllnessId;
+
+                if (string.IsNullOrWhiteSpace(sci))
+                {
+                    var match = illnesses.FirstOrDefault(i =>
+                        string.Equals(i.IllnessName?.Trim(), title, StringComparison.OrdinalIgnoreCase));
+                    if (match != null)
+                    {
+                        sci = match.ScientificName;
+                        illId ??= match.IllnessId;
+                    }
+                }
+
+                string? imagePath = null;
+                if (!string.IsNullOrWhiteSpace(latest.StoredFilename))
+                    imagePath = $"/uploads/images/{latest.StoredFilename}";
+
+                list.Add(new CommonThreatItemDto
+                {
+                    IllnessId = illId,
+                    Title = title,
+                    ScientificName = sci,
+                    ReportCount = g.Count(),
+                    ImageUrl = imagePath
+                });
+            }
+
+            return list;
+        }
+
+        public async Task<ModelVersionUsageMetricsDto?> GetModelUsageMetricsAsync(int modelVersionId)
+        {
+            var modelExists = await _context.ModelVersions
+                .AsNoTracking()
+                .AnyAsync(m => m.ModelVersionId == modelVersionId);
+            if (!modelExists)
+            {
+                return null;
+            }
+
+            var today = DateTime.UtcNow.Date;
+            var since7 = today.AddDays(-6);
+
+            var preds = await _context.Predictions
+                .AsNoTracking()
+                .Include(p => p.Ratings)
+                .Where(p => p.ModelVersionId == modelVersionId)
+                .ToListAsync();
+
+            var total = preds.Count;
+            var todayCount = preds.Count(p =>
+                p.CreatedAt.HasValue && p.CreatedAt.Value.Date == today);
+            var last7 = preds.Count(p =>
+                p.CreatedAt.HasValue && p.CreatedAt.Value.Date >= since7);
+
+            var avgConf = preds.Any(p => p.ConfidenceScore.HasValue)
+                ? preds.Where(p => p.ConfidenceScore.HasValue)
+                    .Average(p => (double)p.ConfidenceScore!.Value)
+                : 0.0;
+
+            var allRatings = preds.SelectMany(p => p.Ratings).ToList();
+            var positive = allRatings.Count(r =>
+                r.Rating1 != null &&
+                r.Rating1.Equals("positive", StringComparison.OrdinalIgnoreCase));
+            var rate = allRatings.Count == 0
+                ? 0.0
+                : Math.Round((double)positive / allRatings.Count * 100, 2);
+
+            var topClasses = preds
+                .Where(p => p.PredictedClass != null && p.PredictedClass.Trim() != "")
+                .GroupBy(p => p.PredictedClass!.Trim())
+                .Select(g => new PredictedClassCountDto
+                {
+                    ClassName = g.Key,
+                    Count = g.Count()
+                })
+                .OrderByDescending(x => x.Count)
+                .Take(12)
+                .ToList();
+
+            return new ModelVersionUsageMetricsDto
+            {
+                TotalPredictions = total,
+                PredictionsToday = todayCount,
+                PredictionsLast7Days = last7,
+                AverageConfidence = Math.Round(avgConf, 4),
+                TotalRatings = allRatings.Count,
+                PositiveRatings = positive,
+                PositiveRatingRate = rate,
+                TopPredictedClasses = topClasses
+            };
         }
     }
 }

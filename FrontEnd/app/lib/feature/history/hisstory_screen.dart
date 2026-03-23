@@ -48,7 +48,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
     setState(() {
       _loading = false;
       if (response.success) {
-        // Newest first
         _items = response.data
           ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
         _error = null;
@@ -58,10 +57,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
     });
   }
 
-  // ── date helpers ──────────────────────────────────────────────────────────
 
   String _dateGroupKey(DateTime dt) {
-    // Use date part only as a stable key for grouping
     return '${dt.year}-${dt.month}-${dt.day}';
   }
 
@@ -72,15 +69,14 @@ class _HistoryScreenState extends State<HistoryScreen> {
     final d = DateTime(dt.year, dt.month, dt.day);
     final formatted =
         '${dt.day.toString().padLeft(2, '0')}/${dt.month.toString().padLeft(2, '0')}/${dt.year}';
-    if (d == today) return 'Hôm nay - $formatted';
-    if (d == yesterday) return 'Hôm qua - $formatted';
+    if (d == today) return 'Today - $formatted';
+    if (d == yesterday) return 'Yesterday - $formatted';
     return formatted;
   }
 
   String _timeOf(DateTime dt) =>
       '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
 
-  // ── grouping ──────────────────────────────────────────────────────────────
 
   List<MapEntry<String, List<HistoryItem>>> _grouped() {
     final map = <String, List<HistoryItem>>{};
@@ -91,13 +87,12 @@ class _HistoryScreenState extends State<HistoryScreen> {
     return map.entries.toList();
   }
 
-  // ── build ─────────────────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return AppScaffold(
-      title: 'Lịch sử quét',
+      title: 'Scan history',
       actions: [
         IconButton(
           onPressed: _loadHistory,
@@ -111,7 +106,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
       ],
       centerContent: false,
       showUserBottomNav: true,
-      selectedNavIndex: 2,
+      selectedNavIndex: 1,
       child: Column(
         children: [
           Expanded(
@@ -129,67 +124,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
       ),
     );
   }
-
-  // ── header ────────────────────────────────────────────────────────────────
-
-  Widget _buildHeader(bool isDark) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-      decoration: BoxDecoration(
-        color: isDark
-            ? AppColors.darkBackground.withOpacity(0.95)
-            : AppColors.lightBackground.withOpacity(0.95),
-        border: Border(
-          bottom: BorderSide(
-            color: isDark ? AppColors.borderDark : AppColors.borderLight,
-          ),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            'Lịch sử quét',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: isDark
-                  ? AppColors.textPrimaryDark
-                  : AppColors.textPrimaryLight,
-            ),
-          ),
-          Material(
-            color: isDark ? AppColors.surfaceDark : Colors.white,
-            borderRadius: BorderRadius.circular(20),
-            child: InkWell(
-              onTap: _loadHistory,
-              borderRadius: BorderRadius.circular(20),
-              child: SizedBox(
-                width: 40,
-                height: 40,
-                child: Icon(
-                  Icons.refresh,
-                  size: 20,
-                  color: isDark
-                      ? AppColors.textSecondaryDark
-                      : AppColors.textSecondaryLight,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ── list ──────────────────────────────────────────────────────────────────
 
   Widget _buildList(bool isDark) {
     final groups = _grouped();
@@ -239,14 +173,13 @@ class _HistoryScreenState extends State<HistoryScreen> {
     );
   }
 
-  // ── card ──────────────────────────────────────────────────────────────────
 
   Widget _buildCard(HistoryItem item, bool isDark) {
     final severity = _severityOf(item.diseaseName);
-    final vietName = DiseaseMapper.toVietnamese(item.diseaseName);
+    final displayName = DiseaseMapper.toDisplayName(item.diseaseName);
 
     return Material(
-      color: isDark ? AppColors.surfaceDark : Colors.white,
+      color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
       borderRadius: BorderRadius.circular(16),
       child: InkWell(
         onTap: () => _openDetail(item),
@@ -269,7 +202,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Thumbnail
               ClipRRect(
                 borderRadius: BorderRadius.circular(12),
                 child: SizedBox(
@@ -283,7 +215,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                             if (progress == null) return child;
                             return Container(
                               color: isDark
-                                  ? const Color(0xFF1F2937)
+                                  ? AppColors.borderDark
                                   : const Color(0xFFE5E7EB),
                               child: Center(
                                 child: CircularProgressIndicator(
@@ -300,7 +232,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 ),
               ),
               const SizedBox(width: 14),
-              // Content
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -313,7 +244,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                vietName,
+                                displayName,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
@@ -359,7 +290,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                         _buildSeverityBadge(severity, isDark),
                         const SizedBox(width: 8),
                         Text(
-                          'Mức độ nghiêm trọng',
+                          'Severity',
                           style: TextStyle(
                             fontSize: 11,
                             fontStyle: FontStyle.italic,
@@ -382,7 +313,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
   Widget _placeholderThumb(bool isDark) {
     return Container(
-      color: isDark ? const Color(0xFF1F2937) : const Color(0xFFE5E7EB),
+      color: isDark ? AppColors.borderDark : const Color(0xFFE5E7EB),
       child: Icon(
         Icons.grass,
         size: 36,
@@ -429,19 +360,19 @@ class _HistoryScreenState extends State<HistoryScreen> {
             ? AppColors.accent.withOpacity(0.2)
             : AppColors.accent.withOpacity(0.13);
         fg = isDark ? AppColors.accent : AppColors.primary;
-        label = 'Thấp';
+        label = 'Low';
       case _Severity.medium:
         bg = isDark
             ? AppColors.warning.withOpacity(0.2)
             : AppColors.warning.withOpacity(0.15);
         fg = isDark ? AppColors.warning : const Color(0xFFB45309);
-        label = 'Trung bình';
+        label = 'Medium';
       case _Severity.high:
         bg = isDark
             ? const Color(0xFFEF4444).withOpacity(0.2)
             : const Color(0xFFEF4444).withOpacity(0.12);
         fg = isDark ? const Color(0xFFF87171) : const Color(0xFFB91C1C);
-        label = 'Cao';
+        label = 'High';
     }
 
     return Container(
@@ -462,7 +393,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
     );
   }
 
-  // ── empty / error states ──────────────────────────────────────────────────
 
   Widget _buildEmptyState(bool isDark) {
     return Center(
@@ -478,7 +408,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
           ),
           const SizedBox(height: 16),
           Text(
-            'Chưa có lịch sử quét',
+            'No scan history yet',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
@@ -489,7 +419,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
           ),
           const SizedBox(height: 6),
           Text(
-            'Hãy quét lá cây để bắt đầu.',
+            'Scan a leaf to get started.',
             style: TextStyle(
               fontSize: 14,
               color: isDark
@@ -518,7 +448,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
             ),
             const SizedBox(height: 16),
             Text(
-              'Không thể tải dữ liệu',
+              'Could not load data',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
@@ -542,10 +472,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
             ElevatedButton.icon(
               onPressed: _loadHistory,
               icon: const Icon(Icons.refresh, size: 18),
-              label: const Text('Thử lại'),
+              label: const Text('Retry'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
+                foregroundColor: AppColors.onPrimary,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 24,
                   vertical: 12,
@@ -561,24 +491,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
     );
   }
 
-  // ── navigation ────────────────────────────────────────────────────────────
 
   void _openDetail(HistoryItem item) {
-    final result = PredictionResult(
-      diseaseName: item.diseaseName,
-      vietnameseName: DiseaseMapper.toVietnamese(item.diseaseName),
-      scientificName: DiseaseMapper.getScientificName(item.diseaseName),
-      imageUrl: item.imageUrl,
-      confidence: item.confidence,
-      description: 'Chưa có dữ liệu mô tả.',
-      cause: 'Chưa có thông tin.',
-      symptoms: 'Chưa có thông tin triệu chứng.',
-      impact: DiseaseMapper.getImpact(item.diseaseName),
-      treatments: [],
-      medicines: [],
-      isHealthy: DiseaseMapper.isHealthy(item.diseaseName),
-      predictionId: item.predictionId,
-    );
+    final result = PredictionResult.fromHistoryItem(item);
     Navigator.of(context).pushNamed(AppRouter.prediction, arguments: result);
   }
 }

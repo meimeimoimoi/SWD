@@ -3,12 +3,13 @@ using Microsoft.AspNetCore.Mvc;
 using MyApp.Application.Features.Admin.DTOs;
 using MyApp.Application.Features.Technician.DTOs;
 using MyApp.Application.Interfaces;
+using MyApp.Domain.Enums;
 
 namespace MyApp.Api.Controllers
 {
     [Route("api/technician")]
     [ApiController]
-    [Authorize(Roles = "Technician,Admin")]
+    [Authorize(Roles = RolePolicy.TechnicianOrAdmin)]
     public class TechnicianController : ControllerBase
     {
         private readonly ITechnicianService _technicianService;
@@ -20,7 +21,6 @@ namespace MyApp.Api.Controllers
             _logger            = logger;
         }
 
-        // ── Illness management ──────────────────
 
         [HttpGet("illnesses")]
         public async Task<IActionResult> GetAllIllnesses()
@@ -133,7 +133,6 @@ namespace MyApp.Api.Controllers
             }
         }
 
-        // ── Stage management ──────────────────
 
         [HttpGet("stages")]
         public async Task<IActionResult> GetAllStages()

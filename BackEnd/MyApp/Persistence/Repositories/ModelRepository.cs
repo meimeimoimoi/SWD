@@ -62,5 +62,34 @@ namespace MyApp.Persistence.Repositories
             return await _context.ModelVersions
                 .FirstOrDefaultAsync(m => m.IsDefault == true && m.IsActive == true);
         }
+
+        public async Task<List<ModelVersion>> GetActiveForPredictionAsync(
+            CancellationToken cancellationToken = default)
+        {
+            return await _context.ModelVersions
+                .AsNoTracking()
+                .Where(m =>
+                    m.IsActive == true &&
+                    m.FilePath != null &&
+                    m.FilePath != string.Empty)
+                .OrderByDescending(m => m.IsDefault == true)
+                .ThenByDescending(m => m.CreatedAt)
+                .ToListAsync(cancellationToken);
+        }
+
+        public async Task<ModelVersion?> GetActiveByIdForPredictionAsync(
+            int modelVersionId,
+            CancellationToken cancellationToken = default)
+        {
+            return await _context.ModelVersions
+                .AsNoTracking()
+                .FirstOrDefaultAsync(
+                    m =>
+                        m.ModelVersionId == modelVersionId &&
+                        m.IsActive == true &&
+                        m.FilePath != null &&
+                        m.FilePath != string.Empty,
+                    cancellationToken);
+        }
     }
 }

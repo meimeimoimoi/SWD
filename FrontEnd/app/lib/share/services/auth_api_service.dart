@@ -4,41 +4,22 @@ import 'dart:io';
 
 import 'package:http/http.dart' as http;
 
+import '../constants/api_config.dart';
 import 'storage_service.dart';
 
-/// HTTP client for authentication API calls.
-/// Contracts directly match backend DTOs:
-/// - RegisterRequestDTO: {username, email, password}
-/// - LoginRequestDTO: {usernameOrEmail, password}
 class AuthApiService {
-  static const String _envBaseUrl = String.fromEnvironment('API_BASE_URL');
+  static String get baseUrl => ApiConfig.baseUrl;
 
-  static String get baseUrl {
-    final configured = _envBaseUrl.trim();
-    if (configured.isNotEmpty) {
-      return configured;
-    }
-
-    if (Platform.isAndroid) {
-      return 'http://10.0.2.2:5299';
-    }
-    return 'http://localhost:5299';
-  }
-
-  static const String registerEndpoint = '/api/Auth/register';
-  static const String loginEndpoint = '/api/Auth/login';
-  // TODO: If backend uses /auth/* instead of /api/Auth/*, update these paths.
-  static const String profileEndpoint = '/api/User/profile';
-  static const String refreshTokenEndpoint = '/api/Auth/refresh-token';
+  static const String registerEndpoint = ApiPaths.authRegister;
+  static const String loginEndpoint = ApiPaths.authLogin;
+  static const String profileEndpoint = ApiPaths.userProfile;
+  static const String refreshTokenEndpoint = ApiPaths.authRefresh;
   static const Duration timeout = Duration(seconds: 30);
 
   static bool _isRefreshing = false;
   static Future<String?>? _refreshFuture;
   static void Function()? onSessionExpired;
 
-  /// Register new user with username, email and password.
-  /// Request: {username: "<username>", email: "<email>", password: "<password>"}
-  /// Response (200/201): {message: "Registration successful."}
   static Future<Map<String, dynamic>> register(
     String username,
     String email,
@@ -105,9 +86,6 @@ class AuthApiService {
     }
   }
 
-  /// Login with username or email and password.
-  /// Request: {usernameOrEmail: "<username/email>", password: "<password>"}
-  /// Response (200): {token: "...", ...} or custom data
   static Future<Map<String, dynamic>> login(
     String usernameOrEmail,
     String password,
@@ -173,12 +151,10 @@ class AuthApiService {
     }
   }
 
-  /// Get current user profile (authorized).
   static Future<Map<String, dynamic>> getProfile() async {
     return _authorizedJsonRequest(method: 'GET', endpoint: profileEndpoint);
   }
 
-  /// Update current user profile (authorized).
   static Future<Map<String, dynamic>> updateProfile(
     Map<String, dynamic> payload,
   ) async {
@@ -189,16 +165,28 @@ class AuthApiService {
     );
   }
 
-  /// Refresh token.
+  static Future<Map<String, dynamic>> logout() async {
+    return _authorizedJsonRequest(
+      method: 'POST',
+      endpoint: ApiPaths.authLogout,
+      retryOnUnauthorized: false,
+    );
+  }
+
   static Future<Map<String, dynamic>> refreshToken(String refreshToken) async {
     if (refreshToken.trim().isEmpty) {
       return {'success': false, 'message': 'Refresh token is missing'};
     }
 
+    final accessToken = await StorageService.getAccessToken() ?? '';
+
     final response = await _sendJsonRequest(
       method: 'POST',
       endpoint: refreshTokenEndpoint,
-      payload: {'refreshToken': refreshToken.trim()},
+      payload: {
+        'accessToken': accessToken,
+        'refreshToken': refreshToken.trim(),
+      },
       accessToken: null,
     );
 

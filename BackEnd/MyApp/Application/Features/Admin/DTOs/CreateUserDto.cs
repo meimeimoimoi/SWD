@@ -16,6 +16,6 @@ namespace MyApp.Application.Features.Admin.DTOs
 
         [Required]
         [MaxLength(50)]
-        public string Role { get; set; } = null!; // "Admin", "Technician", "User", etc.
+        public string Role { get; set; } = null!;
     }
 }

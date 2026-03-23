@@ -1,21 +1,20 @@
-﻿using MyApp.Application.Features.Treatment.DTOs;
+using MyApp.Application.Features.Treatment.DTOs;
 
 namespace MyApp.Application.Features.Prediction
 {
     public class PredictionResponseDto
     {
         public int PredictionId { get; set; }
-        public string ImageUrl { get; set; } = string.Empty; // Đường dẫn ảnh đã upload
+        public string ImageUrl { get; set; } = string.Empty;
         public string PredictedClass { get; set; } = string.Empty;
         public double Confidence { get; set; }
         public long ProcessingTimeMs { get; set; }
 
-        // Thông tin bệnh từ DB
+        public int? IllnessId { get; set; }
         public string? DiseaseName { get; set; }
         public string? Symptoms { get; set; }
         public string? Causes { get; set; }
 
-        // Thông tin điều trị
         public List<TreatmentDto> Treatments { get; set; } = new List<TreatmentDto>();
         public List<MedicineDto> Medicines { get; set; } = new List<MedicineDto>();
 

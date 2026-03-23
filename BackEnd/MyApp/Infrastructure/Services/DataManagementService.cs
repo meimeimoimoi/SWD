@@ -17,7 +17,6 @@ namespace MyApp.Infrastructure.Services
             _logger = logger;
         }
 
-        // ── Tree Stages ──────────────────
 
         public async Task<List<TreeStageDto>> GetAllStagesAsync()
         {
@@ -70,7 +69,6 @@ namespace MyApp.Infrastructure.Services
             return true;
         }
 
-        // ── Tree-Illness Relationships ──────────────────
 
         public async Task<List<TreeIllnessRelationshipDto>> GetAllRelationshipsAsync()
         {
@@ -137,7 +135,6 @@ namespace MyApp.Infrastructure.Services
             return true;
         }
 
-        // ── Helpers ──────────────────
 
         private static TreeStageDto MapStageToDto(TreeStage s) => new()
         {

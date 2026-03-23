@@ -21,7 +21,7 @@ namespace MyApp.Persistence.Configurations
             builder.Property(e => e.CreatedAt).HasDefaultValueSql("GETDATE()").HasColumnName("created_at");
 
             builder.HasOne(d => d.User)
-                   .WithMany() // Or add a collection in User entity if needed. User.cs didn't have it.
+                   .WithMany()
                    .HasForeignKey(d => d.UserId)
                    .OnDelete(DeleteBehavior.SetNull)
                    .HasConstraintName("FK_activity_user");

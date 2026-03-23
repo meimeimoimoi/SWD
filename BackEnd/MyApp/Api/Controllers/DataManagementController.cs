@@ -1,13 +1,14 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MyApp.Application.Features.Admin.DTOs;
 using MyApp.Application.Interfaces;
+using MyApp.Domain.Enums;
 
 namespace MyApp.Api.Controllers
 {
     [Route("api/admin/data")]
     [ApiController]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = RolePolicy.AdminOrTechnician)]
     public class DataManagementController : ControllerBase
     {
         private readonly IDataManagementService _dataService;
@@ -19,7 +20,6 @@ namespace MyApp.Api.Controllers
             _logger = logger;
         }
 
-        // ── Tree Stages ──────────────────
 
         [HttpGet("stages")]
         public async Task<IActionResult> GetAllStages()
@@ -111,7 +111,6 @@ namespace MyApp.Api.Controllers
             }
         }
 
-        // ── Tree-Illness Relationships ──────────────────
 
         [HttpGet("relationships")]
         public async Task<IActionResult> GetAllRelationships(

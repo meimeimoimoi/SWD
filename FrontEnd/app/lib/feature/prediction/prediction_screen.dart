@@ -1,16 +1,20 @@
 import 'package:flutter/material.dart';
+
 import '../../routes/app_router.dart';
+import '../../share/constants/api_config.dart';
+import '../../share/services/history_service.dart';
 import '../../share/services/prediction_service.dart';
+import '../../share/services/storage_service.dart';
+import '../../share/theme/app_colors.dart';
 import '../../share/utils/disease_mapper.dart';
+import '../../share/widgets/user_bottom_nav_bar.dart';
+import 'prediction_solutions_sheet.dart';
 
-/// Model for prediction result data
 class PredictionResult {
-  static const String _imageBaseUrl = 'http://10.0.2.2:5299';
-  static const String _imagePathPrefix = '/uploads/images/';
-
   final int predictionId;
+  final int? illnessId;
   final String diseaseName;
-  final String vietnameseName;
+  final String displayName;
   final String scientificName;
   final String imageUrl;
   final double confidence;
@@ -24,8 +28,9 @@ class PredictionResult {
 
   const PredictionResult({
     required this.predictionId,
+    this.illnessId,
     required this.diseaseName,
-    required this.vietnameseName,
+    required this.displayName,
     required this.scientificName,
     required this.imageUrl,
     required this.confidence,
@@ -38,29 +43,59 @@ class PredictionResult {
     required this.isHealthy,
   });
 
-  /// Create PredictionResult from API response
   static PredictionResult fromApiResponse(PredictionData data) {
     final englishName = data.diseaseName;
-    final vietnameseName = DiseaseMapper.toVietnamese(englishName);
+    final displayName = DiseaseMapper.toDisplayName(englishName);
     final isHealthy = DiseaseMapper.isHealthy(englishName);
     final scientificName = DiseaseMapper.getScientificName(englishName);
     final imageUrl = _buildImageUrl(data.imageUrl);
 
     return PredictionResult(
       predictionId: data.predictionId,
+      illnessId: data.illnessId,
       diseaseName: englishName,
-      vietnameseName: vietnameseName,
+      displayName: displayName,
       scientificName: scientificName,
       imageUrl: imageUrl,
       confidence: data.confidence,
-      description: data.symptoms ?? 'Chưa có dữ liệu mô tả.',
-      cause: data.causes ?? 'Chưa có thông tin.',
-      symptoms: data.symptoms ?? 'Chưa có thông tin triệu chứng.',
+      description: data.symptoms ?? 'No description available.',
+      cause: data.causes ?? 'No information available.',
+      symptoms: data.symptoms ?? 'No symptom information available.',
       impact: DiseaseMapper.getImpact(englishName),
       treatments: _mapTreatments(data.treatments),
       medicines: _mapTreatments(data.medicines),
       isHealthy: isHealthy,
     );
+  }
+
+  static PredictionResult fromHistoryItem(HistoryItem item) {
+    final d = item.diseaseName;
+    final sci = item.scientificName?.trim();
+    return PredictionResult(
+      predictionId: item.predictionId,
+      illnessId: item.illnessId,
+      diseaseName: d,
+      displayName: DiseaseMapper.toDisplayName(d),
+      scientificName:
+          (sci != null && sci.isNotEmpty) ? sci : DiseaseMapper.getScientificName(d),
+      imageUrl: item.imageUrl,
+      confidence: item.confidence,
+      description: _nonEmpty(item.illnessDescription) ??
+          _nonEmpty(item.symptoms) ??
+          'No description available.',
+      cause: _nonEmpty(item.causes) ?? 'No information available.',
+      symptoms: _nonEmpty(item.symptoms) ?? 'No symptom information available.',
+      impact: DiseaseMapper.getImpact(d),
+      treatments: const [],
+      medicines: const [],
+      isHealthy: DiseaseMapper.isHealthy(d),
+    );
+  }
+
+  static String? _nonEmpty(String? s) {
+    final t = s?.trim();
+    if (t == null || t.isEmpty) return null;
+    return t;
   }
 
   static List<TreatmentProduct> _mapTreatments(List<dynamic> items) {
@@ -71,7 +106,7 @@ class PredictionResult {
       return TreatmentProduct(
         name: (map['name'] ?? '') as String,
         imageUrl: '',
-        badge: isMedicine ? 'Thuốc' : 'Chăm sóc',
+        badge: isMedicine ? 'Medicine' : 'Care',
         instruction: (map['description'] ?? '') as String,
         price: '',
         isPrimary: isMedicine,
@@ -79,22 +114,9 @@ class PredictionResult {
     }).toList();
   }
 
-  static String _buildImageUrl(String imageUrl) {
-    if (imageUrl.isEmpty) return imageUrl;
-    final trimmed = imageUrl.trim();
-    if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
-      return trimmed;
-    }
-    final normalizedPath = trimmed.startsWith('/')
-        ? trimmed.substring(1)
-        : trimmed;
-    return '$_imageBaseUrl$_imagePathPrefix$normalizedPath';
-  }
+  static String _buildImageUrl(String imageUrl) => ApiConfig.resolveMediaUrl(imageUrl);
 }
 
-final List<String> _tags = const ['Chăm sóc', 'Thuốc'];
-
-/// Model for treatment product
 class TreatmentProduct {
   final String name;
   final String imageUrl;
@@ -123,23 +145,34 @@ class PredictionScreen extends StatefulWidget {
 }
 
 class _PredictionScreenState extends State<PredictionScreen> {
-  // 0 = Chăm sóc (treatments), 1 = Thuốc (medicines)
   int _selectedTab = 0;
+  bool _showAiConfidence = false;
 
-  // Sample data for demonstration
+  @override
+  void initState() {
+    super.initState();
+    StorageService.getRole().then((r) {
+      if (!mounted) return;
+      final role = r?.trim().toLowerCase() ?? '';
+      final staff = role == 'admin' || role == 'technician';
+      setState(() => _showAiConfidence = staff);
+    });
+  }
+
   static const _sampleResult = PredictionResult(
     predictionId: 0,
+    illnessId: null,
     diseaseName: 'Leaf Blast',
-    vietnameseName: 'Đạo ôn (cháy lá do nấm)',
+    displayName: 'Rice blast (fungal leaf blight)',
     scientificName: 'Magnaporthe oryzae',
     imageUrl:
         'https://lh3.googleusercontent.com/aida-public/AB6AXuA998KIbzaAWHJSTjnx-DfsJtgPMFNyeETxvOnpYgoua7rzPHly7c4NTeriJVTVkEJH_CjMXLxDMjzZxHXzgQKmmv-E_NzGBnWIPOn8_kVsF5a2eQ34JF-a-ZsFk9EU4DS78O1ZIp9y85lKfIPp6snaGQ_rpTjBuKD6_ngh-DPVUeIynJXCTN07eXgLJgGzepqSgf07FPym-d3zP_EGCU8_skAI4DWlvzYEaj8RIvEuwTiBRwv2XaNc0GdSayp2myoLHrmXx2YXzdY',
     confidence: 0.98,
     description:
-        'Bệnh đốm lá do nấm gây ra, thường xuất hiện dưới dạng các đốm nhỏ màu nâu hoặc xám trên bề mặt lá. Nếu không được điều trị, các đốm này có thể lan rộng và làm héo lá, ảnh hưởng nghiêm trọng đến khả năng quang hợp của cây.',
-    cause: 'Độ ẩm cao, nấm bào tử',
-    symptoms: 'Đốm lá, héo lá, giảm năng suất',
-    impact: 'Giảm năng suất 15-30%',
+        'A fungal leaf spot disease that appears as small brown or gray spots on leaf surfaces. Without treatment, spots can spread, wilt leaves, and seriously reduce photosynthesis.',
+    cause: 'High humidity, fungal spores',
+    symptoms: 'Leaf spots, wilting, yield loss',
+    impact: 'Yield reduction 15–30%',
     treatments: [],
     medicines: [],
     isHealthy: false,
@@ -151,9 +184,8 @@ class _PredictionScreenState extends State<PredictionScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: isDark
-          ? const Color(0xFF18181b)
-          : const Color(0xFFF4F4F5),
+      backgroundColor:
+          isDark ? AppColors.darkBackground : AppColors.lightBackground,
       body: SafeArea(
         child: Column(
           children: [
@@ -166,13 +198,15 @@ class _PredictionScreenState extends State<PredictionScreen> {
                   children: [
                     _buildHeroImage(context, data, isDark),
                     const SizedBox(height: 20),
-                    _buildConfidenceCard(context, data, isDark),
-                    const SizedBox(height: 20),
+                    if (_showAiConfidence) ...[
+                      _buildConfidenceCard(context, data, isDark),
+                      const SizedBox(height: 20),
+                    ],
                     _buildDescriptionSection(context, data, isDark),
                     const SizedBox(height: 20),
                     _buildTreatmentSection(context, data, isDark),
                     const SizedBox(height: 16),
-                    _buildActionButtons(context, isDark),
+                    _buildActionButtons(context, data, isDark),
                     const SizedBox(height: 24),
                   ],
                 ),
@@ -181,35 +215,8 @@ class _PredictionScreenState extends State<PredictionScreen> {
           ],
         ),
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 1, // Defaulting to scan/result context
-        type: BottomNavigationBarType.fixed,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.camera_alt), label: 'Scan'),
-          BottomNavigationBarItem(icon: Icon(Icons.history), label: 'History'),
-          BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Setting'),
-        ],
-        onTap: (index) {
-          switch (index) {
-            case 0:
-              Navigator.of(context).pushNamedAndRemoveUntil(
-                AppRouter.dashboard,
-                (route) => false,
-              );
-              break;
-            case 1:
-              Navigator.of(context).pushNamed(AppRouter.scan);
-              break;
-            case 2:
-              Navigator.of(context).pushNamed(AppRouter.history);
-              break;
-            case 3:
-              Navigator.of(context).pushNamed(AppRouter.profile);
-              break;
-          }
-        },
-      ),
+      bottomNavigationBar:
+          const UserBottomNavBar(selectedIndexOverride: 1),
     );
   }
 
@@ -217,10 +224,10 @@ class _PredictionScreenState extends State<PredictionScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF27272a) : Colors.white,
+        color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
         border: Border(
           bottom: BorderSide(
-            color: isDark ? const Color(0xFF374151) : const Color(0xFFE5E7EB),
+            color: isDark ? AppColors.borderDark : const Color(0xFFE5E7EB),
           ),
         ),
         boxShadow: [
@@ -240,11 +247,11 @@ class _PredictionScreenState extends State<PredictionScreen> {
             isDark: isDark,
           ),
           Text(
-            'Kết quả chẩn đoán',
+            'Diagnosis result',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: isDark ? Colors.white : const Color(0xFF111827),
+              color: isDark ? AppColors.textPrimaryDark : const Color(0xFF111827),
             ),
           ),
           _buildCircleButton(
@@ -263,7 +270,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
     required bool isDark,
   }) {
     return Material(
-      color: isDark ? const Color(0xFF3F3F46) : const Color(0xFFF3F4F6),
+      color: isDark ? AppColors.darkControlFill : const Color(0xFFF3F4F6),
       borderRadius: BorderRadius.circular(20),
       child: InkWell(
         onTap: onTap,
@@ -303,7 +310,6 @@ class _PredictionScreenState extends State<PredictionScreen> {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          // Image with grayscale filter
           ColorFiltered(
             colorFilter: const ColorFilter.matrix([
               0.2126,
@@ -334,7 +340,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
                 if (loadingProgress == null) return child;
                 return Container(
                   color: isDark
-                      ? const Color(0xFF3F3F46)
+                      ? AppColors.darkControlFill
                       : const Color(0xFFE5E7EB),
                   child: Center(
                     child: CircularProgressIndicator(
@@ -350,7 +356,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
               errorBuilder: (context, error, stackTrace) {
                 return Container(
                   color: isDark
-                      ? const Color(0xFF3F3F46)
+                      ? AppColors.darkControlFill
                       : const Color(0xFFE5E7EB),
                   child: Icon(
                     Icons.image_not_supported,
@@ -361,9 +367,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
               },
             ),
           ),
-          // Brightness overlay
           Container(color: Colors.black.withOpacity(0.25)),
-          // Gradient overlay
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -386,11 +390,11 @@ class _PredictionScreenState extends State<PredictionScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  data.vietnameseName,
-                  style: const TextStyle(
+                  data.displayName,
+                  style: TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: AppColors.onPrimary,
                     height: 1.2,
                   ),
                 ),
@@ -400,7 +404,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
                   style: TextStyle(
                     fontSize: 14,
                     fontStyle: FontStyle.italic,
-                    color: Colors.white.withOpacity(0.75),
+                    color: AppColors.onPrimary.withOpacity(0.75),
                   ),
                 ),
               ],
@@ -421,10 +425,10 @@ class _PredictionScreenState extends State<PredictionScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF27272a) : Colors.white,
+        color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isDark ? const Color(0xFF3F3F46) : const Color(0xFFE5E7EB),
+          color: isDark ? AppColors.darkControlFill : const Color(0xFFE5E7EB),
         ),
         boxShadow: [
           BoxShadow(
@@ -440,7 +444,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Độ tin cậy của AI',
+                'AI confidence',
                 style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
               ),
               Text(
@@ -448,7 +452,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.white : const Color(0xFF111827),
+                  color: isDark ? AppColors.textPrimaryDark : const Color(0xFF111827),
                 ),
               ),
             ],
@@ -457,7 +461,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
           Container(
             height: 10,
             decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF3F3F46) : const Color(0xFFE5E7EB),
+              color: isDark ? AppColors.darkControlFill : const Color(0xFFE5E7EB),
               borderRadius: BorderRadius.circular(5),
             ),
             child: FractionallySizedBox(
@@ -486,11 +490,11 @@ class _PredictionScreenState extends State<PredictionScreen> {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  'Độ chính xác rất cao dựa trên dữ liệu hiện có.',
+                  'Very high accuracy based on current data.',
                   style: TextStyle(
                     fontSize: 12,
                     color: isDark
-                        ? const Color(0xFF9CA3AF)
+                        ? AppColors.textSecondaryDark
                         : const Color(0xFF6B7280),
                   ),
                 ),
@@ -519,11 +523,11 @@ class _PredictionScreenState extends State<PredictionScreen> {
             ),
             const SizedBox(width: 8),
             Text(
-              'Mô tả bệnh',
+              'Disease description',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: isDark ? Colors.white : const Color(0xFF111827),
+                color: isDark ? AppColors.textPrimaryDark : const Color(0xFF111827),
               ),
             ),
           ],
@@ -543,7 +547,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
           children: [
             Expanded(
               child: _buildInfoCard(
-                title: 'Nguyên nhân',
+                title: 'Cause',
                 content: data.cause,
                 isDark: isDark,
               ),
@@ -551,7 +555,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
             const SizedBox(width: 12),
             Expanded(
               child: _buildInfoCard(
-                title: 'Ảnh hưởng',
+                title: 'Impact',
                 content: data.impact,
                 isDark: isDark,
               ),
@@ -571,12 +575,12 @@ class _PredictionScreenState extends State<PredictionScreen> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: isDark
-            ? const Color(0xFF27272a).withOpacity(0.5)
+            ? AppColors.surfaceDark.withOpacity(0.5)
             : const Color(0xFFF3F4F6),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: isDark
-              ? const Color(0xFF3F3F46).withOpacity(0.5)
+                            ? AppColors.darkControlFill.withOpacity(0.5)
               : const Color(0xFFE5E7EB),
         ),
       ),
@@ -589,7 +593,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
               fontSize: 10,
               fontWeight: FontWeight.bold,
               letterSpacing: 0.5,
-              color: isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280),
+              color: isDark ? AppColors.textSecondaryDark : const Color(0xFF6B7280),
             ),
           ),
           const SizedBox(height: 6),
@@ -623,30 +627,29 @@ class _PredictionScreenState extends State<PredictionScreen> {
             ),
             const SizedBox(width: 8),
             Text(
-              'Đề xuất điều trị',
+              'Treatment suggestions',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: isDark ? Colors.white : const Color(0xFF111827),
+                color: isDark ? AppColors.textPrimaryDark : const Color(0xFF111827),
               ),
             ),
           ],
         ),
         const SizedBox(height: 12),
-        // Tab buttons
         Container(
           padding: const EdgeInsets.all(4),
           decoration: BoxDecoration(
             color: isDark
-                ? const Color(0xFF0F1724).withOpacity(0.15)
+                ? Colors.black.withOpacity(0.25)
                 : const Color(0xFFF3F4F6).withOpacity(0.6),
             borderRadius: BorderRadius.circular(999),
           ),
           child: Row(
             children: [
-              _buildTabItem(title: 'Chăm sóc', index: 0, isDark: isDark),
+              _buildTabItem(title: 'Care', index: 0, isDark: isDark),
               const SizedBox(width: 4),
-              _buildTabItem(title: 'Thuốc', index: 1, isDark: isDark),
+              _buildTabItem(title: 'Medicine', index: 1, isDark: isDark),
             ],
           ),
         ),
@@ -659,19 +662,19 @@ class _PredictionScreenState extends State<PredictionScreen> {
               return Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF27272a) : Colors.white,
+                  color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                     color: isDark
-                        ? const Color(0xFF3F3F46)
+                        ? AppColors.darkControlFill
                         : const Color(0xFFE5E7EB),
                   ),
                 ),
                 child: Center(
                   child: Text(
                     _selectedTab == 0
-                        ? 'Chưa có đề xuất chăm sóc.'
-                        : 'Chưa có gợi ý thuốc.',
+                        ? 'No care suggestions yet.'
+                        : 'No medicine suggestions yet.',
                     style: TextStyle(
                       color: isDark
                           ? const Color(0xFFD1D5DB)
@@ -714,7 +717,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
           padding: const EdgeInsets.symmetric(vertical: 10),
           decoration: BoxDecoration(
             color: isSelected
-                ? (isDark ? const Color(0xFFE4E4E7) : Colors.white)
+                ? (isDark ? const Color(0xFFE4E4E7) : AppColors.surfaceLight)
                 : Colors.transparent,
             borderRadius: BorderRadius.circular(999),
           ),
@@ -744,7 +747,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
                 color: isSelected
                     ? (isDark ? Colors.black : const Color(0xFF111827))
                     : (isDark
-                          ? const Color(0xFF9CA3AF)
+                          ? AppColors.textSecondaryDark
                           : const Color(0xFF6B7280)),
               ),
             ),
@@ -762,10 +765,10 @@ class _PredictionScreenState extends State<PredictionScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF27272a) : Colors.white,
+        color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isDark ? const Color(0xFF3F3F46) : const Color(0xFFE5E7EB),
+          color: isDark ? AppColors.darkControlFill : const Color(0xFFE5E7EB),
         ),
         boxShadow: [
           BoxShadow(
@@ -778,12 +781,11 @@ class _PredictionScreenState extends State<PredictionScreen> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Product image
           Container(
             width: 80,
             height: 80,
             decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF3F3F46) : const Color(0xFFF3F4F6),
+              color: isDark ? AppColors.darkControlFill : const Color(0xFFF3F4F6),
               borderRadius: BorderRadius.circular(12),
             ),
             clipBehavior: Clip.antiAlias,
@@ -824,7 +826,6 @@ class _PredictionScreenState extends State<PredictionScreen> {
             ),
           ),
           const SizedBox(width: 16),
-          // Product details
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -836,7 +837,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
-                    color: isDark ? Colors.white : const Color(0xFF111827),
+                    color: isDark ? AppColors.textPrimaryDark : const Color(0xFF111827),
                   ),
                 ),
                 const SizedBox(height: 2),
@@ -850,7 +851,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
                     fontSize: 12,
                     fontStyle: FontStyle.italic,
                     color: isDark
-                        ? const Color(0xFF9CA3AF)
+                        ? AppColors.textSecondaryDark
                         : const Color(0xFF6B7280),
                   ),
                 ),
@@ -863,7 +864,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
-                        color: isDark ? Colors.white : const Color(0xFF111827),
+                        color: isDark ? AppColors.textPrimaryDark : const Color(0xFF111827),
                       ),
                     ),
                     _buildDetailButton(
@@ -889,7 +890,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
     return Material(
       color: isPrimary
           ? (isDark ? const Color(0xFFE4E4E7) : const Color(0xFF27272A))
-          : (isDark ? const Color(0xFF3F3F46) : const Color(0xFFE5E7EB)),
+          : (isDark ? AppColors.darkControlFill : const Color(0xFFE5E7EB)),
       borderRadius: BorderRadius.circular(8),
       child: InkWell(
         onTap: onTap,
@@ -897,13 +898,13 @@ class _PredictionScreenState extends State<PredictionScreen> {
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           child: Text(
-            'Chi tiết',
+            'Details',
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.bold,
               color: isPrimary
-                  ? (isDark ? Colors.black : Colors.white)
-                  : (isDark ? Colors.white : const Color(0xFF1F2937)),
+                  ? (isDark ? Colors.black : AppColors.onPrimary)
+                  : (isDark ? AppColors.textPrimaryDark : const Color(0xFF1F2937)),
             ),
           ),
         ),
@@ -911,25 +912,135 @@ class _PredictionScreenState extends State<PredictionScreen> {
     );
   }
 
-  Widget _buildActionButtons(BuildContext context, bool isDark) {
-    return Row(
+  Widget _buildActionButtons(
+    BuildContext context,
+    PredictionResult data,
+    bool isDark,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Expanded(
-          child: _buildActionButton(
-            icon: Icons.save,
-            label: 'Lưu lại',
-            onTap: () => _onSave(context),
-            isDark: isDark,
+        if (data.predictionId > 0) ...[
+          Material(
+            color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
+            borderRadius: BorderRadius.circular(12),
+            child: InkWell(
+              onTap: () async {
+                final ok = await Navigator.pushNamed(
+                  context,
+                  AppRouter.predictionAssignTree,
+                  arguments: data,
+                );
+                if (!context.mounted) return;
+                if (ok == true) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Scan linked to plant.')),
+                  );
+                }
+              },
+              borderRadius: BorderRadius.circular(12),
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: AppColors.brandAccent.withValues(alpha: 0.45),
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.park_outlined,
+                      color: AppColors.brandAccentReadable(context),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'ASSIGN TO PLANT',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.6,
+                        color: AppColors.brandAccentReadable(context),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+        ],
+        Material(
+          color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
+          borderRadius: BorderRadius.circular(12),
+          child: InkWell(
+            onTap: () {
+              showPredictionSolutionsSheet(
+                context: context,
+                displayName: data.displayName,
+                diseaseName: data.diseaseName,
+                confidence: data.confidence,
+                predictionId: data.predictionId,
+                illnessId: data.illnessId,
+              );
+            },
+            borderRadius: BorderRadius.circular(12),
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: AppColors.brandAccent.withValues(alpha: 0.35),
+                ),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.healing_outlined,
+                    color: isDark
+                        ? AppColors.brandAccentOnDark
+                        : AppColors.brandAccent,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'SUGGEST SOLUTIONS',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.6,
+                      color: isDark
+                          ? AppColors.brandAccentOnDark
+                          : AppColors.brandAccent,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: _buildActionButton(
-            icon: Icons.feedback,
-            label: 'Phản hồi',
-            onTap: () => _onFeedback(context),
-            isDark: isDark,
-          ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: _buildActionButton(
+                icon: Icons.save,
+                label: 'Save',
+                onTap: () => _onSave(context),
+                isDark: isDark,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: _buildActionButton(
+                icon: Icons.feedback,
+                label: 'Feedback',
+                onTap: () => _onFeedback(context),
+                isDark: isDark,
+              ),
+            ),
+          ],
         ),
       ],
     );
@@ -942,7 +1053,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
     required bool isDark,
   }) {
     return Material(
-      color: isDark ? const Color(0xFF27272a) : Colors.white,
+      color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
       borderRadius: BorderRadius.circular(12),
       child: InkWell(
         onTap: onTap,
@@ -952,7 +1063,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: isDark ? const Color(0xFF3F3F46) : const Color(0xFFE5E7EB),
+              color: isDark ? AppColors.darkControlFill : const Color(0xFFE5E7EB),
             ),
           ),
           child: Column(
@@ -982,7 +1093,6 @@ class _PredictionScreenState extends State<PredictionScreen> {
     );
   }
 
-  // Action methods
   void _showOptionsMenu(BuildContext context) {
     showModalBottomSheet(
       context: context,
@@ -993,26 +1103,23 @@ class _PredictionScreenState extends State<PredictionScreen> {
           children: [
             ListTile(
               leading: const Icon(Icons.share),
-              title: const Text('Chia sẻ kết quả'),
+              title: const Text('Share result'),
               onTap: () {
                 Navigator.pop(context);
-                // TODO: Implement share
               },
             ),
             ListTile(
               leading: const Icon(Icons.download),
-              title: const Text('Tải xuống báo cáo'),
+              title: const Text('Download report'),
               onTap: () {
                 Navigator.pop(context);
-                // TODO: Implement download
               },
             ),
             ListTile(
               leading: const Icon(Icons.help_outline),
-              title: const Text('Trợ giúp'),
+              title: const Text('Help'),
               onTap: () {
                 Navigator.pop(context);
-                // TODO: Implement help
               },
             ),
           ],
@@ -1032,7 +1139,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
         return Container(
           height: MediaQuery.of(context).size.height * 0.75,
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF27272a) : Colors.white,
+            color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
             borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
           ),
           child: SafeArea(
@@ -1040,14 +1147,13 @@ class _PredictionScreenState extends State<PredictionScreen> {
               padding: const EdgeInsets.all(24),
               child: Column(
                 children: [
-                  /// Drag Handle
                   Center(
                     child: Container(
                       width: 40,
                       height: 4,
                       decoration: BoxDecoration(
                         color: isDark
-                            ? const Color(0xFF3F3F46)
+                            ? AppColors.darkControlFill
                             : const Color(0xFFE5E7EB),
                         borderRadius: BorderRadius.circular(2),
                       ),
@@ -1056,27 +1162,24 @@ class _PredictionScreenState extends State<PredictionScreen> {
 
                   const SizedBox(height: 20),
 
-                  /// CONTENT
                   Expanded(
                     child: SingleChildScrollView(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          /// Product name
                           Text(
                             product.name,
                             style: TextStyle(
                               fontSize: 22,
                               fontWeight: FontWeight.bold,
                               color: isDark
-                                  ? Colors.white
+                                  ? AppColors.textPrimaryDark
                                   : const Color(0xFF111827),
                             ),
                           ),
 
                           const SizedBox(height: 10),
 
-                          /// Badge
                           Container(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 8,
@@ -1090,7 +1193,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
                                           ).withOpacity(0.3)
                                         : const Color(0xFFDCFCE7))
                                   : (isDark
-                                        ? const Color(0xFF3F3F46)
+                                        ? AppColors.darkControlFill
                                         : const Color(0xFFF3F4F6)),
                               borderRadius: BorderRadius.circular(6),
                             ),
@@ -1104,7 +1207,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
                                           ? const Color(0xFF4ADE80)
                                           : const Color(0xFF16A34A))
                                     : (isDark
-                                          ? const Color(0xFF9CA3AF)
+                                          ? AppColors.textSecondaryDark
                                           : const Color(0xFF6B7280)),
                               ),
                             ),
@@ -1112,14 +1215,13 @@ class _PredictionScreenState extends State<PredictionScreen> {
 
                           const SizedBox(height: 24),
 
-                          /// Description title
                           Text(
-                            'Mô tả',
+                            'Description',
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
                               color: isDark
-                                  ? Colors.white
+                                  ? AppColors.textPrimaryDark
                                   : const Color(0xFF111827),
                             ),
                           ),
@@ -1137,17 +1239,16 @@ class _PredictionScreenState extends State<PredictionScreen> {
                             ),
                           ),
 
-                          /// Ingredient section (chỉ hiện nếu là thuốc)
                           if (product.isPrimary) ...[
                             const SizedBox(height: 24),
 
                             Text(
-                              'Thành phần',
+                              'Ingredients',
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
                                 color: isDark
-                                    ? Colors.white
+                                    ? AppColors.textPrimaryDark
                                     : const Color(0xFF111827),
                               ),
                             ),
@@ -1155,7 +1256,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
                             const SizedBox(height: 8),
 
                             Text(
-                              'Thành phần chi tiết của sản phẩm này chưa được cập nhật.',
+                              'Detailed ingredients for this product are not available yet.',
                               style: TextStyle(
                                 fontSize: 14,
                                 height: 1.6,
@@ -1172,7 +1273,6 @@ class _PredictionScreenState extends State<PredictionScreen> {
 
                   const SizedBox(height: 16),
 
-                  /// CLOSE BUTTON
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
@@ -1181,14 +1281,15 @@ class _PredictionScreenState extends State<PredictionScreen> {
                         backgroundColor: isDark
                             ? const Color(0xFFE4E4E7)
                             : const Color(0xFF27272A),
-                        foregroundColor: isDark ? Colors.black : Colors.white,
+                        foregroundColor:
+                            isDark ? Colors.black : AppColors.onPrimary,
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
                       child: const Text(
-                        'Đóng',
+                        'Close',
                         style: TextStyle(fontWeight: FontWeight.bold),
                       ),
                     ),
@@ -1205,7 +1306,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
   void _onSave(BuildContext context) {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('Đã lưu kết quả chẩn đoán'),
+        content: Text('Diagnosis result saved'),
         behavior: SnackBarBehavior.floating,
       ),
     );
@@ -1215,35 +1316,6 @@ class _PredictionScreenState extends State<PredictionScreen> {
     Navigator.of(context).pushNamed(
       AppRouter.feedback,
       arguments: widget.result ?? _sampleResult,
-    );
-  }
-
-  Widget _buildFeedbackOption({
-    required IconData icon,
-    required String label,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          children: [
-            Icon(icon, color: color, size: 32),
-            const SizedBox(height: 8),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-                color: color,
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

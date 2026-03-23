@@ -18,7 +18,6 @@ namespace MyApp.Infrastructure.Services
             _logger  = logger;
         }
 
-        // ── Illness management ──────────────────
 
         public async Task<List<IllnessDto>> GetAllIllnessesAsync()
         {
@@ -108,7 +107,6 @@ namespace MyApp.Infrastructure.Services
             return (true, "Illness assigned to tree successfully.");
         }
 
-        // ── Stage management ──────────────────
 
         public async Task<List<TreeStageDto>> GetAllStagesAsync()
         {
@@ -150,7 +148,6 @@ namespace MyApp.Infrastructure.Services
             return MapToStageDto(stage);
         }
 
-        // ── Treatment management ──────────────────
 
         public async Task<List<TreatmentReviewDto>> GetAllTreatmentsAsync()
         {
@@ -207,7 +204,6 @@ namespace MyApp.Infrastructure.Services
             return (true, "Treatment assigned to illness successfully.", MapToTreatmentDto(solution));
         }
 
-        // ── Helpers ──────────────────
 
         private static IllnessDto MapToIllnessDto(TreeIllness i) => new()
         {

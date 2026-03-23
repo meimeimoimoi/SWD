@@ -1,6 +1,5 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// Service for storing and retrieving user authentication data
 class StorageService {
   static const String _tokenKey = 'auth_token';
   static const String _refreshTokenKey = 'refresh_token';
@@ -8,8 +7,8 @@ class StorageService {
   static const String _roleKey = 'role';
   static const String _expiresInKey = 'expires_in';
   static const String _expiresAtKey = 'expires_at';
+  static const String _loginDemoProfileKey = 'login_demo_profile';
 
-  /// Save authentication token and user info
   static Future<bool> saveAuthToken({
     required String accessToken,
     required String? refreshToken,
@@ -45,7 +44,6 @@ class StorageService {
     }
   }
 
-  /// Get stored access token
   static Future<String?> getAccessToken() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -55,7 +53,6 @@ class StorageService {
     }
   }
 
-  /// Get stored refresh token
   static Future<String?> getRefreshToken() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -65,7 +62,6 @@ class StorageService {
     }
   }
 
-  /// Get stored username
   static Future<String?> getUsername() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -75,7 +71,6 @@ class StorageService {
     }
   }
 
-  /// Get stored role
   static Future<String?> getRole() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -85,7 +80,16 @@ class StorageService {
     }
   }
 
-  /// Get stored token expiration timestamp in ISO 8601.
+  static Future<bool> hasElevatedStaffRole() async {
+    final r = (await getRole())?.toLowerCase().trim() ?? '';
+    return r == 'admin' || r == 'technician';
+  }
+
+  static Future<bool> canManageUsers() async {
+    final r = (await getRole())?.toLowerCase().trim() ?? '';
+    return r == 'admin';
+  }
+
   static Future<String?> getExpiresAt() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -95,7 +99,6 @@ class StorageService {
     }
   }
 
-  /// Returns true when token is missing, malformed, or already expired.
   static Future<bool> isTokenExpired() async {
     final token = await getAccessToken();
     if (token == null || token.isEmpty) {
@@ -115,7 +118,17 @@ class StorageService {
     return DateTime.now().isAfter(expiresAt);
   }
 
-  /// Clear all authentication data
+  /// Persists which built-in demo account to pre-fill on the login screen (`user` | `admin`).
+  static Future<void> saveLoginDemoProfile(String profile) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_loginDemoProfileKey, profile);
+  }
+
+  static Future<String?> getLoginDemoProfile() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_loginDemoProfileKey);
+  }
+
   static Future<bool> clearAuthData() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -131,12 +144,10 @@ class StorageService {
     }
   }
 
-  /// Clear all authentication data.
   static Future<bool> clearAuth() async {
     return clearAuthData();
   }
 
-  /// Check if user is authenticated
   static Future<bool> isAuthenticated() async {
     final token = await getAccessToken();
     return token != null && token.isNotEmpty;

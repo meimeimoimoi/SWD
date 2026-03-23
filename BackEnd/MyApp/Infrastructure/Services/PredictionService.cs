@@ -1,9 +1,10 @@
-﻿using Microsoft.ML.OnnxRuntime;
+using Microsoft.ML.OnnxRuntime;
 using Microsoft.ML.OnnxRuntime.Tensors;
 using MyApp.Application.Features.Prediction;
 using MyApp.Application.Features.Treatment.DTOs;
 using MyApp.Application.Interfaces;
 using MyApp.Domain.Entities;
+using MyApp.Infrastructure.Ml;
 using MyApp.Persistence.Repositories;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
@@ -11,203 +12,206 @@ using SixLabors.ImageSharp.Processing;
 using System.Diagnostics;
 using System.Text.Json;
 
-namespace MyApp.Infrastructure.Services
+namespace MyApp.Infrastructure.Services;
+
+public class PredictionService : IPredictionService, IDisposable
 {
-    public class PredictionService : IPredictionService, IDisposable
+    private readonly ILogger<PredictionService> _logger;
+    private readonly PredictionRepository _predictionRepository;
+    private readonly IImageUploadService _imageUploadService;
+    private readonly IllnessRepository _illnessRepository;
+    private readonly ModelRepository _modelRepository;
+    private readonly IWebHostEnvironment _env;
+
+    private InferenceSession? _session;
+    private int? _loadedModelVersionId;
+    private string[]? _classNames;
+    private const int ImageSize = 224;
+
+    public PredictionService(
+        ILogger<PredictionService> logger,
+        PredictionRepository predictionRepository,
+        IImageUploadService imageUploadService,
+        IllnessRepository illnessRepository,
+        ModelRepository modelRepository,
+        IWebHostEnvironment env)
     {
-        private readonly ILogger<PredictionService> _logger;
-        private readonly PredictionRepository _predictionRepository;
-        private readonly IImageUploadService _imageUploadService;
-        private readonly IllnessRepository _illnessRepository;
-        private readonly ModelRepository _modelRepository;
-        private readonly IWebHostEnvironment _env;
+        _logger = logger;
+        _predictionRepository = predictionRepository;
+        _imageUploadService = imageUploadService;
+        _illnessRepository = illnessRepository;
+        _modelRepository = modelRepository;
+        _env = env;
+    }
 
-        private InferenceSession? _session;
-        private int? _loadedModelVersionId;
-        private const int ImageSize = 224;
-
-        private readonly Dictionary<int, string> _labels = new()
+    private async Task EnsureModelLoadedAsync(int? modelVersionId, CancellationToken cancellationToken = default)
+    {
+        ModelVersion model;
+        if (modelVersionId is > 0)
         {
-            { 0, "Bacterial Leaf Blight" },
-            { 1, "Brown Spot" },
-            { 2, "Healthy Rice Leaf" },
-            { 3, "Leaf Blast" }
-        };
-
-        public PredictionService(
-            ILogger<PredictionService> logger,
-            PredictionRepository predictionRepository,
-            IImageUploadService imageUploadService,
-            IllnessRepository illnessRepository,
-            ModelRepository modelRepository,
-            IWebHostEnvironment env)
-        {
-            _logger = logger;
-            _predictionRepository = predictionRepository;
-            _imageUploadService = imageUploadService;
-            _illnessRepository = illnessRepository;
-            _modelRepository = modelRepository;
-            _env = env;
+            var byId = await _modelRepository.GetActiveByIdForPredictionAsync(
+                modelVersionId.Value,
+                cancellationToken);
+            if (byId == null)
+                throw new InvalidOperationException(
+                    $"No active model with id {modelVersionId} is available for prediction.");
+            model = byId;
         }
-
-        // ── Load active default model from DB ────────────────────────────────
-
-        private async Task EnsureModelLoadedAsync()
+        else
         {
             var defaultModel = await _modelRepository.GetDefaultModelAsync();
-
             if (defaultModel == null)
-                throw new InvalidOperationException(
-                    "No active default model found in the database. Please activate a model first.");
-
-            // Already loaded the same model — skip
-            if (_session != null && _loadedModelVersionId == defaultModel.ModelVersionId)
-                return;
-
-            _session?.Dispose();
-            _session = null;
-
-            // Read FilePath from DB (relative path stored at upload/seed time)
-            if (string.IsNullOrWhiteSpace(defaultModel.FilePath))
-                throw new InvalidOperationException(
-                    $"Model Id={defaultModel.ModelVersionId} has no FilePath stored in the database.");
-
-            var modelPath = Path.Combine(_env.ContentRootPath, defaultModel.FilePath);
-
-            if (!File.Exists(modelPath))
-                throw new InvalidOperationException(
-                    $"Model file not found at '{modelPath}'. Please re-upload the model file.");
-
-            _session = new InferenceSession(modelPath);
-            _loadedModelVersionId = defaultModel.ModelVersionId;
-
-            _logger.LogInformation(
-                "ONNX model loaded — Id={Id}, Name='{Name}', v{Version}, Path='{Path}'",
-                defaultModel.ModelVersionId, defaultModel.ModelName, defaultModel.Version, modelPath);
+                throw new InvalidOperationException("No active default model in the database.");
+            model = defaultModel;
         }
 
-        // ── Predict ──────────────────────────────────────────────────────────
+        if (_session != null && _loadedModelVersionId == model.ModelVersionId)
+            return;
 
-        public async Task<PredictionResponseDto> PredictAsync(int userId, IFormFile imageFile)
+        _session?.Dispose();
+        _session = null;
+        _classNames = null;
+
+        if (string.IsNullOrWhiteSpace(model.FilePath))
+            throw new InvalidOperationException($"Model Id={model.ModelVersionId} has no FilePath.");
+
+        var modelPath = Path.Combine(_env.ContentRootPath, model.FilePath);
+        if (!File.Exists(modelPath))
+            throw new InvalidOperationException($"Model file not found: {modelPath}");
+
+        var session = new InferenceSession(modelPath);
+        _classNames = OnnxModelLabels.Read(session, modelPath);
+        _session = session;
+        _loadedModelVersionId = model.ModelVersionId;
+
+        _logger.LogInformation("Loaded ONNX id={Id} path={Path} classes={N}",
+            model.ModelVersionId, modelPath, _classNames.Length);
+    }
+
+    public async Task<IReadOnlyList<PredictionModelListItemDto>> ListAvailablePredictionModelsAsync(
+        CancellationToken cancellationToken = default)
+    {
+        var list = await _modelRepository.GetActiveForPredictionAsync(cancellationToken);
+        return list
+            .Select(m => new PredictionModelListItemDto
+            {
+                ModelVersionId = m.ModelVersionId,
+                ModelName = m.ModelName,
+                Version = m.Version,
+                IsDefault = m.IsDefault == true,
+                Description = m.Description,
+            })
+            .ToList();
+    }
+
+    public async Task<PredictionResponseDto> PredictAsync(
+        int userId,
+        IFormFile imageFile,
+        int? modelVersionId = null)
+    {
+        await EnsureModelLoadedAsync(modelVersionId);
+        var names = _classNames!;
+
+        var sw = Stopwatch.StartNew();
+        var uploadResult = await _imageUploadService.UploadImageAsync(userId, imageFile);
+
+        using var stream = File.OpenRead(uploadResult.FilePath!);
+        using var image = Image.Load<Rgb24>(stream);
+        image.Mutate(x => x.Resize(new ResizeOptions
         {
-            await EnsureModelLoadedAsync();
+            Size = new Size(ImageSize, ImageSize),
+            Mode = ResizeMode.Stretch
+        }));
 
-            var stopwatch = Stopwatch.StartNew();
-
-            var uploadResult = await _imageUploadService.UploadImageAsync(userId, imageFile);
-
-            using var stream = File.OpenRead(uploadResult.FilePath!);
-            using var image = Image.Load<Rgb24>(stream);
-
-            image.Mutate(x => x.Resize(new ResizeOptions
+        var inputTensor = new DenseTensor<float>(new[] { 1, ImageSize, ImageSize, 3 });
+        for (int y = 0; y < image.Height; y++)
+            for (int x = 0; x < image.Width; x++)
             {
-                Size = new Size(ImageSize, ImageSize),
-                Mode = ResizeMode.Stretch
-            }));
-
-            var inputTensor = new DenseTensor<float>(new[] { 1, ImageSize, ImageSize, 3 });
-            for (int y = 0; y < image.Height; y++)
-                for (int x = 0; x < image.Width; x++)
-                {
-                    var pixel = image[x, y];
-                    inputTensor[0, y, x, 0] = pixel.R;
-                    inputTensor[0, y, x, 1] = pixel.G;
-                    inputTensor[0, y, x, 2] = pixel.B;
-                }
-
-            var inputName = _session!.InputMetadata.Keys.First();
-            var outputName = _session.OutputMetadata.Keys.First();
-            var inputs = new List<NamedOnnxValue>
-            {
-                NamedOnnxValue.CreateFromTensor(inputName, inputTensor)
-            };
-
-            using var results = _session.Run(inputs);
-            var outputArray = results.First(v => v.Name == outputName)
-                                        .AsEnumerable<float>().ToArray();
-
-            int predictedIndex = 0;
-            float maxConfidence = outputArray[0];
-            for (int i = 1; i < outputArray.Length; i++)
-            {
-                if (outputArray[i] > maxConfidence)
-                {
-                    maxConfidence = outputArray[i];
-                    predictedIndex = i;
-                }
+                var p = image[x, y];
+                inputTensor[0, y, x, 0] = p.R;
+                inputTensor[0, y, x, 1] = p.G;
+                inputTensor[0, y, x, 2] = p.B;
             }
 
-            string predictedLabel = _labels[predictedIndex];
+        var inputName = _session!.InputMetadata.Keys.First();
+        var outputName = _session.OutputMetadata.Keys.First();
+        using var results = _session.Run(new List<NamedOnnxValue>
+        {
+            NamedOnnxValue.CreateFromTensor(inputName, inputTensor)
+        });
 
-            var allProbs = new Dictionary<string, double>();
-            for (int i = 0; i < outputArray.Length; i++)
-                allProbs[_labels[i]] = Math.Round(outputArray[i], 6);
+        var output = results.First(v => v.Name == outputName).AsEnumerable<float>().ToArray();
+        if (output.Length != names.Length)
+            throw new InvalidOperationException("Output size does not match class_labels count.");
 
-            var illnessInfo = await _illnessRepository.GetByNameAysnc(predictedLabel);
+        int best = 0;
+        for (int i = 1; i < output.Length; i++)
+            if (output[i] > output[best]) best = i;
 
-            stopwatch.Stop();
+        var predictedLabel = names[best];
+        var probs = new Dictionary<string, double>();
+        for (int i = 0; i < output.Length; i++)
+            probs[names[i]] = Math.Round(output[i], 6);
 
-            var prediction = new Prediction
-            {
-                UploadId = uploadResult.UploadId,
-                ModelVersionId = _loadedModelVersionId,
-                Illness = illnessInfo,
-                PredictedClass = predictedLabel,
-                ConfidenceScore = (decimal)maxConfidence,
-                TopNPredictions = JsonSerializer.Serialize(allProbs),
-                ProcessingTimeMs = (int)stopwatch.ElapsedMilliseconds,
-                CreatedAt = DateTime.UtcNow
-            };
+        var illnessInfo = await _illnessRepository.GetByNameAysnc(predictedLabel);
+        sw.Stop();
 
-            await _predictionRepository.AddPredictionAsync(prediction);
+        var prediction = new Prediction
+        {
+            UploadId = uploadResult.UploadId,
+            ModelVersionId = _loadedModelVersionId,
+            Illness = illnessInfo,
+            PredictedClass = predictedLabel,
+            ConfidenceScore = (decimal)output[best],
+            TopNPredictions = JsonSerializer.Serialize(probs),
+            ProcessingTimeMs = (int)sw.ElapsedMilliseconds,
+            CreatedAt = DateTime.UtcNow
+        };
 
-            _logger.LogInformation(
-                "Prediction saved — Id={Id}, Class={Class}, Confidence={Conf:P2}, ModelId={ModelId}",
-                prediction.PredictionId, predictedLabel, maxConfidence, _loadedModelVersionId);
+        await _predictionRepository.AddPredictionAsync(prediction);
 
-            return new PredictionResponseDto
-            {
-                PredictionId = prediction.PredictionId,
-                ImageUrl = uploadResult.StoredFilename ?? string.Empty,
-                PredictedClass = predictedLabel,
-                Confidence = Math.Round(maxConfidence, 4),
-                ProcessingTimeMs = stopwatch.ElapsedMilliseconds,
-                DiseaseName = illnessInfo?.IllnessName ?? predictedLabel,
-                Symptoms = illnessInfo?.Symptoms ?? "No description available.",
-                Causes = illnessInfo?.Causes,
-                Treatments = illnessInfo?.TreatmentSolutions.Where(t => t.SolutionType == "treatment")
+        return new PredictionResponseDto
+        {
+            PredictionId = prediction.PredictionId,
+            ImageUrl = uploadResult.StoredFilename ?? string.Empty,
+            PredictedClass = predictedLabel,
+            Confidence = Math.Round(output[best], 4),
+            ProcessingTimeMs = sw.ElapsedMilliseconds,
+            IllnessId = illnessInfo?.IllnessId,
+            DiseaseName = illnessInfo?.IllnessName ?? predictedLabel,
+            Symptoms = illnessInfo?.Symptoms,
+            Causes = illnessInfo?.Causes,
+            Treatments = illnessInfo?.TreatmentSolutions.Where(t => t.SolutionType == "treatment")
                 .Select(t => new TreatmentDto
                 {
                     Name = t.SolutionName ?? "Treatment",
                     Type = t.SolutionType ?? "treatment",
                     Description = t.Description ?? string.Empty
-                }).ToList() ?? new List<TreatmentDto>(),
-                Medicines = illnessInfo?.TreatmentSolutions.Where(m => m.SolutionType == "medicine")
+                }).ToList() ?? [],
+            Medicines = illnessInfo?.TreatmentSolutions.Where(m => m.SolutionType == "medicine")
                 .Select(m => new MedicineDto
                 {
                     Name = m.SolutionName ?? "Medicine",
                     Type = m.SolutionType ?? "medicine",
                     Description = m.Description ?? string.Empty
-                }).ToList() ?? new List<MedicineDto>()
-                
-            };
-        }
-
-        // ── Health check ─────────────────────────────────────────────────────
-
-        public async Task<bool> IsModelLoaded()
-        {
-            try
-            {
-                await EnsureModelLoadedAsync();
-                return _session != null;
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
-        public void Dispose() => _session?.Dispose();
+                }).ToList() ?? []
+        };
     }
+
+    public async Task<bool> IsModelLoaded()
+    {
+        try
+        {
+            await EnsureModelLoadedAsync(null);
+            return _session != null;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    public int? GetLoadedModelVersionId() => _loadedModelVersionId;
+
+    public void Dispose() => _session?.Dispose();
 }

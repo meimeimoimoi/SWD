@@ -3,29 +3,87 @@ using Microsoft.AspNetCore.Mvc;
 using MyApp.Application.Features.Admin.DTOs;
 using MyApp.Application.Features.Users.DTOs;
 using MyApp.Application.Interfaces;
+using MyApp.Domain.Enums;
 
 namespace MyApp.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = "Admin")]
+    [Authorize]
     public class AdminController : ControllerBase
     {
         private readonly IAdminService _adminService;
         private readonly IPredictionHistoryService _predictionHistoryService;
+        private readonly IServerHostMetricsService _serverHostMetrics;
         private readonly ILogger<AdminController> _logger;
 
         public AdminController(
             IAdminService adminService,
             IPredictionHistoryService predictionHistoryService,
+            IServerHostMetricsService serverHostMetrics,
             ILogger<AdminController> logger)
         {
             _adminService = adminService;
             _predictionHistoryService = predictionHistoryService;
+            _serverHostMetrics = serverHostMetrics;
             _logger = logger;
         }
 
+        [HttpGet("server/status")]
+        [Authorize(Roles = RolePolicy.Admin)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetServerStatus(CancellationToken cancellationToken)
+        {
+            try
+            {
+                var data = await _serverHostMetrics.GetSimpleAsync(cancellationToken);
+                return Ok(new
+                {
+                    success = true,
+                    message = "Server status retrieved",
+                    data
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error reading server status");
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "Could not read server status",
+                    error = ex.Message
+                });
+            }
+        }
+
+        [HttpGet("server/status/detail")]
+        [Authorize(Roles = RolePolicy.Admin)]
+        public async Task<IActionResult> GetServerStatusDetail(CancellationToken cancellationToken)
+        {
+            try
+            {
+                var data = await _serverHostMetrics.GetDetailAsync(cancellationToken);
+                return Ok(new
+                {
+                    success = true,
+                    message = "Server detail status retrieved",
+                    data
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error reading detailed server status");
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "Could not read detailed server status",
+                    error = ex.Message
+                });
+            }
+        }
+
         [HttpGet("users")]
+        [Authorize(Roles = RolePolicy.Admin)]
         public async Task<IActionResult> GetAllUsers(
             [FromQuery] string? search = null,
             [FromQuery] string? role = null,
@@ -55,6 +113,7 @@ namespace MyApp.Api.Controllers
         }
 
         [HttpGet("users/{userId}")]
+        [Authorize(Roles = RolePolicy.Admin)]
         public async Task<IActionResult> GetUserById(int userId)
         {
             try
@@ -90,6 +149,7 @@ namespace MyApp.Api.Controllers
         }
 
         [HttpPut("users/{userId}")]
+        [Authorize(Roles = RolePolicy.Admin)]
         public async Task<IActionResult> UpdateUser(int userId, [FromBody] UpdateUserDto updateDto)
         {
             try
@@ -142,6 +202,7 @@ namespace MyApp.Api.Controllers
         }
 
         [HttpPatch("users/{userId}/status")]
+        [Authorize(Roles = RolePolicy.Admin)]
         public async Task<IActionResult> UpdateUserStatus(int userId, [FromBody] UpdateStatusRequest request)
         {
             try
@@ -166,11 +227,18 @@ namespace MyApp.Api.Controllers
                     });
                 }
 
+                var updated = await _adminService.GetUserByIdAsync(userId);
+
                 return Ok(new
                 {
                     success = true,
-                    message = $"User status updated to '{request.Status}' successfully"
+                    message = $"User status updated to '{request.Status}' successfully",
+                    data = updated
                 });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { success = false, message = ex.Message });
             }
             catch (Exception ex)
             {
@@ -185,6 +253,7 @@ namespace MyApp.Api.Controllers
         }
 
         [HttpPost("users/staff")]
+        [Authorize(Roles = RolePolicy.Admin)]
         public async Task<IActionResult> CreateStaffUser([FromBody] CreateTechnicianStaffDto createDto)
         {
             try
@@ -240,6 +309,7 @@ namespace MyApp.Api.Controllers
         }
 
         [HttpPost("users")]
+        [Authorize(Roles = RolePolicy.Admin)]
         public async Task<IActionResult> CreateUser([FromBody] CreateUserDto createDto)
         {
             try
@@ -283,6 +353,7 @@ namespace MyApp.Api.Controllers
         }
 
         [HttpDelete("users/{userId}")]
+        [Authorize(Roles = RolePolicy.Admin)]
         public async Task<IActionResult> DeleteUser(int userId)
         {
             try
@@ -325,6 +396,7 @@ namespace MyApp.Api.Controllers
         }
 
         [HttpGet("predictions")]
+        [Authorize(Roles = RolePolicy.AdminOrTechnician)]
         public async Task<IActionResult> GetAllPredictions()
         {
             try

@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using MyApp.Application.Interfaces;
@@ -12,27 +12,27 @@ namespace MyApp.Api.Controllers
     public class PredictionController : ControllerBase
     {
         private readonly IPredictionService _predictionService;
+        private readonly IMonitoringService _monitoringService;
         private readonly ILogger<PredictionController> _logger;
 
         public PredictionController(
             IPredictionService predictionService,
+            IMonitoringService monitoringService,
             ILogger<PredictionController> logger)
         {
             _predictionService = predictionService;
+            _monitoringService = monitoringService;
             _logger = logger;
         }
 
-/// <summary>
-/// Dự đoán bệnh trên lá lúa từ hình ảnh được tải lên. Trả về treatment - thuốc(medicine)
-/// </summary>
-/// <param name="image"></param>
-/// <returns></returns>
         [HttpPost("predict")]
         [Consumes("multipart/form-data")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [Authorize]
-        public async Task<IActionResult> Predict(IFormFile image)
+        public async Task<IActionResult> Predict(
+            IFormFile image,
+            [FromForm] int? modelVersionId = null)
         {
             try
             {
@@ -68,7 +68,7 @@ namespace MyApp.Api.Controllers
 
                 try
                 {
-                    var result = await _predictionService.PredictAsync(userId, image);
+                    var result = await _predictionService.PredictAsync(userId, image, modelVersionId);
                     result.ImageUrl = BuildImageUrl(result.ImageUrl);
                     return Ok(new
                     {
@@ -115,6 +115,28 @@ namespace MyApp.Api.Controllers
            
         }
 
+        [HttpGet("models")]
+        [Authorize]
+        public async Task<IActionResult> ListPredictionModels(CancellationToken cancellationToken)
+        {
+            try
+            {
+                var models =
+                    await _predictionService.ListAvailablePredictionModelsAsync(cancellationToken);
+                return Ok(new
+                {
+                    success = true,
+                    total = models.Count,
+                    data = models,
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error listing prediction models");
+                return StatusCode(500, new { success = false, message = "Error loading models" });
+            }
+        }
+
         [HttpGet("classes")]
         [AllowAnonymous]
         public IActionResult GetClasses()
@@ -144,6 +166,22 @@ namespace MyApp.Api.Controllers
                     : "Prediction service unavailable",
                 modelLoaded = isLoaded
             });
+        }
+
+        [HttpGet("common-threats")]
+        [Authorize]
+        public async Task<IActionResult> GetCommonThreats([FromQuery] int take = 5)
+        {
+            try
+            {
+                var data = await _monitoringService.GetCommonThreatsAsync(take);
+                return Ok(new { success = true, data });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error loading common threats");
+                return StatusCode(500, new { success = false, message = "Could not load common threats." });
+            }
         }
 
         private string BuildImageUrl(string? storedFilename)

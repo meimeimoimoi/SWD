@@ -1,6 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.OpenApi.Models;
+using System.Text.Json;
 using MyApp.Api;
 using MyApp.Application.Interfaces;
 using MyApp.Configuration;
@@ -17,43 +20,49 @@ namespace MyApp
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            builder.Services.AddControllers();
             builder.Services.AddSwaggerDocumentation();
             builder.Services.AddApplicationSerivce();
             builder.Services.AddInfrastructureService();
             builder.Services.AddPersitenceService();
-            
-// Cấu hình JSON để không escape ký tự Unicode (để hiển thị tiếng Việt đúng)
-            builder.Services.AddControllers()
-    .AddJsonOptions(options =>
-    {
-        options.JsonSerializerOptions.Encoder = 
-        System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping;
-    });
 
-            // Add DbContext
+            builder.Services.AddControllers()
+                .AddJsonOptions(options =>
+                {
+                    options.JsonSerializerOptions.PropertyNamingPolicy =
+                        JsonNamingPolicy.CamelCase;
+                    options.JsonSerializerOptions.Encoder =
+                        System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping;
+                });
+
             builder.Services.AddDbContext<AppDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-            // Add JWT Authentication
+            builder.Services.AddHealthChecks()
+                .AddCheck("self", () => HealthCheckResult.Healthy(), tags: new[] { "live" })
+                .AddDbContextCheck<AppDbContext>(
+                    name: "database",
+                    failureStatus: HealthStatus.Unhealthy,
+                    tags: new[] { "ready", "db" });
+
             builder.Services.AddJwtAuthentication(builder.Configuration);
 
 
             var app = builder.Build();
 
-            // Seed database
             using (var scope = app.Services.CreateScope())
             {
                 var services = scope.ServiceProvider;
+                var logger = services.GetRequiredService<ILogger<Program>>();
+                var seeder = services.GetRequiredService<DataSeeder>();
                 try
                 {
-                    var seeder = services.GetRequiredService<DataSeeder>();
+                    await seeder.MigrateDatabaseAsync();
                     await seeder.SeedAsync();
                 }
                 catch (Exception ex)
                 {
-                    var logger = services.GetRequiredService<ILogger<Program>>();
-                    logger.LogError(ex, "An error occurred while seeding the database");
+                    logger.LogCritical(ex, "Database migration or seeding failed; the application will not start.");
+                    throw;
                 }
             }
 
@@ -67,11 +76,20 @@ namespace MyApp
                 RequestPath = "/uploads/images"
             });
 
-            // Important: Authentication must come before Authorization
             app.UseAuthentication();
             app.UseAuthorization();
 
             app.MapControllers();
+
+            app.MapHealthChecks("/health");
+            app.MapHealthChecks("/health/live", new HealthCheckOptions
+            {
+                Predicate = r => r.Tags.Contains("live")
+            });
+            app.MapHealthChecks("/health/ready", new HealthCheckOptions
+            {
+                Predicate = r => r.Tags.Contains("ready")
+            });
 
             app.Run();
         }

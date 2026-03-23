@@ -1,8 +1,7 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace MyApp.Application.Features.Admin.DTOs
 {
-    // ── Dashboard stats ──────────────────
 
     public class DashboardStatsDto
     {
@@ -14,7 +13,6 @@ namespace MyApp.Application.Features.Admin.DTOs
         public int ActiveModels { get; set; }
     }
 
-    // ── System monitoring ──────────────────
 
     public class PredictionStatsDto
     {
@@ -50,6 +48,15 @@ namespace MyApp.Application.Features.Admin.DTOs
         public double PositiveRatingRate { get; set; }
     }
 
+    public class CommonThreatItemDto
+    {
+        public int? IllnessId { get; set; }
+        public string Title { get; set; } = "";
+        public string? ScientificName { get; set; }
+        public int ReportCount { get; set; }
+        public string? ImageUrl { get; set; }
+    }
+
     public class RatingDto
     {
         public int RatingId { get; set; }
@@ -61,7 +68,6 @@ namespace MyApp.Application.Features.Admin.DTOs
         public DateTime? CreatedAt { get; set; }
     }
 
-    // ── Treatment review ──────────────────
 
     public class TreatmentReviewDto
     {

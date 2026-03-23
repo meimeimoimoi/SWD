@@ -23,7 +23,6 @@ namespace MyApp.Infrastructure.Services
             _logger          = logger;
         }
 
-        // ── Treatment content review ──────────────────
 
         public async Task<List<TreatmentReviewDto>> GetAllTreatmentsAsync()
         {
@@ -78,7 +77,6 @@ namespace MyApp.Infrastructure.Services
             return true;
         }
 
-        // ── Model control ──────────────────
 
         public async Task<List<ModelVersionDto>> GetAllModelsAsync()
         {
@@ -140,7 +138,6 @@ namespace MyApp.Infrastructure.Services
             return true;
         }
 
-        // ── Helpers ──────────────────
 
         private static TreatmentReviewDto MapToReviewDto(Domain.Entities.TreatmentSolution s) => new()
         {

@@ -16,16 +16,16 @@ class FeedbackScreen extends StatefulWidget {
 class _FeedbackScreenState extends State<FeedbackScreen> {
   final TextEditingController _commentController = TextEditingController();
   int _rating = 4;
-  final Set<String> _selectedTags = {'Chẩn đoán đúng'};
+  final Set<String> _selectedTags = {'Accurate diagnosis'};
   bool _isSubmitting = false;
   final RatingService _ratingService = RatingService();
 
   final List<String> _tags = const [
-    'Chẩn đoán đúng',
-    'Xử lý nhanh',
-    'Hướng dẫn rõ ràng',
-    'Dễ sử dụng',
-    'Hình ảnh sắc nét',
+    'Accurate diagnosis',
+    'Fast processing',
+    'Clear guidance',
+    'Easy to use',
+    'Sharp images',
   ];
 
   @override
@@ -61,13 +61,12 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
 
       if (result['success'] == true) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Cảm ơn phản hồi của bạn!')),
+          const SnackBar(content: Text('Thanks for your feedback!')),
         );
-        // Navigate back to prediction screen
         Navigator.pop(context);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(result['message'] ?? 'Có lỗi xảy ra')),
+          SnackBar(content: Text(result['message'] ?? 'Something went wrong')),
         );
       }
     } finally {
@@ -90,7 +89,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
           onPressed: () => Navigator.pop(context),
           icon: const Icon(Icons.arrow_back),
         ),
-        title: Text('Đánh giá chẩn đoán', style: theme.textTheme.titleLarge),
+        title: Text('Rate diagnosis', style: theme.textTheme.titleLarge),
         centerTitle: true,
       ),
       body: SafeArea(
@@ -169,7 +168,7 @@ class _SummaryCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Kết quả chẩn đoán',
+                  'Diagnosis result',
                   style: theme.textTheme.labelLarge?.copyWith(
                     color: AppColors.primary,
                     letterSpacing: 0.8,
@@ -177,7 +176,7 @@ class _SummaryCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  predictionResult?.vietnameseName ?? 'Bệnh đốm lá (Leaf Spot)',
+                  predictionResult?.displayName ?? 'Leaf spot',
                   style: theme.textTheme.titleLarge,
                 ),
                 const SizedBox(height: 4),
@@ -205,7 +204,7 @@ class _RatingSection extends StatelessWidget {
     final theme = Theme.of(context);
     return Column(
       children: [
-        Text('Mức độ hài lòng của bạn?', style: theme.textTheme.titleLarge),
+        Text('How satisfied are you?', style: theme.textTheme.titleLarge),
         const SizedBox(height: 12),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -251,7 +250,7 @@ class _QuickTagsSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Phản hồi nhanh', style: theme.textTheme.titleMedium),
+        Text('Quick feedback', style: theme.textTheme.titleMedium),
         const SizedBox(height: 12),
         Wrap(
           spacing: 8,
@@ -305,13 +304,13 @@ class _CommentSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Ý kiến đóng góp thêm', style: theme.textTheme.titleMedium),
+        Text('Additional comments', style: theme.textTheme.titleMedium),
         const SizedBox(height: 8),
         TextField(
           controller: controller,
           maxLines: 4,
           decoration: InputDecoration(
-            hintText: 'Chia sẻ trải nghiệm của bạn với chúng tôi...',
+            hintText: 'Share your experience with us...',
             alignLabelWithHint: true,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
@@ -350,14 +349,15 @@ class _SubmitSection extends StatelessWidget {
                   height: 20,
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
-                    color: Colors.white,
+                    color: AppColors.onPrimary,
                   ),
                 )
                 : const Icon(Icons.send),
-            label: Text(isSubmitting ? 'Đang gửi...' : 'Gửi phản hồi'),
+            label: Text(isSubmitting ? 'Sending...' : 'Submit feedback'),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,
-              foregroundColor: isDark ? AppColors.darkBackground : Colors.white,
+              foregroundColor:
+                  isDark ? AppColors.darkBackground : AppColors.onPrimary,
               padding: const EdgeInsets.symmetric(vertical: 16),
               textStyle: theme.textTheme.labelLarge?.copyWith(
                 fontWeight: FontWeight.w700,
@@ -370,7 +370,7 @@ class _SubmitSection extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         Text(
-          'Cảm ơn bạn đã đóng góp ý kiến. Phản hồi của bạn giúp PlantGuard AI ngày càng hoàn thiện hơn.',
+          'Thank you for contributing. Your feedback helps Argivision improve.',
           textAlign: TextAlign.center,
           style: theme.textTheme.bodySmall,
         ),

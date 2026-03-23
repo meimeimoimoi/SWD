@@ -14,6 +14,12 @@ class AppTextStyles {
       fontWeight: FontWeight.w600,
       color: AppColors.textPrimaryLight,
     ),
+    headlineSmall: GoogleFonts.poppins(
+      fontSize: 22,
+      fontWeight: FontWeight.w700,
+      color: AppColors.textPrimaryLight,
+      height: 1.25,
+    ),
     titleLarge: GoogleFonts.poppins(
       fontSize: 20,
       fontWeight: FontWeight.w600,
@@ -24,20 +30,47 @@ class AppTextStyles {
       fontWeight: FontWeight.w600,
       color: AppColors.textPrimaryLight,
     ),
+    titleSmall: GoogleFonts.poppins(
+      fontSize: 14,
+      fontWeight: FontWeight.w600,
+      color: AppColors.textPrimaryLight,
+      letterSpacing: 0.1,
+    ),
     bodyLarge: GoogleFonts.inter(
       fontSize: 16,
       fontWeight: FontWeight.w500,
       color: AppColors.textSecondaryLight,
+      height: 1.45,
     ),
     bodyMedium: GoogleFonts.inter(
       fontSize: 14,
       fontWeight: FontWeight.w400,
       color: AppColors.textSecondaryLight,
+      height: 1.45,
+    ),
+    bodySmall: GoogleFonts.inter(
+      fontSize: 12,
+      fontWeight: FontWeight.w400,
+      color: AppColors.textSecondaryLight,
+      height: 1.4,
     ),
     labelLarge: GoogleFonts.inter(
       fontSize: 14,
       fontWeight: FontWeight.w600,
       color: AppColors.textPrimaryLight,
+      letterSpacing: 0.2,
+    ),
+    labelMedium: GoogleFonts.inter(
+      fontSize: 12,
+      fontWeight: FontWeight.w600,
+      color: AppColors.textSecondaryLight,
+      letterSpacing: 0.15,
+    ),
+    labelSmall: GoogleFonts.inter(
+      fontSize: 11,
+      fontWeight: FontWeight.w500,
+      color: AppColors.textSecondaryLight,
+      letterSpacing: 0.2,
     ),
   );
 
@@ -52,6 +85,12 @@ class AppTextStyles {
       fontWeight: FontWeight.w600,
       color: AppColors.textPrimaryDark,
     ),
+    headlineSmall: GoogleFonts.poppins(
+      fontSize: 22,
+      fontWeight: FontWeight.w700,
+      color: AppColors.textPrimaryDark,
+      height: 1.25,
+    ),
     titleLarge: GoogleFonts.poppins(
       fontSize: 20,
       fontWeight: FontWeight.w600,
@@ -62,20 +101,47 @@ class AppTextStyles {
       fontWeight: FontWeight.w600,
       color: AppColors.textPrimaryDark,
     ),
+    titleSmall: GoogleFonts.poppins(
+      fontSize: 14,
+      fontWeight: FontWeight.w600,
+      color: AppColors.textPrimaryDark,
+      letterSpacing: 0.1,
+    ),
     bodyLarge: GoogleFonts.inter(
       fontSize: 16,
       fontWeight: FontWeight.w500,
       color: AppColors.textSecondaryDark,
+      height: 1.45,
     ),
     bodyMedium: GoogleFonts.inter(
       fontSize: 14,
       fontWeight: FontWeight.w400,
       color: AppColors.textSecondaryDark,
+      height: 1.45,
+    ),
+    bodySmall: GoogleFonts.inter(
+      fontSize: 12,
+      fontWeight: FontWeight.w400,
+      color: AppColors.textSecondaryDark,
+      height: 1.4,
     ),
     labelLarge: GoogleFonts.inter(
       fontSize: 14,
       fontWeight: FontWeight.w600,
       color: AppColors.textPrimaryDark,
+      letterSpacing: 0.2,
+    ),
+    labelMedium: GoogleFonts.inter(
+      fontSize: 12,
+      fontWeight: FontWeight.w600,
+      color: AppColors.textSecondaryDark,
+      letterSpacing: 0.15,
+    ),
+    labelSmall: GoogleFonts.inter(
+      fontSize: 11,
+      fontWeight: FontWeight.w500,
+      color: AppColors.textSecondaryDark,
+      letterSpacing: 0.2,
     ),
   );
 }

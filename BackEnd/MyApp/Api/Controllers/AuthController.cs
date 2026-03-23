@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MyApp.Application.Features.Users.DTOs;
 using MyApp.Application.Interfaces;
@@ -67,7 +67,6 @@ namespace MyApp.Api.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] ResgisterRequestDTO request)
         {
-            // 1. Kiểm tra Model (Validation từ DTO)
             if (!ModelState.IsValid)
             {
                 return BadRequest(new
@@ -80,10 +79,8 @@ namespace MyApp.Api.Controllers
 
             try
             {
-                // 2. Gọi Service và nhận kết quả ApiResponse
                 var result = await _authService.RegisterAsync(request);
 
-                // 3. Kiểm tra kết quả trả về từ Service
                 if (!result.Success)
                 {
                     return BadRequest(new
@@ -156,16 +153,37 @@ namespace MyApp.Api.Controllers
                 });
             }
         }
-
         [HttpPost("logout")]
         [Authorize]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<IActionResult> Logout([FromHeader] string token)
+        public async Task<IActionResult> Logout()
         {
             try
             {
-                await _authService.LogoutAsync(token);
+                var rawAuth = Request.Headers.Authorization.FirstOrDefault();
+                string? jwt = null;
+                if (!string.IsNullOrEmpty(rawAuth) &&
+                    rawAuth.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+                {
+                    jwt = rawAuth["Bearer ".Length..].Trim();
+                }
+
+                if (string.IsNullOrEmpty(jwt))
+                {
+                    jwt = Request.Headers["token"].FirstOrDefault();
+                }
+
+                if (string.IsNullOrEmpty(jwt))
+                {
+                    return Unauthorized(new
+                    {
+                        success = false,
+                        message = "Missing token. Send Authorization: Bearer <jwt> or token header."
+                    });
+                }
+
+                await _authService.LogoutAsync(jwt);
                 return Ok(new
                 {
                     success = true,

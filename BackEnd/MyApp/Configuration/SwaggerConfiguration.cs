@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
 
@@ -23,7 +23,6 @@ namespace MyApp.Configuration
                     }
                 });
 
-                // Add XML comments
                 var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
                 var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
                 if (File.Exists(xmlPath))
@@ -31,7 +30,6 @@ namespace MyApp.Configuration
                     c.IncludeXmlComments(xmlPath);
                 }
 
-                // Configure JWT authentication
                 c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
                     Description = "JWT Authorization header using the Bearer scheme. Example: \"Bearer {token}\"",
@@ -65,7 +63,7 @@ namespace MyApp.Configuration
             app.UseSwaggerUI(c =>
             {
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "MyApp API v1");
-                c.RoutePrefix = string.Empty; // Swagger at root URL
+                c.RoutePrefix = string.Empty;
                 c.DocumentTitle = "MyApp API Documentation";
             });
             return app;

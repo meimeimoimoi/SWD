@@ -19,8 +19,44 @@ class DashboardProvider with ChangeNotifier {
   List<dynamic> _adminUsers = [];
   List<dynamic> get adminUsers => _adminUsers;
 
+  String? _adminUsersSearch;
+  String? _adminUsersRole;
+  String _adminUsersSortBy = 'email';
+  String _adminUsersSortOrder = 'asc';
+
   List<dynamic> _feedbackList = [];
   List<dynamic> get feedbackList => _feedbackList;
+
+  Map<String, dynamic>? _adminPredictionStats;
+  List<Map<String, dynamic>> _adminModelAccuracy = [];
+  int _criticalFeedbackCount = 0;
+
+  Map<String, dynamic>? get adminPredictionStats => _adminPredictionStats;
+  List<Map<String, dynamic>> get adminModelAccuracy => _adminModelAccuracy;
+  int get criticalFeedbackCount => _criticalFeedbackCount;
+
+  Future<void> fetchAdminDashboard() async {
+    _isLoading = true;
+    notifyListeners();
+
+    _adminStats = await _service.getAdminStats();
+    _adminPredictionStats = await _service.getAdminPredictionStats(days: 7);
+    _adminModelAccuracy = await _service.getModelAccuracy();
+    _adminLogs = await _service.getAdminActivityLogs(count: 25);
+    final feedback = await _service.getFeedbackList();
+    _criticalFeedbackCount = feedback.where((e) {
+      if (e is! Map) return false;
+      final m = Map<String, dynamic>.from(e);
+      final s = m['score'];
+      final n = s is int
+          ? s
+          : (s is num ? s.round() : int.tryParse('$s') ?? 99);
+      return n <= 2;
+    }).length;
+
+    _isLoading = false;
+    notifyListeners();
+  }
 
   Future<void> fetchFeedbackList() async {
     _isLoading = true;
@@ -36,7 +72,12 @@ class DashboardProvider with ChangeNotifier {
 
     _adminStats = await _service.getAdminStats();
     _adminLogs = await _service.getAdminActivityLogs();
-    _adminUsers = await _service.getAdminUsers();
+    _adminUsersSearch = null;
+    _adminUsersRole = null;
+    _adminUsers = await _service.getAdminUsers(
+      sortBy: _adminUsersSortBy,
+      sortOrder: _adminUsersSortOrder,
+    );
     _feedbackList = await _service.getFeedbackList();
 
     _isLoading = false;
@@ -46,9 +87,35 @@ class DashboardProvider with ChangeNotifier {
   Future<void> fetchAdminUsers() async {
     _isLoading = true;
     notifyListeners();
-    _adminUsers = await _service.getAdminUsers();
+    _adminUsers = await _service.getAdminUsers(
+      search: _adminUsersSearch,
+      role: _adminUsersRole,
+      sortBy: _adminUsersSortBy,
+      sortOrder: _adminUsersSortOrder,
+    );
     _isLoading = false;
     notifyListeners();
+  }
+
+  Future<void> setAdminUsersFilters({
+    String? search,
+    String? role,
+    String? sortBy,
+    String? sortOrder,
+  }) async {
+    if (search != null) {
+      _adminUsersSearch = search.trim().isEmpty ? null : search.trim();
+    }
+    if (role != null) {
+      _adminUsersRole = role.trim().isEmpty ? null : role.trim();
+    }
+    if (sortBy != null && sortBy.isNotEmpty) {
+      _adminUsersSortBy = sortBy;
+    }
+    if (sortOrder != null && sortOrder.isNotEmpty) {
+      _adminUsersSortOrder = sortOrder;
+    }
+    await fetchAdminUsers();
   }
 
   Future<bool> createUser(String email, String password, String role) async {
@@ -56,7 +123,12 @@ class DashboardProvider with ChangeNotifier {
     notifyListeners();
     final success = await _service.createUser(email, password, role);
     if (success) {
-      _adminUsers = await _service.getAdminUsers();
+      _adminUsers = await _service.getAdminUsers(
+        search: _adminUsersSearch,
+        role: _adminUsersRole,
+        sortBy: _adminUsersSortBy,
+        sortOrder: _adminUsersSortOrder,
+      );
     }
     _isLoading = false;
     notifyListeners();
@@ -67,9 +139,12 @@ class DashboardProvider with ChangeNotifier {
     _isLoading = true;
     notifyListeners();
     final success = await _service.updateUserStatus(userId, status);
-    if (success) {
-      _adminUsers = await _service.getAdminUsers();
-    }
+    _adminUsers = await _service.getAdminUsers(
+      search: _adminUsersSearch,
+      role: _adminUsersRole,
+      sortBy: _adminUsersSortBy,
+      sortOrder: _adminUsersSortOrder,
+    );
     _isLoading = false;
     notifyListeners();
     return success;
@@ -80,7 +155,12 @@ class DashboardProvider with ChangeNotifier {
     notifyListeners();
     final success = await _service.updateUserRole(userId, role);
     if (success) {
-      _adminUsers = await _service.getAdminUsers();
+      _adminUsers = await _service.getAdminUsers(
+        search: _adminUsersSearch,
+        role: _adminUsersRole,
+        sortBy: _adminUsersSortBy,
+        sortOrder: _adminUsersSortOrder,
+      );
     }
     _isLoading = false;
     notifyListeners();

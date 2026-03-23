@@ -1,4 +1,8 @@
 import 'package:dio/dio.dart';
+
+import '../constants/api_config.dart';
+import '../models/model_version_detail.dart';
+import '../models/server_host_status.dart';
 import 'storage_service.dart';
 
 class DashboardStats {
@@ -19,7 +23,6 @@ class DashboardStats {
   });
 
   factory DashboardStats.fromJson(Map<String, dynamic> json) {
-    // API returns data wrapped in a 'data' field
     final d = json['data'] ?? json;
     return DashboardStats(
       totalUsers: d['totalUsers'] ?? 0,
@@ -102,14 +105,13 @@ class NotificationItem {
 
 class DashboardService {
   final Dio _dio;
-  static const String _baseUrl = 'http://10.0.2.2:5299';
 
   DashboardService({Dio? dio})
     : _dio =
           dio ??
           Dio(
             BaseOptions(
-              baseUrl: _baseUrl,
+              baseUrl: ApiConfig.baseUrl,
               connectTimeout: const Duration(seconds: 30),
               receiveTimeout: const Duration(seconds: 30),
               headers: {'Accept': 'application/json'},
@@ -118,7 +120,7 @@ class DashboardService {
 
   Future<DashboardStats?> getAdminStats() async {
     try {
-      final response = await _authorizedGet('/api/admin/stats');
+      final response = await _authorizedGet(ApiPaths.adminStats);
       if (response.data['success'] == true) {
         return DashboardStats.fromJson(response.data);
       }
@@ -143,7 +145,7 @@ class DashboardService {
 
   Future<List<NotificationItem>> getUserNotifications() async {
     try {
-      final response = await _authorizedGet('/api/User/notifications');
+      final response = await _authorizedGet(ApiPaths.userNotifications);
       if (response.data['success'] == true) {
         final List raw = response.data['data'] ?? [];
         return raw.map((e) => NotificationItem.fromJson(e)).toList();
@@ -156,7 +158,7 @@ class DashboardService {
 
   Future<List<ActivityLogItem>> getUserActivities() async {
     try {
-      final response = await _authorizedGet('/api/User/activities');
+      final response = await _authorizedGet(ApiPaths.userActivities);
       if (response.data['success'] == true) {
         final List raw = response.data['data'] ?? [];
         return raw.map((e) => ActivityLogItem.fromJson(e)).toList();
@@ -169,7 +171,7 @@ class DashboardService {
 
   Future<List<dynamic>> getFeedbackList() async {
     try {
-      final response = await _authorizedGet('/api/rating/all');
+      final response = await _authorizedGet(ApiPaths.ratingAll);
       if (response.data['success'] == true) {
         return response.data['data'] ?? [];
       }
@@ -179,21 +181,128 @@ class DashboardService {
     }
   }
 
-  Future<List<dynamic>> getAdminUsers() async {
+  Future<List<dynamic>> getAdminUsers({
+    String? search,
+    String? role,
+    String sortBy = 'email',
+    String sortOrder = 'asc',
+  }) async {
     try {
-      final response = await _authorizedGet('/api/Admin/users');
+      final path = ApiPaths.adminUsersList(
+        search: search,
+        role: role,
+        sortBy: sortBy,
+        sortOrder: sortOrder,
+      );
+      final response = await _authorizedGet(path);
       if (response.data['success'] == true) {
         return response.data['data'] ?? [];
       }
       return [];
     } catch (e) {
       return [];
+    }
+  }
+
+  Future<Map<String, dynamic>?> getAdminUserById(int userId) async {
+    try {
+      final response = await _authorizedGet(ApiPaths.adminUser(userId));
+      if (response.data['success'] == true) {
+        final d = response.data['data'];
+        if (d is Map) {
+          return Map<String, dynamic>.from(d);
+        }
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  Future<bool> deleteAdminUser(int userId) async {
+    try {
+      final response = await _authorizedDelete(ApiPaths.adminUser(userId));
+      return response.data['success'] == true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<Map<String, dynamic>?> createAdminStaff(
+    Map<String, dynamic> body,
+  ) async {
+    try {
+      final response = await _authorizedPost(ApiPaths.adminUsersStaff, body);
+      if (response.data['success'] == true) {
+        final d = response.data['data'];
+        if (d is Map) {
+          return Map<String, dynamic>.from(d);
+        }
+        return {};
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  Future<bool> updateAdminUser(int userId, Map<String, dynamic> body) async {
+    try {
+      final response = await _authorizedPut(ApiPaths.adminUser(userId), body);
+      return response.data['success'] == true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<List<dynamic>> getAdminPredictions() async {
+    try {
+      final response = await _authorizedGet(ApiPaths.adminPredictions);
+      if (response.data['success'] == true) {
+        return response.data['data'] ?? [];
+      }
+      return [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  Future<Map<String, dynamic>?> getAdminPredictionStats({int days = 7}) async {
+    try {
+      final response =
+          await _authorizedGet(ApiPaths.adminPredictionStats(days: days));
+      if (response.data['success'] == true) {
+        final d = response.data['data'];
+        if (d is Map) {
+          return Map<String, dynamic>.from(d);
+        }
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  Future<Map<String, dynamic>?> getAdminRatingsPaged({
+    int page = 1,
+    int pageSize = 20,
+  }) async {
+    try {
+      final response = await _authorizedGet(
+        ApiPaths.adminRatings(page: page, pageSize: pageSize),
+      );
+      if (response.data['success'] == true) {
+        return Map<String, dynamic>.from(response.data as Map);
+      }
+      return null;
+    } catch (e) {
+      return null;
     }
   }
 
   Future<bool> createUser(String email, String password, String role) async {
     try {
-      final response = await _authorizedPost('/api/Admin/users', {
+      final response = await _authorizedPost(ApiPaths.adminUsersRoot, {
         'email': email,
         'password': password,
         'role': role,
@@ -206,7 +315,8 @@ class DashboardService {
 
   Future<bool> updateUserStatus(int userId, String status) async {
     try {
-      final response = await _authorizedPatch('/api/Admin/users/$userId/status', {
+      final response =
+          await _authorizedPatch('${ApiPaths.adminUser(userId)}/status', {
         'status': status,
       });
       return response.data['success'] == true;
@@ -220,6 +330,535 @@ class DashboardService {
       final response = await _authorizedPut('/api/Admin/users/$userId', {
         'role': role,
       });
+      return response.data['success'] == true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getModelAccuracy() async {
+    try {
+      final response = await _authorizedGet(ApiPaths.adminModelsAccuracy);
+      if (response.data['success'] == true) {
+        final List raw = response.data['data'] ?? [];
+        return raw
+            .map((e) => Map<String, dynamic>.from(e as Map))
+            .toList();
+      }
+      return [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getAdminModelsList() async {
+    try {
+      final response = await _authorizedGet(ApiPaths.adminModels);
+      if (response.data['success'] == true) {
+        final List raw = response.data['data'] ?? [];
+        return raw
+            .map((e) => Map<String, dynamic>.from(e as Map))
+            .toList();
+      }
+      return [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  Future<ModelVersionDetail?> getAdminModelDetail(int modelVersionId) async {
+    try {
+      final response =
+          await _authorizedGet(ApiPaths.adminModelDetail(modelVersionId));
+      if (response.data['success'] == true) {
+        final d = response.data['data'];
+        if (d is Map) {
+          return ModelVersionDetail.fromJson(Map<String, dynamic>.from(d));
+        }
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  Future<bool> activateAdminModel(int id) async {
+    try {
+      final response =
+          await _authorizedPatch(ApiPaths.adminModelActive(id), {});
+      return response.data['success'] == true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<bool> uploadAdminModel({
+    required String modelName,
+    required String version,
+    required String filePath,
+    String? description,
+    String modelType = 'mobilenetv3',
+  }) async {
+    try {
+      final accessToken = await StorageService.getAccessToken();
+      final fileName = filePath.split(RegExp(r'[\\/]')).last;
+      final formData = FormData.fromMap({
+        'ModelName': modelName,
+        'Version': version,
+        'ModelType': modelType,
+        if (description != null && description.isNotEmpty) 'Description': description,
+        'ModelFile': await MultipartFile.fromFile(filePath, filename: fileName),
+      });
+      final response = await _dio.post(
+        ApiPaths.adminModels,
+        data: formData,
+        options: Options(
+          headers: {'Authorization': 'Bearer $accessToken'},
+        ),
+      );
+      return response.data['success'] == true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<ServerHostStatusSimple?> getAdminServerStatusSimple() async {
+    try {
+      final response = await _authorizedGet(ApiPaths.adminServerStatus);
+      if (response.data['success'] == true) {
+        final d = response.data['data'];
+        if (d is Map) {
+          return ServerHostStatusSimple.fromJson(
+            Map<String, dynamic>.from(d),
+          );
+        }
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  Future<ServerHostStatusDetail?> getAdminServerStatusDetail() async {
+    try {
+      final response = await _authorizedGet(ApiPaths.adminServerStatusDetail);
+      if (response.data['success'] == true) {
+        final d = response.data['data'];
+        if (d is Map) {
+          return ServerHostStatusDetail.fromJson(
+            Map<String, dynamic>.from(d),
+          );
+        }
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  Future<Map<String, dynamic>> getHealthChecks() async {
+    final out = <String, dynamic>{};
+    try {
+      final live = await _dio.get('/health/live');
+      out['live'] = live.data;
+      out['liveCode'] = live.statusCode;
+    } catch (e) {
+      out['liveError'] = e.toString();
+    }
+    try {
+      final ready = await _dio.get('/health/ready');
+      out['ready'] = ready.data;
+      out['readyCode'] = ready.statusCode;
+    } catch (e) {
+      out['readyError'] = e.toString();
+    }
+    try {
+      final root = await _dio.get('/health');
+      out['root'] = root.data;
+      out['rootCode'] = root.statusCode;
+    } catch (e) {
+      out['rootError'] = e.toString();
+    }
+    return out;
+  }
+
+  Future<List<Map<String, dynamic>>> getIllnesses() async {
+    try {
+      final response = await _authorizedGet('/api/technician/illnesses');
+      if (response.data['success'] == true) {
+        final List raw = response.data['data'] ?? [];
+        return raw
+            .map((e) => Map<String, dynamic>.from(e as Map))
+            .toList();
+      }
+      return [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  Future<Map<String, dynamic>?> getIllnessById(int id) async {
+    try {
+      final response = await _authorizedGet(ApiPaths.technicianIllness(id));
+      if (response.data['success'] == true) {
+        final d = response.data['data'];
+        if (d is Map) {
+          return Map<String, dynamic>.from(d);
+        }
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  Future<bool> createIllness(Map<String, dynamic> body) async {
+    try {
+      final response = await _authorizedPost(ApiPaths.technicianIllnesses, body);
+      return response.data['success'] == true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<bool> updateIllness(int id, Map<String, dynamic> body) async {
+    try {
+      final response =
+          await _authorizedPut(ApiPaths.technicianIllness(id), body);
+      return response.data['success'] == true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<bool> deleteIllness(int id) async {
+    try {
+      final accessToken = await StorageService.getAccessToken();
+      final response = await _dio.delete(
+        ApiPaths.technicianIllness(id),
+        options: Options(
+          headers: {'Authorization': 'Bearer $accessToken'},
+        ),
+      );
+      return response.data['success'] == true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<bool> assignIllnessToTree(int illnessId, int treeId) async {
+    try {
+      final response = await _authorizedPost(
+        ApiPaths.technicianIllnessAssignTree(illnessId),
+        {'treeId': treeId},
+      );
+      return response.data['success'] == true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getTechnicianStages() async {
+    try {
+      final response = await _authorizedGet(ApiPaths.technicianStages);
+      if (response.data['success'] == true) {
+        final List raw = response.data['data'] ?? [];
+        return raw
+            .map((e) => Map<String, dynamic>.from(e as Map))
+            .toList();
+      }
+      return [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  Future<Map<String, dynamic>?> getTechnicianStageById(int id) async {
+    try {
+      final response = await _authorizedGet(ApiPaths.technicianStage(id));
+      if (response.data['success'] == true) {
+        final d = response.data['data'];
+        if (d is Map) {
+          return Map<String, dynamic>.from(d);
+        }
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  Future<bool> createTechnicianStage(Map<String, dynamic> body) async {
+    try {
+      final response = await _authorizedPost(ApiPaths.technicianStages, body);
+      return response.data['success'] == true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<bool> updateTechnicianStage(int id, Map<String, dynamic> body) async {
+    try {
+      final response = await _authorizedPut(ApiPaths.technicianStage(id), body);
+      return response.data['success'] == true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getAdminDataStages() async {
+    try {
+      final response = await _authorizedGet(ApiPaths.adminDataStages);
+      if (response.data['success'] == true) {
+        final List raw = response.data['data'] ?? [];
+        return raw
+            .map((e) => Map<String, dynamic>.from(e as Map))
+            .toList();
+      }
+      return [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  Future<Map<String, dynamic>?> getAdminDataStageById(int id) async {
+    try {
+      final response = await _authorizedGet(ApiPaths.adminDataStage(id));
+      if (response.data['success'] == true) {
+        final d = response.data['data'];
+        if (d is Map) {
+          return Map<String, dynamic>.from(d);
+        }
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  Future<bool> createAdminDataStage(Map<String, dynamic> body) async {
+    try {
+      final response = await _authorizedPost(ApiPaths.adminDataStages, body);
+      return response.data['success'] == true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<bool> updateAdminDataStage(int id, Map<String, dynamic> body) async {
+    try {
+      final response = await _authorizedPut(ApiPaths.adminDataStage(id), body);
+      return response.data['success'] == true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<bool> deleteAdminDataStage(int id) async {
+    try {
+      final response = await _authorizedDelete(ApiPaths.adminDataStage(id));
+      return response.data['success'] == true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getAdminDataRelationships({
+    int? treeId,
+    int? illnessId,
+  }) async {
+    try {
+      final response = await _authorizedGet(
+        ApiPaths.adminDataRelationships(treeId: treeId, illnessId: illnessId),
+      );
+      if (response.data['success'] == true) {
+        final List raw = response.data['data'] ?? [];
+        return raw
+            .map((e) => Map<String, dynamic>.from(e as Map))
+            .toList();
+      }
+      return [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  Future<Map<String, dynamic>?> createAdminDataRelationship(
+    Map<String, dynamic> body,
+  ) async {
+    try {
+      final response =
+          await _authorizedPost(ApiPaths.adminDataRelationships(), body);
+      if (response.data['success'] == true) {
+        final d = response.data['data'];
+        if (d is Map) {
+          return Map<String, dynamic>.from(d);
+        }
+        return {};
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  Future<bool> deleteAdminDataRelationship(int id) async {
+    try {
+      final response =
+          await _authorizedDelete(ApiPaths.adminDataRelationship(id));
+      return response.data['success'] == true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getReviewTreatments() async {
+    try {
+      final response = await _authorizedGet(ApiPaths.reviewTreatments);
+      if (response.data['success'] == true) {
+        final List raw = response.data['data'] ?? [];
+        return raw
+            .map((e) => Map<String, dynamic>.from(e as Map))
+            .toList();
+      }
+      return [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  Future<Map<String, dynamic>?> getReviewTreatmentById(int id) async {
+    try {
+      final response = await _authorizedGet(ApiPaths.reviewTreatment(id));
+      if (response.data['success'] == true) {
+        final d = response.data['data'];
+        if (d is Map) {
+          return Map<String, dynamic>.from(d);
+        }
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  Future<bool> updateReviewTreatment(int id, Map<String, dynamic> body) async {
+    try {
+      final response = await _authorizedPut(ApiPaths.reviewTreatment(id), body);
+      return response.data['success'] == true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<bool> deleteReviewTreatment(int id) async {
+    try {
+      final response = await _authorizedDelete(ApiPaths.reviewTreatment(id));
+      return response.data['success'] == true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getReviewModels() async {
+    try {
+      final response = await _authorizedGet(ApiPaths.reviewModels);
+      if (response.data['success'] == true) {
+        final List raw = response.data['data'] ?? [];
+        return raw
+            .map((e) => Map<String, dynamic>.from(e as Map))
+            .toList();
+      }
+      return [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  Future<bool> reviewActivateModel(int id) async {
+    try {
+      final response =
+          await _authorizedPatch(ApiPaths.reviewModelActivate(id), {});
+      return response.data['success'] == true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<bool> reviewDeactivateModel(int id) async {
+    try {
+      final response =
+          await _authorizedPatch(ApiPaths.reviewModelDeactivate(id), {});
+      return response.data['success'] == true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<List<dynamic>> getAdminSettings() async {
+    try {
+      final response = await _authorizedGet(ApiPaths.adminSettings);
+      if (response.data['success'] == true) {
+        final d = response.data['data'];
+        if (d is List) return d;
+      }
+      return [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  Future<bool> updateAdminSetting(String key, String? value) async {
+    try {
+      final response = await _authorizedPut(
+        ApiPaths.adminSettingKey(key),
+        {'value': value},
+      );
+      return response.data['success'] == true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getTreatmentManagementList() async {
+    try {
+      final response = await _authorizedGet(ApiPaths.treatments);
+      if (response.data['success'] == true) {
+        final List raw = response.data['data'] ?? [];
+        return raw
+            .map((e) => Map<String, dynamic>.from(e as Map))
+            .toList();
+      }
+      return [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  Future<Map<String, dynamic>?> createTreatmentManagement(
+    Map<String, dynamic> body,
+  ) async {
+    try {
+      final response = await _authorizedPost(ApiPaths.treatments, body);
+      if (response.data['success'] == true) {
+        final d = response.data['data'];
+        if (d is Map) {
+          return Map<String, dynamic>.from(d);
+        }
+        return {};
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  Future<bool> assignTreatmentToIllness(int treatmentId, int illnessId) async {
+    try {
+      final response = await _authorizedPost(
+        ApiPaths.treatmentAssign(treatmentId),
+        {'illnessId': illnessId},
+      );
       return response.data['success'] == true;
     } catch (e) {
       return false;
@@ -242,7 +881,11 @@ class DashboardService {
       path,
       data: data,
       options: Options(
-        headers: {'Authorization': 'Bearer $accessToken'},
+        headers: {
+          'Authorization': 'Bearer $accessToken',
+          Headers.contentTypeHeader: Headers.jsonContentType,
+          'Accept': 'application/json',
+        },
       ),
     );
   }
@@ -253,7 +896,11 @@ class DashboardService {
       path,
       data: data,
       options: Options(
-        headers: {'Authorization': 'Bearer $accessToken'},
+        headers: {
+          'Authorization': 'Bearer $accessToken',
+          Headers.contentTypeHeader: Headers.jsonContentType,
+          'Accept': 'application/json',
+        },
       ),
     );
   }
@@ -263,6 +910,20 @@ class DashboardService {
     return await _dio.put(
       path,
       data: data,
+      options: Options(
+        headers: {
+          'Authorization': 'Bearer $accessToken',
+          Headers.contentTypeHeader: Headers.jsonContentType,
+          'Accept': 'application/json',
+        },
+      ),
+    );
+  }
+
+  Future<Response> _authorizedDelete(String path) async {
+    final accessToken = await StorageService.getAccessToken();
+    return await _dio.delete(
+      path,
       options: Options(
         headers: {'Authorization': 'Bearer $accessToken'},
       ),
