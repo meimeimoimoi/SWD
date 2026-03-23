@@ -34,6 +34,7 @@ namespace MyApp.Infrastructure
             services.AddScoped<ISystemSettingService, SystemSettingService>();
             services.AddScoped<EfMigrationHistoryChecksumService>();
             services.AddScoped<DataSeeder>();
+            services.AddSingleton<IServerHostMetricsService, ServerHostMetricsService>();
             return services;
         }
     }

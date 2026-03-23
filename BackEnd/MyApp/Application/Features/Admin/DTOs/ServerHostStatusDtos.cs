@@ -1,0 +1,41 @@
+namespace MyApp.Application.Features.Admin.DTOs;
+
+public sealed record ServerHostStatusSimpleDto(
+    DateTime CapturedAtUtc,
+    string MachineName,
+    int ProcessorCount,
+    double ProcessUptimeSeconds,
+    double ProcessWorkingSetMb,
+    double ProcessPrivateMemoryMb,
+    double? MachineTotalMemoryMb,
+    double? MachineAvailableMemoryMb,
+    double? MachineMemoryUsedPercent,
+    string DotNetVersion,
+    string EnvironmentName,
+    string ApplicationName);
+
+public sealed record ServerHostStatusDetailDto(
+    DateTime CapturedAtUtc,
+    string MachineName,
+    int ProcessorCount,
+    double ProcessUptimeSeconds,
+    double ProcessWorkingSetMb,
+    double ProcessPrivateMemoryMb,
+    double? MachineTotalMemoryMb,
+    double? MachineAvailableMemoryMb,
+    double? MachineMemoryUsedPercent,
+    string DotNetVersion,
+    string EnvironmentName,
+    string ApplicationName,
+    int ProcessId,
+    string OsDescription,
+    int ThreadCount,
+    int HandleCount,
+    long GcTotalMemoryBytes,
+    long GcHeapSizeBytes,
+    long GcHighMemoryLoadThresholdBytes,
+    int GcGen0Collections,
+    int GcGen1Collections,
+    int GcGen2Collections,
+    DateTime ProcessStartTimeUtc,
+    double? EstimatedProcessCpuPercent);

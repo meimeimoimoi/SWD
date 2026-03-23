@@ -4,6 +4,7 @@ import '../../../routes/app_router.dart';
 import '../../../share/services/auth_api_service.dart';
 import '../../../share/services/storage_service.dart';
 import '../../../share/constants/app_brand.dart';
+import '../../../share/constants/demo_accounts.dart';
 import '../../../share/widgets/app_button.dart';
 import '../../../share/widgets/app_card.dart';
 import '../../../share/widgets/app_input.dart';
@@ -19,13 +20,45 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  final TextEditingController _emailController =
-      TextEditingController(text: 'User1@swd.com');
-  final TextEditingController _passwordController =
-      TextEditingController(text: 'User123!');
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
   bool _rememberMe = true;
   bool _obscurePassword = true;
   bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _restoreDemoProfile());
+  }
+
+  Future<void> _restoreDemoProfile() async {
+    final saved = await StorageService.getLoginDemoProfile();
+    if (!mounted) return;
+    final useAdmin = saved == 'admin';
+    setState(() {
+      _emailController.text =
+          useAdmin ? DemoAccounts.adminEmail : DemoAccounts.userEmail;
+      _passwordController.text =
+          useAdmin ? DemoAccounts.adminPassword : DemoAccounts.userPassword;
+    });
+  }
+
+  Future<void> _applyDemoUser() async {
+    setState(() {
+      _emailController.text = DemoAccounts.userEmail;
+      _passwordController.text = DemoAccounts.userPassword;
+    });
+    await StorageService.saveLoginDemoProfile('user');
+  }
+
+  Future<void> _applyDemoAdmin() async {
+    setState(() {
+      _emailController.text = DemoAccounts.adminEmail;
+      _passwordController.text = DemoAccounts.adminPassword;
+    });
+    await StorageService.saveLoginDemoProfile('admin');
+  }
 
   @override
   void dispose() {
@@ -63,6 +96,15 @@ class _LoginScreenState extends State<LoginScreen> {
             role: role,
             expiresIn: expiresIn,
           );
+
+          if (_rememberMe) {
+            final email = _emailController.text.trim();
+            if (DemoAccounts.isUserDemo(email)) {
+              await StorageService.saveLoginDemoProfile('user');
+            } else if (DemoAccounts.isAdminDemo(email)) {
+              await StorageService.saveLoginDemoProfile('admin');
+            }
+          }
 
           final cs = Theme.of(context).colorScheme;
           ScaffoldMessenger.of(context).showSnackBar(
@@ -167,6 +209,8 @@ class _LoginScreenState extends State<LoginScreen> {
                         rememberMe: _rememberMe,
                         obscurePassword: _obscurePassword,
                         isLoading: _isLoading,
+                        onDemoUser: _applyDemoUser,
+                        onDemoAdmin: _applyDemoAdmin,
                         onRememberChanged: (value) =>
                             setState(() => _rememberMe = value),
                         onTogglePassword: () => setState(
@@ -193,6 +237,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       rememberMe: _rememberMe,
                       obscurePassword: _obscurePassword,
                       isLoading: _isLoading,
+                      onDemoUser: _applyDemoUser,
+                      onDemoAdmin: _applyDemoAdmin,
                       onRememberChanged: (value) =>
                           setState(() => _rememberMe = value),
                       onTogglePassword: () => setState(
@@ -223,6 +269,8 @@ class _AuthCard extends StatelessWidget {
     required this.rememberMe,
     required this.obscurePassword,
     required this.isLoading,
+    required this.onDemoUser,
+    required this.onDemoAdmin,
     required this.onRememberChanged,
     required this.onTogglePassword,
     required this.onSubmit,
@@ -234,6 +282,8 @@ class _AuthCard extends StatelessWidget {
   final bool rememberMe;
   final bool obscurePassword;
   final bool isLoading;
+  final Future<void> Function() onDemoUser;
+  final Future<void> Function() onDemoAdmin;
   final ValueChanged<bool> onRememberChanged;
   final VoidCallback onTogglePassword;
   final VoidCallback onSubmit;
@@ -291,6 +341,82 @@ class _AuthCard extends StatelessWidget {
                       : Icons.visibility_off_outlined,
                 ),
                 onPressed: onTogglePassword,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: TextButton(
+                style: TextButton.styleFrom(
+                  foregroundColor: theme.colorScheme.onSurface
+                      .withValues(alpha: 0.5),
+                  textStyle: theme.textTheme.bodySmall?.copyWith(
+                    fontWeight: FontWeight.w500,
+                  ),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  visualDensity: VisualDensity.compact,
+                ),
+                onPressed: isLoading
+                    ? null
+                    : () async {
+                        final choice = await showDialog<String>(
+                          context: context,
+                          builder: (ctx) {
+                            final cs = Theme.of(ctx).colorScheme;
+                            return AlertDialog(
+                              title: const Text('Demo account'),
+                              content: SingleChildScrollView(
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    ListTile(
+                                      contentPadding: EdgeInsets.zero,
+                                      leading: Icon(
+                                        Icons.person_outline,
+                                        color: cs.primary,
+                                      ),
+                                      title: const Text('User1@swd.com'),
+                                      subtitle: const Text(
+                                        'Regular user · demo seed',
+                                      ),
+                                      onTap: () => Navigator.pop(ctx, 'user'),
+                                    ),
+                                    const Divider(height: 1),
+                                    ListTile(
+                                      contentPadding: EdgeInsets.zero,
+                                      leading: Icon(
+                                        Icons.admin_panel_settings_outlined,
+                                        color: cs.primary,
+                                      ),
+                                      title: const Text('Admin@swd.com'),
+                                      subtitle: const Text(
+                                        'Staff console · demo seed',
+                                      ),
+                                      onTap: () => Navigator.pop(ctx, 'admin'),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(ctx),
+                                  child: const Text('Cancel'),
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                        if (!context.mounted || choice == null) return;
+                        if (choice == 'user') {
+                          await onDemoUser();
+                        } else if (choice == 'admin') {
+                          await onDemoAdmin();
+                        }
+                      },
+                child: const Text('Use demo account…'),
               ),
             ),
             const SizedBox(height: 12),

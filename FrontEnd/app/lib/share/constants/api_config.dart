@@ -80,6 +80,8 @@ abstract final class ApiPaths {
 
   static String adminUser(int userId) => '$adminUsersRoot/$userId';
   static const adminUsersStaff = '/api/Admin/users/staff';
+  static const adminServerStatus = '/api/Admin/server/status';
+  static const adminServerStatusDetail = '/api/Admin/server/status/detail';
   static const adminPredictions = '/api/Admin/predictions';
 
   static const adminStats = '/api/admin/stats';
@@ -93,6 +95,7 @@ abstract final class ApiPaths {
 
   static const adminModels = '/api/admin/models';
   static String adminModelActive(int id) => '/api/admin/models/$id/active';
+  static String adminModelDetail(int id) => '/api/admin/models/$id/detail';
 
   static const adminDataStages = '/api/admin/data/stages';
   static String adminDataStage(int id) => '/api/admin/data/stages/$id';

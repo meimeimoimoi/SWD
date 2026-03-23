@@ -7,6 +7,7 @@ class StorageService {
   static const String _roleKey = 'role';
   static const String _expiresInKey = 'expires_in';
   static const String _expiresAtKey = 'expires_at';
+  static const String _loginDemoProfileKey = 'login_demo_profile';
 
   static Future<bool> saveAuthToken({
     required String accessToken,
@@ -115,6 +116,17 @@ class StorageService {
     }
 
     return DateTime.now().isAfter(expiresAt);
+  }
+
+  /// Persists which built-in demo account to pre-fill on the login screen (`user` | `admin`).
+  static Future<void> saveLoginDemoProfile(String profile) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_loginDemoProfileKey, profile);
+  }
+
+  static Future<String?> getLoginDemoProfile() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_loginDemoProfileKey);
   }
 
   static Future<bool> clearAuthData() async {

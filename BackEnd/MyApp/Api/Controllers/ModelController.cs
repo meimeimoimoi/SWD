@@ -20,6 +20,35 @@ namespace MyApp.Api.Controllers
             _logger = logger;
         }
 
+        [HttpGet("{id:int}/detail")]
+        public async Task<IActionResult> GetModelDetail(int id)
+        {
+            try
+            {
+                var detail = await _modelService.GetModelVersionDetailAsync(id);
+                if (detail == null)
+                {
+                    return NotFound(new
+                    {
+                        success = false,
+                        message = $"Model with ID {id} not found."
+                    });
+                }
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "Model detail retrieved successfully.",
+                    data = detail
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting model detail Id={Id}.", id);
+                return StatusCode(500, new { success = false, message = "Internal server error." });
+            }
+        }
+
         [HttpGet]
         public async Task<IActionResult> GetAllModels()
         {

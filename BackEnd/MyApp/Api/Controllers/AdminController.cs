@@ -14,16 +14,72 @@ namespace MyApp.Api.Controllers
     {
         private readonly IAdminService _adminService;
         private readonly IPredictionHistoryService _predictionHistoryService;
+        private readonly IServerHostMetricsService _serverHostMetrics;
         private readonly ILogger<AdminController> _logger;
 
         public AdminController(
             IAdminService adminService,
             IPredictionHistoryService predictionHistoryService,
+            IServerHostMetricsService serverHostMetrics,
             ILogger<AdminController> logger)
         {
             _adminService = adminService;
             _predictionHistoryService = predictionHistoryService;
+            _serverHostMetrics = serverHostMetrics;
             _logger = logger;
+        }
+
+        [HttpGet("server/status")]
+        [Authorize(Roles = RolePolicy.Admin)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetServerStatus(CancellationToken cancellationToken)
+        {
+            try
+            {
+                var data = await _serverHostMetrics.GetSimpleAsync(cancellationToken);
+                return Ok(new
+                {
+                    success = true,
+                    message = "Server status retrieved",
+                    data
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error reading server status");
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "Could not read server status",
+                    error = ex.Message
+                });
+            }
+        }
+
+        [HttpGet("server/status/detail")]
+        [Authorize(Roles = RolePolicy.Admin)]
+        public async Task<IActionResult> GetServerStatusDetail(CancellationToken cancellationToken)
+        {
+            try
+            {
+                var data = await _serverHostMetrics.GetDetailAsync(cancellationToken);
+                return Ok(new
+                {
+                    success = true,
+                    message = "Server detail status retrieved",
+                    data
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error reading detailed server status");
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "Could not read detailed server status",
+                    error = ex.Message
+                });
+            }
         }
 
         [HttpGet("users")]

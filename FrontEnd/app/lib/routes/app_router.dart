@@ -4,9 +4,12 @@ import 'package:flutter/material.dart';
 import '../share/services/storage_service.dart';
 import '../share/theme/app_colors.dart';
 import '../feature/admin/admin_illness_management_screen.dart';
+import '../feature/admin/admin_model_detail_screen.dart';
 import '../feature/admin/admin_model_management_screen.dart';
 import '../feature/admin/admin_model_upload_screen.dart';
 import '../feature/admin/admin_server_management_screen.dart';
+import '../feature/admin/admin_treatment_add_screen.dart';
+import '../feature/admin/admin_treatment_management_screen.dart';
 import '../feature/admin/admin_profile_screen.dart';
 import '../feature/admin/admin_dashboard_screen.dart';
 import '../feature/admin/admin_user_screen.dart';
@@ -39,9 +42,12 @@ class AppRouter {
   static const String adminDashboard = '/admin/dashboard';
   static const String adminUsers = '/admin/users';
   static const String adminModels = '/admin/models';
+  static const String adminModelDetail = '/admin/models/detail';
   static const String adminModelUpload = '/admin/models/upload';
   static const String adminServer = '/admin/server';
   static const String adminIllnesses = '/admin/illnesses';
+  static const String adminTreatments = '/admin/treatments';
+  static const String adminTreatmentAdd = '/admin/treatments/add';
   static const String adminProfile = '/admin/profile';
   static const String adminFeedback = '/admin/feedback';
   static const String adminSettings = '/admin/settings';
@@ -71,6 +77,16 @@ class AppRouter {
         return MaterialPageRoute(
           builder: (_) => const AdminModelManagementScreen(),
         );
+      case adminModelDetail:
+        final modelId = settings.arguments;
+        if (modelId is! int) {
+          return MaterialPageRoute(
+            builder: (_) => const AdminModelManagementScreen(),
+          );
+        }
+        return MaterialPageRoute(
+          builder: (_) => AdminModelDetailScreen(modelVersionId: modelId),
+        );
       case adminModelUpload:
         return MaterialPageRoute(
           builder: (_) => const AdminModelUploadScreen(),
@@ -82,6 +98,14 @@ class AppRouter {
       case adminIllnesses:
         return MaterialPageRoute(
           builder: (_) => const AdminIllnessManagementScreen(),
+        );
+      case adminTreatments:
+        return MaterialPageRoute(
+          builder: (_) => const AdminTreatmentManagementScreen(),
+        );
+      case adminTreatmentAdd:
+        return MaterialPageRoute(
+          builder: (_) => const AdminTreatmentAddScreen(),
         );
       case adminProfile:
         return MaterialPageRoute(

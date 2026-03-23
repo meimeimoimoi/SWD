@@ -11,6 +11,7 @@ enum AdminShellTab {
   models,
   server,
   diseases,
+  treatments,
   profile,
 }
 
@@ -65,6 +66,12 @@ class AdminBottomNav extends StatelessWidget {
             route: AppRouter.adminIllnesses,
           ),
           const _AdminNavItem(
+            tab: AdminShellTab.treatments,
+            label: 'Treatments',
+            icon: Icons.medical_services_outlined,
+            route: AppRouter.adminTreatments,
+          ),
+          const _AdminNavItem(
             tab: AdminShellTab.profile,
             label: 'Profile',
             icon: Icons.account_circle_outlined,
@@ -75,52 +82,62 @@ class AdminBottomNav extends StatelessWidget {
         final activeIndex = items.indexWhere((e) => e.tab == selected);
         final safeIndex = activeIndex >= 0 ? activeIndex : 0;
 
-        return BottomAppBar(
-          color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
+        // Use Material instead of BottomAppBar: BottomAppBar's clip path reads
+        // Scaffold.geometryOf() during hit testing, which throws when combined with a FAB
+        // (Flutter: "Scaffold.geometryOf() must only be accessed during the paint phase").
+        final barColor =
+            isDark ? AppColors.surfaceDark : AppColors.surfaceLight;
+        return Material(
           elevation: 8,
-          child: SizedBox(
-            height: 72,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: List.generate(items.length, (index) {
-                final item = items[index];
-                final isActive = index == safeIndex;
-                final color = isActive ? AppColors.primary : textSecondary;
+          color: barColor,
+          surfaceTintColor: Colors.transparent,
+          shadowColor: Colors.black.withValues(alpha: isDark ? 0.45 : 0.12),
+          child: SafeArea(
+            top: false,
+            child: SizedBox(
+              height: 72,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: List.generate(items.length, (index) {
+                  final item = items[index];
+                  final isActive = index == safeIndex;
+                  final color = isActive ? AppColors.primary : textSecondary;
 
-                return Expanded(
-                  child: InkWell(
-                    onTap: isActive
-                        ? null
-                        : () => Navigator.pushReplacementNamed(
-                              context,
-                              item.route,
+                  return Expanded(
+                    child: InkWell(
+                      onTap: isActive
+                          ? null
+                          : () => Navigator.pushReplacementNamed(
+                                context,
+                                item.route,
+                              ),
+                      borderRadius: AppLayout.borderRadiusSm,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 2),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(item.icon, size: 22, color: color),
+                            const SizedBox(height: 2),
+                            Text(
+                              item.label,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: theme.textTheme.labelSmall?.copyWith(
+                                color: color,
+                                fontSize: 9,
+                                fontWeight: isActive
+                                    ? FontWeight.w700
+                                    : FontWeight.w500,
+                              ),
                             ),
-                    borderRadius: AppLayout.borderRadiusSm,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 2),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(item.icon, size: 22, color: color),
-                          const SizedBox(height: 2),
-                          Text(
-                            item.label,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: theme.textTheme.labelSmall?.copyWith(
-                              color: color,
-                              fontSize: 9,
-                              fontWeight: isActive
-                                  ? FontWeight.w700
-                                  : FontWeight.w500,
-                            ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                );
-              }),
+                  );
+                }),
+              ),
             ),
           ),
         );

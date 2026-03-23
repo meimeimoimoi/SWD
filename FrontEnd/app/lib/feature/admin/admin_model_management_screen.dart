@@ -132,55 +132,11 @@ class _AdminModelManagementScreenState
     );
   }
 
-  void _showModelDetail(
-    BuildContext context, {
-    required Map<String, dynamic> m,
-    required Map<String, dynamic>? metrics,
-  }) {
-    final id = _asInt(m['modelVersionId'] ?? m['ModelVersionId']);
-    final name = '${m['modelName'] ?? m['ModelName'] ?? 'Model'}';
-    final ver = '${m['version'] ?? m['Version'] ?? ''}';
-    final preds = metrics != null
-        ? (metrics['totalPredictions'] ?? metrics['TotalPredictions'] ?? 0)
-        : 0;
-    final conf = metrics != null
-        ? (metrics['averageConfidence'] ?? metrics['AverageConfidence'] ?? 0)
-        : 0;
-    final rate = metrics != null
-        ? (metrics['positiveRatingRate'] ?? metrics['PositiveRatingRate'] ?? 0)
-        : 0;
-    showModalBottomSheet<void>(
-      context: context,
-      showDragHandle: true,
-      builder: (ctx) => Padding(
-        padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              name,
-              style: GoogleFonts.spaceGrotesk(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'Version: $ver · ID: $id',
-              style: GoogleFonts.spaceGrotesk(
-                fontSize: 13,
-                color: Colors.grey.shade600,
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Predictions: $preds\nAvg confidence: ${_pct(conf)}\nPositive ratings: ${_pct(rate)}',
-              style: GoogleFonts.spaceGrotesk(fontSize: 14, height: 1.45),
-            ),
-          ],
-        ),
-      ),
+  void _openModelDetail(BuildContext context, int modelVersionId) {
+    Navigator.pushNamed(
+      context,
+      AppRouter.adminModelDetail,
+      arguments: modelVersionId,
     );
   }
 
@@ -359,11 +315,8 @@ class _AdminModelManagementScreenState
                                         );
                                       }
                                     },
-                                    onDetail: () => _showModelDetail(
-                                      context,
-                                      m: m,
-                                      metrics: metrics,
-                                    ),
+                                    onDetail: () =>
+                                        _openModelDetail(context, id),
                                   ),
                                 );
                               },

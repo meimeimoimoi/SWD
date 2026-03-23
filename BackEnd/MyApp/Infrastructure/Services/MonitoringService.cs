@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using MyApp.Application.Features.Admin.DTOs;
+using MyApp.Application.Features.ModelManagement.DTOs;
 using MyApp.Application.Interfaces;
 using MyApp.Domain.Entities;
 using MyApp.Persistence.Context;
@@ -233,6 +234,69 @@ namespace MyApp.Infrastructure.Services
             }
 
             return list;
+        }
+
+        public async Task<ModelVersionUsageMetricsDto?> GetModelUsageMetricsAsync(int modelVersionId)
+        {
+            var modelExists = await _context.ModelVersions
+                .AsNoTracking()
+                .AnyAsync(m => m.ModelVersionId == modelVersionId);
+            if (!modelExists)
+            {
+                return null;
+            }
+
+            var today = DateTime.UtcNow.Date;
+            var since7 = today.AddDays(-6);
+
+            var preds = await _context.Predictions
+                .AsNoTracking()
+                .Include(p => p.Ratings)
+                .Where(p => p.ModelVersionId == modelVersionId)
+                .ToListAsync();
+
+            var total = preds.Count;
+            var todayCount = preds.Count(p =>
+                p.CreatedAt.HasValue && p.CreatedAt.Value.Date == today);
+            var last7 = preds.Count(p =>
+                p.CreatedAt.HasValue && p.CreatedAt.Value.Date >= since7);
+
+            var avgConf = preds.Any(p => p.ConfidenceScore.HasValue)
+                ? preds.Where(p => p.ConfidenceScore.HasValue)
+                    .Average(p => (double)p.ConfidenceScore!.Value)
+                : 0.0;
+
+            var allRatings = preds.SelectMany(p => p.Ratings).ToList();
+            var positive = allRatings.Count(r =>
+                r.Rating1 != null &&
+                r.Rating1.Equals("positive", StringComparison.OrdinalIgnoreCase));
+            var rate = allRatings.Count == 0
+                ? 0.0
+                : Math.Round((double)positive / allRatings.Count * 100, 2);
+
+            var topClasses = preds
+                .Where(p => p.PredictedClass != null && p.PredictedClass.Trim() != "")
+                .GroupBy(p => p.PredictedClass!.Trim())
+                .Select(g => new PredictedClassCountDto
+                {
+                    ClassName = g.Key,
+                    Count = g.Count()
+                })
+                .OrderByDescending(x => x.Count)
+                .Take(12)
+                .ToList();
+
+            return new ModelVersionUsageMetricsDto
+            {
+                TotalPredictions = total,
+                PredictionsToday = todayCount,
+                PredictionsLast7Days = last7,
+                AverageConfidence = Math.Round(avgConf, 4),
+                TotalRatings = allRatings.Count,
+                PositiveRatings = positive,
+                PositiveRatingRate = rate,
+                TopPredictedClasses = topClasses
+            };
         }
     }
 }

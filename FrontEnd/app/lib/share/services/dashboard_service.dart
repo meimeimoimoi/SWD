@@ -1,6 +1,8 @@
 import 'package:dio/dio.dart';
 
 import '../constants/api_config.dart';
+import '../models/model_version_detail.dart';
+import '../models/server_host_status.dart';
 import 'storage_service.dart';
 
 class DashboardStats {
@@ -364,6 +366,22 @@ class DashboardService {
     }
   }
 
+  Future<ModelVersionDetail?> getAdminModelDetail(int modelVersionId) async {
+    try {
+      final response =
+          await _authorizedGet(ApiPaths.adminModelDetail(modelVersionId));
+      if (response.data['success'] == true) {
+        final d = response.data['data'];
+        if (d is Map) {
+          return ModelVersionDetail.fromJson(Map<String, dynamic>.from(d));
+        }
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+
   Future<bool> activateAdminModel(int id) async {
     try {
       final response =
@@ -401,6 +419,40 @@ class DashboardService {
       return response.data['success'] == true;
     } catch (e) {
       return false;
+    }
+  }
+
+  Future<ServerHostStatusSimple?> getAdminServerStatusSimple() async {
+    try {
+      final response = await _authorizedGet(ApiPaths.adminServerStatus);
+      if (response.data['success'] == true) {
+        final d = response.data['data'];
+        if (d is Map) {
+          return ServerHostStatusSimple.fromJson(
+            Map<String, dynamic>.from(d),
+          );
+        }
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  Future<ServerHostStatusDetail?> getAdminServerStatusDetail() async {
+    try {
+      final response = await _authorizedGet(ApiPaths.adminServerStatusDetail);
+      if (response.data['success'] == true) {
+        final d = response.data['data'];
+        if (d is Map) {
+          return ServerHostStatusDetail.fromJson(
+            Map<String, dynamic>.from(d),
+          );
+        }
+      }
+      return null;
+    } catch (e) {
+      return null;
     }
   }
 

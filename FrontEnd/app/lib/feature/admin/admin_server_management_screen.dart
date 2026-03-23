@@ -1,8 +1,7 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 
 import '../../share/constants/api_config.dart';
+import '../../share/models/server_host_status.dart';
 import '../../share/services/dashboard_service.dart';
 import '../../share/services/prediction_service.dart';
 import '../../share/theme/app_colors.dart';
@@ -23,7 +22,10 @@ class _AdminServerManagementScreenState
     extends State<AdminServerManagementScreen> {
   final DashboardService _api = DashboardService();
   final PredictionService _prediction = PredictionService();
-  Map<String, dynamic> _snapshot = {};
+
+  ServerHostStatusSimple? _simple;
+  ServerHostStatusDetail? _detail;
+  Map<String, dynamic> _healthSnapshot = {};
   bool _predictionHealthy = false;
   bool _loading = true;
 
@@ -35,14 +37,28 @@ class _AdminServerManagementScreenState
 
   Future<void> _load() async {
     setState(() => _loading = true);
-    final snap = await _api.getHealthChecks();
-    final predOk = await _prediction.isPredictionServiceHealthy();
-    if (mounted) {
+
+    try {
+      final results = await Future.wait([
+        _api.getAdminServerStatusSimple(),
+        _api.getAdminServerStatusDetail(),
+        _api.getHealthChecks(),
+        _prediction.isPredictionServiceHealthy(),
+      ]);
+
+      if (!mounted) return;
+
       setState(() {
-        _snapshot = snap;
-        _predictionHealthy = predOk;
+        _simple = results[0] as ServerHostStatusSimple?;
+        _detail = results[1] as ServerHostStatusDetail?;
+        _healthSnapshot = results[2] as Map<String, dynamic>;
+        _predictionHealthy = results[3] as bool;
         _loading = false;
       });
+    } catch (_) {
+      if (mounted) {
+        setState(() => _loading = false);
+      }
     }
   }
 
@@ -59,149 +75,207 @@ class _AdminServerManagementScreenState
 
     return AdminPopScope(
       child: Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'Server management',
-          style: theme.textTheme.titleLarge?.copyWith(color: textPrimary),
-        ),
-        actions: [
-          ...adminSecondaryAppBarActions(context),
-          IconButton(
-            tooltip: 'Refresh',
-            onPressed: _load,
-            icon: const Icon(Icons.refresh),
+        appBar: AppBar(
+          title: Text(
+            'Server',
+            style: theme.textTheme.titleLarge?.copyWith(color: textPrimary),
           ),
-        ],
-      ),
-      body: SafeArea(
-        child: _loading
-            ? const Center(child: CircularProgressIndicator())
-            : RefreshIndicator(
-                onRefresh: _load,
-                child: ListView(
-                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 88),
-                  children: [
-                    Text(
-                      'Health endpoints',
-                      style: theme.textTheme.titleMedium?.copyWith(color: textPrimary),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Uses /health, /health/live, and /health/ready (no auth).',
-                      style: theme.textTheme.bodySmall?.copyWith(color: textSecondary),
-                    ),
-                    const SizedBox(height: 16),
-                    _HealthCard(
-                      title: '/health/live',
-                      code: _snapshot['liveCode'],
-                      error: _snapshot['liveError'],
-                      body: _snapshot['live'],
-                      textPrimary: textPrimary,
-                      textSecondary: textSecondary,
-                    ),
-                    const SizedBox(height: 12),
-                    _HealthCard(
-                      title: '/health/ready',
-                      code: _snapshot['readyCode'],
-                      error: _snapshot['readyError'],
-                      body: _snapshot['ready'],
-                      textPrimary: textPrimary,
-                      textSecondary: textSecondary,
-                    ),
-                    const SizedBox(height: 12),
-                    _HealthCard(
-                      title: '/health',
-                      code: _snapshot['rootCode'],
-                      error: _snapshot['rootError'],
-                      body: _snapshot['root'],
-                      textPrimary: textPrimary,
-                      textSecondary: textSecondary,
-                    ),
-                    const SizedBox(height: 20),
-                    Text(
-                      'ML prediction API',
-                      style: theme.textTheme.titleMedium?.copyWith(color: textPrimary),
-                    ),
-                    const SizedBox(height: 8),
-                    _HealthCard(
-                      title: ApiPaths.predictionHealth,
-                      code: _predictionHealthy ? 200 : null,
-                      error: _predictionHealthy ? null : 'No 200 response',
-                      body: _predictionHealthy ? const {'ok': true} : null,
-                      textPrimary: textPrimary,
-                      textSecondary: textSecondary,
-                    ),
-                  ],
+          actions: [
+            ...adminSecondaryAppBarActions(context),
+            IconButton(
+              tooltip: 'Refresh',
+              onPressed: _load,
+              icon: const Icon(Icons.refresh),
+            ),
+          ],
+        ),
+        body: SafeArea(
+          child: _loading
+              ? const Center(child: CircularProgressIndicator())
+              : RefreshIndicator(
+                  onRefresh: _load,
+                  child: ListView(
+                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 88),
+                    children: [
+                      Text(
+                        'Host overview',
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          color: textPrimary,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Live metrics from the API process and machine (admin only).',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: textSecondary,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      _OverviewCard(
+                        simple: _simple ?? _detail,
+                        detail: _detail,
+                        textPrimary: textPrimary,
+                        textSecondary: textSecondary,
+                      ),
+                      const SizedBox(height: 20),
+                      Text(
+                        'Services',
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          color: textPrimary,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      _ServiceStrip(
+                        health: _healthSnapshot,
+                        predictionOk: _predictionHealthy,
+                        textPrimary: textPrimary,
+                        textSecondary: textSecondary,
+                      ),
+                      const SizedBox(height: 20),
+                      if (_detail != null) ...[
+                        Text(
+                          'Runtime detail',
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            color: textPrimary,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        _DetailCard(
+                          detail: _detail!,
+                          textPrimary: textPrimary,
+                          textSecondary: textSecondary,
+                        ),
+                      ],
+                    ],
+                  ),
                 ),
-              ),
-      ),
-      bottomNavigationBar: const AdminBottomNav(selected: AdminShellTab.server),
+        ),
+        bottomNavigationBar:
+            const AdminBottomNav(selected: AdminShellTab.server),
       ),
     );
   }
 }
 
-class _HealthCard extends StatelessWidget {
-  const _HealthCard({
-    required this.title,
-    required this.code,
-    required this.error,
-    required this.body,
+class _OverviewCard extends StatelessWidget {
+  const _OverviewCard({
+    required this.simple,
+    required this.detail,
     required this.textPrimary,
     required this.textSecondary,
   });
 
-  final String title;
-  final Object? code;
-  final Object? error;
-  final Object? body;
+  final ServerHostStatusSimple? simple;
+  final ServerHostStatusDetail? detail;
   final Color textPrimary;
   final Color textSecondary;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final s = simple;
+    if (s == null) {
+      return AppCard(
+        padding: const EdgeInsets.all(16),
+        child: Text(
+          'No metrics available',
+          style: theme.textTheme.bodyMedium?.copyWith(color: textSecondary),
+        ),
+      );
+    }
+
+    final memPct = s.machineMemoryUsedPercent;
+    final cpu = detail?.estimatedProcessCpuPercent;
+
     return AppCard(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(
-                error == null ? Icons.dns : Icons.error_outline,
-                color: error == null ? AppColors.primary : Colors.red,
-                size: 22,
-              ),
-              const SizedBox(width: 8),
+              Icon(Icons.memory, color: AppColors.primary, size: 26),
+              const SizedBox(width: 10),
               Expanded(
-                child: Text(
-                  title,
-                  style: theme.textTheme.titleSmall?.copyWith(
-                    color: textPrimary,
-                    fontWeight: FontWeight.w700,
-                  ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      s.machineName,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        color: textPrimary,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    Text(
+                      '${s.environmentName} · ${s.processorCount} logical CPUs · .NET ${s.dotNetVersion}',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: textSecondary,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              if (code != null)
-                Chip(
-                  label: Text('$code', style: const TextStyle(fontSize: 11)),
-                  visualDensity: VisualDensity.compact,
-                ),
             ],
           ),
-          if (error != null) ...[
-            const SizedBox(height: 8),
-            Text('$error', style: TextStyle(color: Colors.red[700], fontSize: 12)),
+          const SizedBox(height: 16),
+          _metricRow(
+            theme,
+            'Uptime',
+            _formatUptime(s.processUptimeSeconds),
+            textPrimary,
+            textSecondary,
+          ),
+          const SizedBox(height: 12),
+          if (memPct != null) ...[
+            _labeledProgress(
+              theme,
+              label: 'Machine memory in use',
+              value: (memPct / 100).clamp(0.0, 1.0),
+              caption:
+                  '${memPct.toStringAsFixed(1)}% · ${_fmtMb(s.machineTotalMemoryMb)} total · ${_fmtMb(s.machineAvailableMemoryMb)} avail.',
+              textPrimary: textPrimary,
+              textSecondary: textSecondary,
+            ),
+            const SizedBox(height: 12),
+          ] else ...[
+            Text(
+              'Machine memory: not available on this host',
+              style: theme.textTheme.bodySmall?.copyWith(color: textSecondary),
+            ),
+            const SizedBox(height: 12),
           ],
-          if (body != null && error == null) ...[
-            const SizedBox(height: 8),
-            SelectableText(
-              _prettyBody(body),
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: textSecondary,
-                fontFamily: 'monospace',
-              ),
+          if (s.machineTotalMemoryMb != null && s.machineTotalMemoryMb! > 0)
+            _labeledProgress(
+              theme,
+              label: 'API process working set',
+              value: _processRamFraction(s),
+              caption:
+                  '${s.processWorkingSetMb.toStringAsFixed(1)} MB working set · ${s.processPrivateMemoryMb.toStringAsFixed(1)} MB private',
+              textPrimary: textPrimary,
+              textSecondary: textSecondary,
+            )
+          else
+            _metricRow(
+              theme,
+              'Process RAM',
+              '${s.processWorkingSetMb.toStringAsFixed(1)} MB working set · '
+                  '${s.processPrivateMemoryMb.toStringAsFixed(1)} MB private',
+              textPrimary,
+              textSecondary,
+            ),
+          if (cpu != null) ...[
+            const SizedBox(height: 12),
+            _labeledProgress(
+              theme,
+              label: 'API process CPU (sampled)',
+              value: (cpu / 100).clamp(0.0, 1.0),
+              caption: '${cpu.toStringAsFixed(1)}% over ~120 ms window',
+              textPrimary: textPrimary,
+              textSecondary: textSecondary,
             ),
           ],
         ],
@@ -209,15 +283,285 @@ class _HealthCard extends StatelessWidget {
     );
   }
 
-  String _prettyBody(Object? body) {
-    if (body == null) return '—';
-    if (body is Map || body is List) {
-      try {
-        return const JsonEncoder.withIndent('  ').convert(body);
-      } catch (_) {
-        return body.toString();
-      }
-    }
-    return body.toString();
+  double _processRamFraction(ServerHostStatusSimple s) {
+    final total = s.machineTotalMemoryMb;
+    if (total == null || total <= 0) return 0;
+    final frac = s.processWorkingSetMb / total;
+    return frac.clamp(0.0, 1.0);
+  }
+
+  static String _fmtMb(double? mb) {
+    if (mb == null) return '—';
+    if (mb >= 1024) return '${(mb / 1024).toStringAsFixed(2)} GB';
+    return '${mb.toStringAsFixed(0)} MB';
+  }
+
+  static String _formatUptime(double seconds) {
+    final d = Duration(seconds: seconds.round());
+    final parts = <String>[];
+    if (d.inDays > 0) parts.add('${d.inDays}d');
+    final h = d.inHours.remainder(24);
+    if (h > 0) parts.add('${h}h');
+    final m = d.inMinutes.remainder(60);
+    if (m > 0 && d.inDays < 2) parts.add('${m}m');
+    if (parts.isEmpty) return '${seconds.toStringAsFixed(0)}s';
+    return parts.join(' ');
+  }
+
+  static Widget _metricRow(
+    ThemeData theme,
+    String label,
+    String value,
+    Color textPrimary,
+    Color textSecondary,
+  ) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 120,
+          child: Text(
+            label,
+            style: theme.textTheme.bodySmall?.copyWith(color: textSecondary),
+          ),
+        ),
+        Expanded(
+          child: Text(
+            value,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: textPrimary,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  static Widget _labeledProgress(
+    ThemeData theme, {
+    required String label,
+    required double value,
+    required String caption,
+    required Color textPrimary,
+    required Color textSecondary,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: theme.textTheme.labelLarge?.copyWith(color: textPrimary),
+        ),
+        const SizedBox(height: 6),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(6),
+          child: LinearProgressIndicator(
+            value: value > 0 ? value : null,
+            minHeight: 10,
+            backgroundColor: theme.colorScheme.surfaceContainerHighest,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          caption,
+          style: theme.textTheme.bodySmall?.copyWith(color: textSecondary),
+        ),
+      ],
+    );
+  }
+}
+
+class _DetailCard extends StatelessWidget {
+  const _DetailCard({
+    required this.detail,
+    required this.textPrimary,
+    required this.textSecondary,
+  });
+
+  final ServerHostStatusDetail detail;
+  final Color textPrimary;
+  final Color textSecondary;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    String bytesToMb(int b) => (b / (1024 * 1024)).toStringAsFixed(1);
+
+    return AppCard(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Process & GC',
+            style: theme.textTheme.titleSmall?.copyWith(
+              color: textPrimary,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 10),
+          _kv(theme, 'PID', '${detail.processId}', textPrimary, textSecondary),
+          _kv(theme, 'Threads', '${detail.threadCount}', textPrimary,
+              textSecondary),
+          _kv(theme, 'Handles', '${detail.handleCount}', textPrimary,
+              textSecondary),
+          if (detail.processStartTimeUtc != null)
+            _kv(
+              theme,
+              'Started (UTC)',
+              detail.processStartTimeUtc!.toIso8601String(),
+              textPrimary,
+              textSecondary,
+            ),
+          const SizedBox(height: 8),
+          Text(
+            detail.osDescription,
+            style: theme.textTheme.bodySmall?.copyWith(color: textSecondary),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'GC heap ${bytesToMb(detail.gcHeapSizeBytes)} MB · '
+            'total tracked ${bytesToMb(detail.gcTotalMemoryBytes)} MB',
+            style: theme.textTheme.bodySmall?.copyWith(color: textPrimary),
+          ),
+          Text(
+            'High load threshold ${bytesToMb(detail.gcHighMemoryLoadThresholdBytes)} MB',
+            style: theme.textTheme.bodySmall?.copyWith(color: textSecondary),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Collections  gen0 ${detail.gcGen0Collections} · '
+            'gen1 ${detail.gcGen1Collections} · gen2 ${detail.gcGen2Collections}',
+            style: theme.textTheme.bodySmall?.copyWith(color: textSecondary),
+          ),
+        ],
+      ),
+    );
+  }
+
+  static Widget _kv(
+    ThemeData theme,
+    String k,
+    String v,
+    Color textPrimary,
+    Color textSecondary,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 112,
+            child: Text(
+              k,
+              style: theme.textTheme.bodySmall?.copyWith(color: textSecondary),
+            ),
+          ),
+          Expanded(
+            child: SelectableText(
+              v,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: textPrimary,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ServiceStrip extends StatelessWidget {
+  const _ServiceStrip({
+    required this.health,
+    required this.predictionOk,
+    required this.textPrimary,
+    required this.textSecondary,
+  });
+
+  final Map<String, dynamic> health;
+  final bool predictionOk;
+  final Color textPrimary;
+  final Color textSecondary;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return AppCard(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      child: Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        children: [
+          _pill(
+            theme,
+            '/health/live',
+            health['liveError'] == null,
+            textPrimary,
+            textSecondary,
+          ),
+          _pill(
+            theme,
+            '/health/ready',
+            health['readyError'] == null,
+            textPrimary,
+            textSecondary,
+          ),
+          _pill(
+            theme,
+            '/health',
+            health['rootError'] == null,
+            textPrimary,
+            textSecondary,
+          ),
+          _pill(
+            theme,
+            ApiPaths.predictionHealth,
+            predictionOk,
+            textPrimary,
+            textSecondary,
+          ),
+        ],
+      ),
+    );
+  }
+
+  static Widget _pill(
+    ThemeData theme,
+    String label,
+    bool ok,
+    Color textPrimary,
+    Color textSecondary,
+  ) {
+    final color = ok ? Colors.green.shade700 : Colors.red.shade700;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: color.withValues(alpha: 0.45)),
+        color: color.withValues(alpha: 0.08),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            ok ? Icons.check_circle_outline : Icons.error_outline,
+            size: 16,
+            color: color,
+          ),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: theme.textTheme.labelSmall?.copyWith(
+              color: textPrimary,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

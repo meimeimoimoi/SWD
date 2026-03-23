@@ -1,6 +1,8 @@
-﻿using MyApp.Application.Features.ModelManagement.DTOs;
+using Microsoft.ML.OnnxRuntime;
+using MyApp.Application.Features.ModelManagement.DTOs;
 using MyApp.Application.Interfaces;
 using MyApp.Domain.Entities;
+using MyApp.Infrastructure.Ml;
 using MyApp.Persistence.Repositories;
 
 namespace MyApp.Infrastructure.Services
@@ -8,15 +10,21 @@ namespace MyApp.Infrastructure.Services
     public class ModelService : IModelService
     {
         private readonly ModelRepository _modelRepository;
+        private readonly IMonitoringService _monitoring;
+        private readonly IPredictionService _prediction;
         private readonly ILogger<ModelService> _logger;
         private readonly IWebHostEnvironment _env;
 
         public ModelService(
             ModelRepository modelRepository,
+            IMonitoringService monitoring,
+            IPredictionService prediction,
             ILogger<ModelService> logger,
             IWebHostEnvironment env)
         {
             _modelRepository = modelRepository;
+            _monitoring      = monitoring;
+            _prediction      = prediction;
             _logger          = logger;
             _env             = env;
         }
@@ -121,6 +129,124 @@ namespace MyApp.Infrastructure.Services
             return MapToDto(model);
         }
 
+        public async Task<ModelVersionDetailDto?> GetModelVersionDetailAsync(int modelVersionId)
+        {
+            var m = await _modelRepository.GetByIdAsync(modelVersionId);
+            if (m == null)
+            {
+                return null;
+            }
+
+            var usage = await _monitoring.GetModelUsageMetricsAsync(modelVersionId)
+                        ?? new ModelVersionUsageMetricsDto();
+
+            var dto = new ModelVersionDetailDto
+            {
+                ModelVersionId = m.ModelVersionId,
+                ModelName = m.ModelName,
+                Version = m.Version,
+                ModelType = m.ModelType,
+                Description = m.Description,
+                IsActive = m.IsActive,
+                IsDefault = m.IsDefault,
+                CreatedAt = m.CreatedAt,
+                RelativeFilePath = m.FilePath,
+                TotalPredictions = usage.TotalPredictions,
+                PredictionsToday = usage.PredictionsToday,
+                PredictionsLast7Days = usage.PredictionsLast7Days,
+                AverageConfidence = usage.AverageConfidence,
+                TotalRatings = usage.TotalRatings,
+                PositiveRatings = usage.PositiveRatings,
+                PositiveRatingRate = usage.PositiveRatingRate,
+                TopPredictedClasses = usage.TopPredictedClasses,
+                CurrentlyLoadedModelVersionId = _prediction.GetLoadedModelVersionId(),
+                IsCurrentInferenceModel =
+                    _prediction.GetLoadedModelVersionId() == modelVersionId
+            };
+
+            if (string.IsNullOrWhiteSpace(m.FilePath))
+            {
+                return dto;
+            }
+
+            var full = Path.GetFullPath(Path.Combine(_env.ContentRootPath, m.FilePath));
+            dto.AbsolutePath = full;
+
+            if (!File.Exists(full))
+            {
+                return dto;
+            }
+
+            dto.FileExists = true;
+            try
+            {
+                var fi = new FileInfo(full);
+                dto.FileSizeBytes = fi.Length;
+                dto.FileLastModifiedUtc = fi.LastWriteTimeUtc;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Could not stat model file {Path}", full);
+            }
+
+            PopulateOnnxMetadata(dto, full);
+            return dto;
+        }
+
+        private void PopulateOnnxMetadata(ModelVersionDetailDto dto, string fullPath)
+        {
+            try
+            {
+                using var session = new InferenceSession(fullPath);
+                var mm = session.ModelMetadata;
+                dto.OnnxProducerName = mm.ProducerName;
+                dto.OnnxGraphName = mm.GraphName;
+                dto.OnnxDomain = mm.Domain;
+                dto.OnnxModelVersion = mm.Version;
+
+                dto.OnnxInputNames = session.InputMetadata.Keys.ToList();
+                dto.OnnxOutputNames = session.OutputMetadata.Keys.ToList();
+
+                foreach (var kv in session.InputMetadata)
+                {
+                    dto.OnnxInputShapeDescriptions[kv.Key] = DescribeDimensions(kv.Value);
+                }
+
+                foreach (var kv in session.OutputMetadata)
+                {
+                    dto.OnnxOutputShapeDescriptions[kv.Key] = DescribeDimensions(kv.Value);
+                }
+
+                try
+                {
+                    var labels = OnnxModelLabels.Read(session, fullPath);
+                    dto.OnnxClassLabelCount = labels.Length;
+                    dto.OnnxClassLabelsSample = labels.Take(32).ToList();
+                }
+                catch (Exception ex)
+                {
+                    dto.OnnxClassLabelsError = ex.Message;
+                }
+            }
+            catch (Exception ex)
+            {
+                dto.OnnxMetadataError = ex.Message;
+                _logger.LogWarning(ex, "ONNX inspect failed for {Path}", fullPath);
+            }
+        }
+
+        private static string DescribeDimensions(NodeMetadata meta)
+        {
+            var dims = meta.Dimensions;
+            if (dims == null || dims.Length == 0)
+            {
+                return "?";
+            }
+
+            return string.Join(
+                " × ",
+                dims.Select(d => d <= 0 ? "dynamic" : d.ToString()));
+        }
 
         private static ModelVersionDto MapToDto(ModelVersion m, string? filePath = null) => new()
         {

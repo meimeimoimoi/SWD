@@ -15,5 +15,8 @@ namespace MyApp.Application.Interfaces
             CancellationToken cancellationToken = default);
 
         Task<bool> IsModelLoaded();
+
+        /// <summary>Which model version ID is loaded in the shared inference session, if any.</summary>
+        int? GetLoadedModelVersionId();
     }
 }

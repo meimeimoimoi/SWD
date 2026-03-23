@@ -211,5 +211,7 @@ public class PredictionService : IPredictionService, IDisposable
         }
     }
 
+    public int? GetLoadedModelVersionId() => _loadedModelVersionId;
+
     public void Dispose() => _session?.Dispose();
 }
