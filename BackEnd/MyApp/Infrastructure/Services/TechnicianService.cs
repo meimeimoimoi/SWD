@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using System;
 using MyApp.Application.Features.Admin.DTOs;
 using MyApp.Application.Features.Technician.DTOs;
 using MyApp.Application.Interfaces;
@@ -166,21 +167,29 @@ namespace MyApp.Infrastructure.Services
 
         public async Task<List<SolutionImageDto>> GetImagesBySolutionIdAsync(int solutionId)
         {
-            var images = await _context.SolutionImages
-                .Where(i => i.SolutionId == solutionId)
-                .OrderBy(i => i.DisplayOrder)
-                .ToListAsync();
-
-            return images.Select(i => new SolutionImageDto
+            try
             {
-                ImageId = i.ImageId,
-                ImageUrl = i.ImageUrl,
-                DisplayOrder = i.DisplayOrder,
-                UploadedAt = i.UploadedAt,
-                FileSize = i.FileSize,
-                Width = i.Width,
-                Height = i.Height
-            }).ToList();
+                var images = await _context.SolutionImages
+                    .Where(i => i.SolutionId == solutionId)
+                    .OrderBy(i => i.DisplayOrder)
+                    .ToListAsync();
+
+                return images.Select(i => new SolutionImageDto
+                {
+                    ImageId = i.ImageId,
+                    ImageUrl = i.ImageUrl,
+                    DisplayOrder = i.DisplayOrder,
+                    UploadedAt = i.UploadedAt,
+                    FileSize = i.FileSize,
+                    Width = i.Width,
+                    Height = i.Height
+                }).ToList();
+            }
+            catch (Microsoft.Data.SqlClient.SqlException ex)
+            {
+                _logger.LogWarning(ex, "SolutionImages table not available. Returning empty image list for solution {SolutionId}", solutionId);
+                return new List<SolutionImageDto>();
+            }
         }
 
         public async Task<SolutionImageDto> UploadSolutionImageAsync(int solutionId, IFormFile file)
@@ -216,8 +225,15 @@ namespace MyApp.Infrastructure.Services
             }
 
             var displayOrder = 1;
-            var last = await _context.SolutionImages.Where(i => i.SolutionId == solutionId).OrderByDescending(i => i.DisplayOrder).FirstOrDefaultAsync();
-            if (last != null) displayOrder = last.DisplayOrder + 1;
+            try
+            {
+                var last = await _context.SolutionImages.Where(i => i.SolutionId == solutionId).OrderByDescending(i => i.DisplayOrder).FirstOrDefaultAsync();
+                if (last != null) displayOrder = last.DisplayOrder + 1;
+            }
+            catch (Microsoft.Data.SqlClient.SqlException ex)
+            {
+                _logger.LogWarning(ex, "SolutionImages table not available. Saving image file but not recording DB entry.");
+            }
 
             var entity = new SolutionImage
             {
@@ -230,8 +246,15 @@ namespace MyApp.Infrastructure.Services
                 Height = height
             };
 
-            _context.SolutionImages.Add(entity);
-            await _context.SaveChangesAsync();
+            try
+            {
+                _context.SolutionImages.Add(entity);
+                await _context.SaveChangesAsync();
+            }
+            catch (Microsoft.Data.SqlClient.SqlException ex)
+            {
+                _logger.LogWarning(ex, "SolutionImages table not available. Image saved to disk but DB entry was not created.");
+            }
 
             return new SolutionImageDto
             {
@@ -247,8 +270,10 @@ namespace MyApp.Infrastructure.Services
 
         public async Task<bool> DeleteSolutionImageAsync(int imageId)
         {
-            var img = await _context.SolutionImages.FindAsync(imageId);
-            if (img == null) return false;
+            try
+            {
+                var img = await _context.SolutionImages.FindAsync(imageId);
+                if (img == null) return false;
 
             // attempt to delete file
             try
@@ -262,25 +287,39 @@ namespace MyApp.Infrastructure.Services
                 _logger.LogWarning(ex, "Could not delete image file for {ImageId}", imageId);
             }
 
-            _context.SolutionImages.Remove(img);
-            await _context.SaveChangesAsync();
-            return true;
+                _context.SolutionImages.Remove(img);
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch (Microsoft.Data.SqlClient.SqlException ex)
+            {
+                _logger.LogWarning(ex, "SolutionImages table not available. Cannot delete image id {ImageId}", imageId);
+                return false;
+            }
         }
 
         public async Task<bool> ReorderSolutionImagesAsync(int solutionId, List<int> orderedImageIds)
         {
-            var imgs = await _context.SolutionImages.Where(i => i.SolutionId == solutionId && orderedImageIds.Contains(i.ImageId)).ToListAsync();
-            if (imgs.Count != orderedImageIds.Count) return false;
-
-            for (int i = 0; i < orderedImageIds.Count; i++)
+            try
             {
-                var id = orderedImageIds[i];
-                var img = imgs.First(x => x.ImageId == id);
-                img.DisplayOrder = i + 1;
-            }
+                var imgs = await _context.SolutionImages.Where(i => i.SolutionId == solutionId && orderedImageIds.Contains(i.ImageId)).ToListAsync();
+                if (imgs.Count != orderedImageIds.Count) return false;
 
-            await _context.SaveChangesAsync();
-            return true;
+                for (int i = 0; i < orderedImageIds.Count; i++)
+                {
+                    var id = orderedImageIds[i];
+                    var img = imgs.First(x => x.ImageId == id);
+                    img.DisplayOrder = i + 1;
+                }
+
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch (Microsoft.Data.SqlClient.SqlException ex)
+            {
+                _logger.LogWarning(ex, "SolutionImages table not available. Cannot reorder images for solution {SolutionId}", solutionId);
+                return false;
+            }
         }
         public async Task<TreatmentReviewDto> CreateTreatmentAsync(CreateTreatmentDto dto)
         {
@@ -291,14 +330,17 @@ namespace MyApp.Infrastructure.Services
                 SolutionName  = dto.SolutionName,
                 SolutionType  = dto.SolutionType,
                 Description   = dto.Description,
-                Ingredients   = dto.Ingredients,
                 MinConfidence = dto.MinConfidence,
                 Priority      = dto.Priority,
                 CreatedAt     = DateTime.UtcNow
             };
+
+            // Minimal DB schema: do not set ingredients/instructions here because columns may not exist.
             _context.TreatmentSolutions.Add(solution);
             await _context.SaveChangesAsync();
             _logger.LogInformation("Treatment solution created - Id={Id}, Name='{Name}'", solution.SolutionId, solution.SolutionName);
+
+            // Minimal DB schema: image linking is not supported when solution_images table is not present.
 
             await _context.Entry(solution).Reference(s => s.Illness).LoadAsync();
             await _context.Entry(solution).Reference(s => s.TreeStage).LoadAsync();
@@ -355,7 +397,6 @@ namespace MyApp.Infrastructure.Services
             SolutionName  = s.SolutionName,
             SolutionType  = s.SolutionType,
             Description   = s.Description,
-            Ingredients   = s.Ingredients,
             IllnessId     = s.IllnessId,
             IllnessName   = s.Illness?.IllnessName,
             TreeStageId   = s.TreeStageId,

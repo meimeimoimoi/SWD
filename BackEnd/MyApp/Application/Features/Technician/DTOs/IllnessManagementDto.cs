@@ -84,7 +84,8 @@ namespace MyApp.Application.Features.Technician.DTOs
         [Range(1, int.MaxValue, ErrorMessage = "Priority must be a positive integer.")]
         public int? Priority { get; set; }
 
-        public string? Ingredients { get; set; }
+        // Note: DB schema does not include ingredients/link/image tables in the minimal deployment.
+        // CreateTreatment will only persist fields that exist in the database schema.
     }
 
     public class AssignTreatmentToIllnessDto
