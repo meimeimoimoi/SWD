@@ -1,4 +1,4 @@
-using MyApp.Application.Features.Treatment.DTOs;
+﻿using MyApp.Application.Features.Treatment.DTOs;
 
 namespace MyApp.Application.Features.Prediction
 {
@@ -31,6 +31,9 @@ namespace MyApp.Application.Features.Prediction
     {  
         public string Name { get; set; } = string.Empty;
                 public string Type { get; set; } = string.Empty;
+    
+                public string ImageUrl { get; set; } = string.Empty;
+        public string? Ingredients { get; set; }
 
      public string Description { get; set; } = string.Empty;
 

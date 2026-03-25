@@ -40,6 +40,10 @@ namespace MyApp.Persistence.Configurations
                 .IsUnicode(true)
                 .HasColumnName("instructions");
             entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
+            entity.Property(e => e.Ingredients)
+                .HasColumnType("nvarchar(max)")
+                .IsUnicode(true)
+                .HasColumnName("ingredients");
             entity.Property(e => e.TreeStageId).HasColumnName("tree_stage_id");
 
             entity.HasOne(d => d.Illness).WithMany(p => p.TreatmentSolutions)

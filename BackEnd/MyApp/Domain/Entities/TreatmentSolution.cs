@@ -30,6 +30,8 @@ public partial class TreatmentSolution
     public string? Instructions { get; set; }
 
     public DateTime? UpdatedAt { get; set; }
+    
+    public string? Ingredients { get; set; }
 
     public virtual TreeIllness Illness { get; set; } = null!;
 

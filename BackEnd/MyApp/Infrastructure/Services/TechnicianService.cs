@@ -291,6 +291,7 @@ namespace MyApp.Infrastructure.Services
                 SolutionName  = dto.SolutionName,
                 SolutionType  = dto.SolutionType,
                 Description   = dto.Description,
+                Ingredients   = dto.Ingredients,
                 MinConfidence = dto.MinConfidence,
                 Priority      = dto.Priority,
                 CreatedAt     = DateTime.UtcNow
@@ -354,6 +355,7 @@ namespace MyApp.Infrastructure.Services
             SolutionName  = s.SolutionName,
             SolutionType  = s.SolutionType,
             Description   = s.Description,
+            Ingredients   = s.Ingredients,
             IllnessId     = s.IllnessId,
             IllnessName   = s.Illness?.IllnessName,
             TreeStageId   = s.TreeStageId,
