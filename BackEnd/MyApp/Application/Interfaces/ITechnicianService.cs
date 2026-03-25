@@ -20,5 +20,11 @@ namespace MyApp.Application.Interfaces
         Task<List<TreatmentReviewDto>> GetAllTreatmentsAsync();
         Task<TreatmentReviewDto> CreateTreatmentAsync(CreateTreatmentDto dto);
         Task<(bool success, string message, TreatmentReviewDto? data)> AssignTreatmentToIllnessAsync(int solutionId, int illnessId);
+
+        // Image management for TreatmentSolution
+        Task<List<SolutionImageDto>> GetImagesBySolutionIdAsync(int solutionId);
+        Task<SolutionImageDto> UploadSolutionImageAsync(int solutionId, Microsoft.AspNetCore.Http.IFormFile file);
+        Task<bool> DeleteSolutionImageAsync(int imageId);
+        Task<bool> ReorderSolutionImagesAsync(int solutionId, List<int> orderedImageIds);
     }
 }

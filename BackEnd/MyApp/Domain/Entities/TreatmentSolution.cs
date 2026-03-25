@@ -25,9 +25,17 @@ public partial class TreatmentSolution
 
     public DateTime? CreatedAt { get; set; }
 
+    public string? ShoppeUrl { get; set; }
+
+    public string? Instructions { get; set; }
+
+    public DateTime? UpdatedAt { get; set; }
+
     public virtual TreeIllness Illness { get; set; } = null!;
 
     public virtual ICollection<SolutionCondition> SolutionConditions { get; set; } = new List<SolutionCondition>();
+
+    public virtual ICollection<SolutionImage> Images { get; set; } = new List<SolutionImage>();
 
     public virtual TreeStage TreeStage { get; set; } = null!;
 }
