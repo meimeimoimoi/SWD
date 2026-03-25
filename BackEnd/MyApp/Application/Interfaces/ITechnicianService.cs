@@ -19,6 +19,7 @@ namespace MyApp.Application.Interfaces
 
         Task<List<TreatmentReviewDto>> GetAllTreatmentsAsync();
         Task<TreatmentReviewDto> CreateTreatmentAsync(CreateTreatmentDto dto);
+        Task<TreatmentReviewDto?> UpdateTreatmentAsync(int solutionId, UpdateTreatmentDto dto);
         Task<(bool success, string message, TreatmentReviewDto? data)> AssignTreatmentToIllnessAsync(int solutionId, int illnessId);
 
         // Image management for TreatmentSolution

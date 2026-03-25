@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using MyApp.Domain.Entities;
 using MyApp.Persistence.Context;
 
@@ -17,6 +17,7 @@ namespace MyApp.Persistence.Repositories
         {
             return await _context.TreeIllnesses
                 .Include(i => i.TreatmentSolutions)
+                    .ThenInclude(t => t.Images)
                 .FirstOrDefaultAsync(i => i.IllnessName == illnessName);
         }
         

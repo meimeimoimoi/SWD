@@ -76,6 +76,8 @@ namespace MyApp.Application.Features.Admin.DTOs
         public string? SolutionType { get; set; }
         public string? Description { get; set; }
         public string? Ingredients { get; set; }
+        public string? ShoppeUrl { get; set; }
+        public string? Instructions { get; set; }
         public int IllnessId { get; set; }
         public string? IllnessName { get; set; }
         public int TreeStageId { get; set; }
@@ -103,5 +105,9 @@ namespace MyApp.Application.Features.Admin.DTOs
         public int? Priority { get; set; }
 
         public string? Ingredients { get; set; }
+
+        public string? ShoppeUrl { get; set; }
+
+        public string? Instructions { get; set; }
     }
 }

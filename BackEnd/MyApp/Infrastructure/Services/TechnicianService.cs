@@ -291,7 +291,9 @@ namespace MyApp.Infrastructure.Services
                 SolutionName  = dto.SolutionName,
                 SolutionType  = dto.SolutionType,
                 Description   = dto.Description,
-                Ingredients   = dto.Ingredients,
+                Ingredients   = dto.SolutionType == "MEDICINE" ? dto.Ingredients : null,
+                ShoppeUrl     = dto.SolutionType == "MEDICINE" ? dto.ShoppeUrl : null,
+                Instructions  = dto.SolutionType == "MEDICINE" ? dto.Instructions : null,
                 MinConfidence = dto.MinConfidence,
                 Priority      = dto.Priority,
                 CreatedAt     = DateTime.UtcNow
@@ -302,6 +304,36 @@ namespace MyApp.Infrastructure.Services
 
             await _context.Entry(solution).Reference(s => s.Illness).LoadAsync();
             await _context.Entry(solution).Reference(s => s.TreeStage).LoadAsync();
+            return MapToTreatmentDto(solution);
+        }
+
+        public async Task<TreatmentReviewDto?> UpdateTreatmentAsync(int solutionId, UpdateTreatmentDto dto)
+        {
+            var solution = await _context.TreatmentSolutions
+                .Include(s => s.Illness)
+                .Include(s => s.TreeStage)
+                .FirstOrDefaultAsync(s => s.SolutionId == solutionId);
+
+            if (solution == null) return null;
+
+            if (dto.SolutionName  != null) solution.SolutionName  = dto.SolutionName;
+            if (dto.SolutionType  != null) solution.SolutionType  = dto.SolutionType;
+            if (dto.Description   != null) solution.Description   = dto.Description;
+            if (dto.MinConfidence != null) solution.MinConfidence  = dto.MinConfidence;
+            if (dto.Priority      != null) solution.Priority       = dto.Priority;
+
+            // Only update medicine-specific fields for MEDICINE type
+            var effectiveType = dto.SolutionType ?? solution.SolutionType;
+            if (effectiveType == "MEDICINE")
+            {
+                if (dto.Ingredients  != null) solution.Ingredients  = dto.Ingredients;
+                if (dto.ShoppeUrl    != null) solution.ShoppeUrl    = dto.ShoppeUrl;
+                if (dto.Instructions != null) solution.Instructions = dto.Instructions;
+            }
+
+            solution.UpdatedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+            _logger.LogInformation("Treatment solution Id={Id} updated.", solutionId);
             return MapToTreatmentDto(solution);
         }
 
@@ -356,6 +388,8 @@ namespace MyApp.Infrastructure.Services
             SolutionType  = s.SolutionType,
             Description   = s.Description,
             Ingredients   = s.Ingredients,
+            ShoppeUrl     = s.ShoppeUrl,
+            Instructions  = s.Instructions,
             IllnessId     = s.IllnessId,
             IllnessName   = s.Illness?.IllnessName,
             TreeStageId   = s.TreeStageId,

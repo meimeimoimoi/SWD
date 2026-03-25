@@ -124,6 +124,27 @@ namespace MyApp.Api.Controllers
             }
         }
 
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateTreatment(int id, [FromBody] Application.Features.Admin.DTOs.UpdateTreatmentDto dto)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                    return BadRequest(new { success = false, message = "Invalid input.",
+                        errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage) });
+
+                var result = await _technicianService.UpdateTreatmentAsync(id, dto);
+                if (result == null)
+                    return NotFound(new { success = false, message = $"Treatment with ID {id} not found." });
+                return Ok(new { success = true, message = "Treatment updated successfully.", data = result });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating treatment Id={Id}.", id);
+                return StatusCode(500, new { success = false, message = "Internal server error." });
+            }
+        }
+
         [HttpPost("{id}/assign")]
         public async Task<IActionResult> AssignTreatmentToIllness(int id, [FromBody] AssignTreatmentToIllnessDto dto)
         {

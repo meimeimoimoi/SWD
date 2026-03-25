@@ -85,6 +85,10 @@ namespace MyApp.Application.Features.Technician.DTOs
         public int? Priority { get; set; }
 
         public string? Ingredients { get; set; }
+
+        public string? ShoppeUrl { get; set; }
+
+        public string? Instructions { get; set; }
     }
 
     public class AssignTreatmentToIllnessDto

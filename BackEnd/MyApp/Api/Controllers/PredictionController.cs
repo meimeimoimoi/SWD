@@ -14,15 +14,18 @@ namespace MyApp.Api.Controllers
         private readonly IPredictionService _predictionService;
         private readonly IMonitoringService _monitoringService;
         private readonly ILogger<PredictionController> _logger;
+        private readonly MyApp.Persistence.Repositories.PredictionRepository _predictionRepository;
 
         public PredictionController(
             IPredictionService predictionService,
             IMonitoringService monitoringService,
-            ILogger<PredictionController> logger)
+            ILogger<PredictionController> logger,
+            MyApp.Persistence.Repositories.PredictionRepository predictionRepository)
         {
             _predictionService = predictionService;
             _monitoringService = monitoringService;
             _logger = logger;
+            _predictionRepository = predictionRepository;
         }
 
         [HttpPost("predict")]
@@ -181,6 +184,42 @@ namespace MyApp.Api.Controllers
             {
                 _logger.LogError(ex, "Error loading common threats");
                 return StatusCode(500, new { success = false, message = "Could not load common threats." });
+            }
+        }
+
+        [HttpPatch("{id}")]
+        [Authorize]
+        public async Task<IActionResult> UpdatePrediction(int id, [FromBody] MyApp.Application.Features.Prediction.UpdatePredictionDto dto)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                    return BadRequest(new { success = false, message = "Invalid input.",
+                        errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage) });
+
+                var prediction = await _predictionRepository.GetPredictionByIdAsync(id);
+                if (prediction == null)
+                    return NotFound(new { success = false, message = $"Prediction with ID {id} not found." });
+
+                if (dto.TreeId != null) prediction.TreeId = dto.TreeId;
+                if (dto.IllnessId != null) prediction.IllnessId = dto.IllnessId;
+                if (dto.PredictedClass != null) prediction.PredictedClass = dto.PredictedClass;
+
+                await _predictionRepository.UpdatePredictionAsync(prediction);
+
+                return Ok(new { success = true, message = "Prediction updated successfully.", data = new
+                {
+                    prediction.PredictionId,
+                    prediction.TreeId,
+                    prediction.IllnessId,
+                    prediction.PredictedClass,
+                    prediction.ConfidenceScore
+                }});
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating prediction Id={Id}.", id);
+                return StatusCode(500, new { success = false, message = "Internal server error." });
             }
         }
 
