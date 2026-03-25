@@ -31,6 +31,19 @@ namespace MyApp.Persistence.Configurations
                 .HasMaxLength(100)
                 .IsUnicode(true)
                 .HasColumnName("solution_type");
+            entity.Property(e => e.ShoppeUrl)
+                .HasMaxLength(500)
+                .IsUnicode(true)
+                .HasColumnName("shoppe_url");
+            entity.Property(e => e.Instructions)
+                .HasColumnType("nvarchar(max)")
+                .IsUnicode(true)
+                .HasColumnName("instructions");
+            entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
+            entity.Property(e => e.Ingredients)
+                .HasColumnType("nvarchar(max)")
+                .IsUnicode(true)
+                .HasColumnName("ingredients");
             entity.Property(e => e.TreeStageId).HasColumnName("tree_stage_id");
 
             entity.HasOne(d => d.Illness).WithMany(p => p.TreatmentSolutions)

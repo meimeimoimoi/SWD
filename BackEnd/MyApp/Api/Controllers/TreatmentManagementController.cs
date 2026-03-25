@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using MyApp.Application.Features.Technician.DTOs;
 using MyApp.Application.Interfaces;
 using MyApp.Domain.Enums;
+using Microsoft.AspNetCore.Http;
 
 namespace MyApp.Api.Controllers
 {
@@ -35,6 +36,75 @@ namespace MyApp.Api.Controllers
             }
         }
 
+        [HttpGet("{id}/images")]
+        public async Task<IActionResult> GetImages(int id)
+        {
+            try
+            {
+                var images = await _technicianService.GetImagesBySolutionIdAsync(id);
+                return Ok(new { success = true, total = images.Count, data = images });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching images for treatment {Id}.", id);
+                return StatusCode(500, new { success = false, message = "Internal server error." });
+            }
+        }
+
+        [HttpPost("{id}/images")]
+        public async Task<IActionResult> UploadImage(int id, IFormFile file)
+        {
+            try
+            {
+                if (file == null || file.Length == 0)
+                    return BadRequest(new { success = false, message = "Invalid file." });
+
+                var image = await _technicianService.UploadSolutionImageAsync(id, file);
+                return StatusCode(201, new { success = true, message = "Image uploaded.", data = image });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error uploading image for treatment {Id}.", id);
+                return StatusCode(500, new { success = false, message = "Internal server error." });
+            }
+        }
+
+        [HttpDelete("images/{imageId}")]
+        public async Task<IActionResult> DeleteImage(int imageId)
+        {
+            try
+            {
+                var ok = await _technicianService.DeleteSolutionImageAsync(imageId);
+                if (!ok)
+                    return NotFound(new { success = false, message = "Image not found." });
+                return Ok(new { success = true, message = "Image deleted." });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error deleting image {ImageId}.", imageId);
+                return StatusCode(500, new { success = false, message = "Internal server error." });
+            }
+        }
+
+        [HttpPatch("{id}/images/reorder")]
+        public async Task<IActionResult> ReorderImages(int id, [FromBody] List<int> orderedIds)
+        {
+            try
+            {
+                if (orderedIds == null)
+                    return BadRequest(new { success = false, message = "Invalid input." });
+
+                var ok = await _technicianService.ReorderSolutionImagesAsync(id, orderedIds);
+                if (!ok)
+                    return BadRequest(new { success = false, message = "Reorder failed." });
+                return Ok(new { success = true, message = "Reorder successful." });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error reordering images for treatment {Id}.", id);
+                return StatusCode(500, new { success = false, message = "Internal server error." });
+            }
+        }
         [HttpPost]
         public async Task<IActionResult> CreateTreatment([FromBody] CreateTreatmentDto dto)
         {

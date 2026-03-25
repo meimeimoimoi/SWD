@@ -83,6 +83,8 @@ namespace MyApp.Application.Features.Technician.DTOs
 
         [Range(1, int.MaxValue, ErrorMessage = "Priority must be a positive integer.")]
         public int? Priority { get; set; }
+
+        public string? Ingredients { get; set; }
     }
 
     public class AssignTreatmentToIllnessDto

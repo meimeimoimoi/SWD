@@ -75,6 +75,7 @@ namespace MyApp.Application.Features.Admin.DTOs
         public string? SolutionName { get; set; }
         public string? SolutionType { get; set; }
         public string? Description { get; set; }
+        public string? Ingredients { get; set; }
         public int IllnessId { get; set; }
         public string? IllnessName { get; set; }
         public int TreeStageId { get; set; }
@@ -100,5 +101,7 @@ namespace MyApp.Application.Features.Admin.DTOs
 
         [Range(1, int.MaxValue, ErrorMessage = "Priority must be a positive integer.")]
         public int? Priority { get; set; }
+
+        public string? Ingredients { get; set; }
     }
 }

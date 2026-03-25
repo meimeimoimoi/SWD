@@ -58,6 +58,7 @@ namespace MyApp.Infrastructure.Services
             if (dto.SolutionName  != null) solution.SolutionName  = dto.SolutionName;
             if (dto.SolutionType  != null) solution.SolutionType  = dto.SolutionType;
             if (dto.Description   != null) solution.Description   = dto.Description;
+            if (dto.Ingredients   != null) solution.Ingredients   = dto.Ingredients;
             if (dto.MinConfidence != null) solution.MinConfidence  = dto.MinConfidence;
             if (dto.Priority      != null) solution.Priority       = dto.Priority;
 
@@ -145,6 +146,7 @@ namespace MyApp.Infrastructure.Services
             SolutionName  = s.SolutionName,
             SolutionType  = s.SolutionType,
             Description   = s.Description,
+            Ingredients   = s.Ingredients,
             IllnessId     = s.IllnessId,
             IllnessName   = s.Illness?.IllnessName,
             TreeStageId   = s.TreeStageId,

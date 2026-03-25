@@ -26,6 +26,8 @@ public partial class AppDbContext : DbContext
 
     public virtual DbSet<SolutionCondition> SolutionConditions { get; set; }
 
+    public virtual DbSet<SolutionImage> SolutionImages { get; set; }
+
     public virtual DbSet<TreatmentSolution> TreatmentSolutions { get; set; }
 
     public virtual DbSet<Tree> Trees { get; set; }

@@ -4,6 +4,10 @@ using MyApp.Application.Features.Technician.DTOs;
 using MyApp.Application.Interfaces;
 using MyApp.Domain.Entities;
 using MyApp.Persistence.Context;
+using Microsoft.AspNetCore.Http;
+using System.IO;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
 
 namespace MyApp.Infrastructure.Services
 {
@@ -160,6 +164,124 @@ namespace MyApp.Infrastructure.Services
             return solutions.Select(MapToTreatmentDto).ToList();
         }
 
+        public async Task<List<SolutionImageDto>> GetImagesBySolutionIdAsync(int solutionId)
+        {
+            var images = await _context.SolutionImages
+                .Where(i => i.SolutionId == solutionId)
+                .OrderBy(i => i.DisplayOrder)
+                .ToListAsync();
+
+            return images.Select(i => new SolutionImageDto
+            {
+                ImageId = i.ImageId,
+                ImageUrl = i.ImageUrl,
+                DisplayOrder = i.DisplayOrder,
+                UploadedAt = i.UploadedAt,
+                FileSize = i.FileSize,
+                Width = i.Width,
+                Height = i.Height
+            }).ToList();
+        }
+
+        public async Task<SolutionImageDto> UploadSolutionImageAsync(int solutionId, IFormFile file)
+        {
+            var solution = await _context.TreatmentSolutions.FindAsync(solutionId);
+            if (solution == null) throw new InvalidOperationException($"Solution {solutionId} not found.");
+
+            var uploadsRoot = Path.Combine("uploads", "images");
+            Directory.CreateDirectory(uploadsRoot);
+
+            var fileName = $"sol_{solutionId}_{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
+            var filePath = Path.Combine(uploadsRoot, fileName);
+
+            using (var stream = File.Create(filePath))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            long? fileSize = null;
+            int? width = null;
+            int? height = null;
+            try
+            {
+                var fi = new FileInfo(filePath);
+                fileSize = fi.Length;
+                using var image = Image.Load(filePath);
+                width = image.Width;
+                height = image.Height;
+            }
+            catch
+            {
+                // ignore image sizing errors
+            }
+
+            var displayOrder = 1;
+            var last = await _context.SolutionImages.Where(i => i.SolutionId == solutionId).OrderByDescending(i => i.DisplayOrder).FirstOrDefaultAsync();
+            if (last != null) displayOrder = last.DisplayOrder + 1;
+
+            var entity = new SolutionImage
+            {
+                SolutionId = solutionId,
+                ImageUrl = Path.Combine("uploads/images", fileName).Replace('\\','/'),
+                DisplayOrder = displayOrder,
+                UploadedAt = DateTime.UtcNow,
+                FileSize = fileSize,
+                Width = width,
+                Height = height
+            };
+
+            _context.SolutionImages.Add(entity);
+            await _context.SaveChangesAsync();
+
+            return new SolutionImageDto
+            {
+                ImageId = entity.ImageId,
+                ImageUrl = entity.ImageUrl,
+                DisplayOrder = entity.DisplayOrder,
+                UploadedAt = entity.UploadedAt,
+                FileSize = entity.FileSize,
+                Width = entity.Width,
+                Height = entity.Height
+            };
+        }
+
+        public async Task<bool> DeleteSolutionImageAsync(int imageId)
+        {
+            var img = await _context.SolutionImages.FindAsync(imageId);
+            if (img == null) return false;
+
+            // attempt to delete file
+            try
+            {
+                var path = img.ImageUrl?.Replace('/', Path.DirectorySeparatorChar) ?? string.Empty;
+                if (!string.IsNullOrEmpty(path) && File.Exists(path))
+                    File.Delete(path);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Could not delete image file for {ImageId}", imageId);
+            }
+
+            _context.SolutionImages.Remove(img);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> ReorderSolutionImagesAsync(int solutionId, List<int> orderedImageIds)
+        {
+            var imgs = await _context.SolutionImages.Where(i => i.SolutionId == solutionId && orderedImageIds.Contains(i.ImageId)).ToListAsync();
+            if (imgs.Count != orderedImageIds.Count) return false;
+
+            for (int i = 0; i < orderedImageIds.Count; i++)
+            {
+                var id = orderedImageIds[i];
+                var img = imgs.First(x => x.ImageId == id);
+                img.DisplayOrder = i + 1;
+            }
+
+            await _context.SaveChangesAsync();
+            return true;
+        }
         public async Task<TreatmentReviewDto> CreateTreatmentAsync(CreateTreatmentDto dto)
         {
             var solution = new TreatmentSolution
@@ -169,6 +291,7 @@ namespace MyApp.Infrastructure.Services
                 SolutionName  = dto.SolutionName,
                 SolutionType  = dto.SolutionType,
                 Description   = dto.Description,
+                Ingredients   = dto.Ingredients,
                 MinConfidence = dto.MinConfidence,
                 Priority      = dto.Priority,
                 CreatedAt     = DateTime.UtcNow
@@ -232,6 +355,7 @@ namespace MyApp.Infrastructure.Services
             SolutionName  = s.SolutionName,
             SolutionType  = s.SolutionType,
             Description   = s.Description,
+            Ingredients   = s.Ingredients,
             IllnessId     = s.IllnessId,
             IllnessName   = s.Illness?.IllnessName,
             TreeStageId   = s.TreeStageId,
