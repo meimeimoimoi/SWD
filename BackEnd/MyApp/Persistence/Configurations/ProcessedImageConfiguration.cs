@@ -23,7 +23,7 @@ namespace MyApp.Persistence.Configurations
             entity.Property(e => e.PreprocessingSteps).HasColumnName("preprocessing_steps");
             entity.Property(e => e.ProcessedFilePath)
                 .HasMaxLength(1000)
-                .IsUnicode(false)
+                .IsUnicode(true)
                 .HasColumnName("processed_file_path");
             entity.Property(e => e.UploadId).HasColumnName("upload_id");
 

@@ -17,7 +17,7 @@ namespace MyApp.Persistence.Configurations
             entity.Property(e => e.RatingId).HasColumnName("rating_id");
             entity.Property(e => e.Comment)
                 .HasMaxLength(1000)
-                .IsUnicode(false)
+                .IsUnicode(true)
                 .HasColumnName("comment");
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("(getdate())")
@@ -25,7 +25,7 @@ namespace MyApp.Persistence.Configurations
             entity.Property(e => e.PredictionId).HasColumnName("prediction_id");
             entity.Property(e => e.Rating1)
                 .HasMaxLength(50)
-                .IsUnicode(false)
+                .IsUnicode(true)
                 .HasColumnName("rating");
 
             entity.HasOne(d => d.Prediction).WithMany(p => p.Ratings)

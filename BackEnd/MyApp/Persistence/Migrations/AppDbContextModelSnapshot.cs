@@ -168,8 +168,8 @@ namespace MyApp.Persistence.Migrations
 
                     b.Property<string>("FilePath")
                         .HasMaxLength(500)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(500)")
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(500)")
                         .HasColumnName("file_path");
 
                     b.Property<bool?>("IsActive")
@@ -181,29 +181,29 @@ namespace MyApp.Persistence.Migrations
                     b.Property<bool?>("IsDefault")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
-                        .HasDefaultValue(false)
+                        .HasDefaultValue(true)
                         .HasColumnName("is_default");
 
                     b.Property<string>("ModelName")
                         .IsRequired()
                         .HasMaxLength(255)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(255)")
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(255)")
                         .HasColumnName("model_name");
 
                     b.Property<string>("ModelType")
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(100)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(100)")
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(100)")
                         .HasDefaultValue("resnet18")
                         .HasColumnName("model_type");
 
                     b.Property<string>("Version")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(50)")
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(50)")
                         .HasColumnName("version");
 
                     b.HasKey("ModelVersionId")
@@ -296,8 +296,8 @@ namespace MyApp.Persistence.Migrations
 
                     b.Property<string>("PredictedClass")
                         .HasMaxLength(255)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(255)")
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(255)")
                         .HasColumnName("predicted_class");
 
                     b.Property<int?>("ProcessingTimeMs")
@@ -353,8 +353,8 @@ namespace MyApp.Persistence.Migrations
 
                     b.Property<string>("ProcessedFilePath")
                         .HasMaxLength(1000)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(1000)")
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(1000)")
                         .HasColumnName("processed_file_path");
 
                     b.Property<int>("UploadId")
@@ -382,8 +382,8 @@ namespace MyApp.Persistence.Migrations
 
                     b.Property<string>("Comment")
                         .HasMaxLength(1000)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(1000)")
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(1000)")
                         .HasColumnName("comment");
 
                     b.Property<DateTime?>("CreatedAt")
@@ -398,8 +398,8 @@ namespace MyApp.Persistence.Migrations
 
                     b.Property<string>("Rating1")
                         .HasMaxLength(50)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(50)")
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(50)")
                         .HasColumnName("rating");
 
                     b.HasKey("RatingId")
@@ -434,8 +434,8 @@ namespace MyApp.Persistence.Migrations
                     b.Property<string>("JtiHash")
                         .IsRequired()
                         .HasMaxLength(255)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(255)")
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(255)")
                         .HasColumnName("jti_hash");
 
                     b.Property<DateTime?>("UpdatedAt")
@@ -479,8 +479,8 @@ namespace MyApp.Persistence.Migrations
                     b.Property<string>("TokenHash")
                         .IsRequired()
                         .HasMaxLength(255)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(255)")
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(255)")
                         .HasColumnName("token_hash");
 
                     b.Property<DateTime?>("UpdatedAt")
@@ -523,8 +523,8 @@ namespace MyApp.Persistence.Migrations
 
                     b.Property<string>("WeatherCondition")
                         .HasMaxLength(255)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(255)")
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(255)")
                         .HasColumnName("weather_condition");
 
                     b.HasKey("ConditionId")
@@ -615,14 +615,14 @@ namespace MyApp.Persistence.Migrations
 
                     b.Property<string>("SolutionName")
                         .HasMaxLength(255)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(255)")
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(255)")
                         .HasColumnName("solution_name");
 
                     b.Property<string>("SolutionType")
                         .HasMaxLength(100)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(100)")
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(100)")
                         .HasColumnName("solution_type");
 
                     b.Property<int>("TreeStageId")
@@ -660,20 +660,20 @@ namespace MyApp.Persistence.Migrations
 
                     b.Property<string>("ImagePath")
                         .HasMaxLength(500)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(500)")
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(500)")
                         .HasColumnName("image_path");
 
                     b.Property<string>("ScientificName")
                         .HasMaxLength(255)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(255)")
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(255)")
                         .HasColumnName("scientific_name");
 
                     b.Property<string>("TreeName")
                         .HasMaxLength(255)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(255)")
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(255)")
                         .HasColumnName("tree_name");
 
                     b.Property<DateTime?>("UpdatedAt")
@@ -722,20 +722,20 @@ namespace MyApp.Persistence.Migrations
 
                     b.Property<string>("IllnessName")
                         .HasMaxLength(255)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(255)")
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(255)")
                         .HasColumnName("illness_name");
 
                     b.Property<string>("ScientificName")
                         .HasMaxLength(255)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(255)")
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(255)")
                         .HasColumnName("scientific_name");
 
                     b.Property<string>("Severity")
                         .HasMaxLength(50)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(50)")
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(50)")
                         .HasColumnName("severity");
 
                     b.Property<string>("Symptoms")
@@ -812,8 +812,8 @@ namespace MyApp.Persistence.Migrations
 
                     b.Property<string>("StageName")
                         .HasMaxLength(255)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(255)")
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(255)")
                         .HasColumnName("stage_name");
 
                     b.HasKey("StageId")
@@ -833,8 +833,8 @@ namespace MyApp.Persistence.Migrations
 
                     b.Property<string>("AccountStatus")
                         .HasMaxLength(50)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(50)")
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(50)")
                         .HasColumnName("account_status");
 
                     b.Property<DateTime?>("CreatedAt")
@@ -846,14 +846,14 @@ namespace MyApp.Persistence.Migrations
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasMaxLength(255)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(255)")
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(255)")
                         .HasColumnName("email");
 
                     b.Property<string>("FirstName")
                         .HasMaxLength(100)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(100)")
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(100)")
                         .HasColumnName("first_name");
 
                     b.Property<DateTime?>("LastLoginAt")
@@ -862,33 +862,33 @@ namespace MyApp.Persistence.Migrations
 
                     b.Property<string>("LastName")
                         .HasMaxLength(100)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(100)")
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(100)")
                         .HasColumnName("last_name");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
                         .HasMaxLength(255)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(255)")
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(255)")
                         .HasColumnName("password_hash");
 
                     b.Property<string>("Phone")
                         .HasMaxLength(20)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(20)")
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(20)")
                         .HasColumnName("phone");
 
                     b.Property<string>("ProfileImagePath")
                         .HasMaxLength(500)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(500)")
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(500)")
                         .HasColumnName("profile_image_path");
 
                     b.Property<string>("Role")
                         .HasMaxLength(50)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(50)")
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(50)")
                         .HasColumnName("role");
 
                     b.Property<DateTime?>("UpdatedAt")
@@ -900,8 +900,8 @@ namespace MyApp.Persistence.Migrations
                     b.Property<string>("Username")
                         .IsRequired()
                         .HasMaxLength(255)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(255)")
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(255)")
                         .HasColumnName("username");
 
                     b.HasKey("UserId")

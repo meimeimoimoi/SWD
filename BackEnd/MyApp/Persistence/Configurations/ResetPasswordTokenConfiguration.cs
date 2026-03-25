@@ -25,7 +25,7 @@ namespace MyApp.Persistence.Configurations
                 .HasColumnName("is_used");
             entity.Property(e => e.TokenHash)
                 .HasMaxLength(255)
-                .IsUnicode(false)
+                .IsUnicode(true)
                 .HasColumnName("token_hash");
             entity.Property(e => e.UpdatedAt)
                 .HasDefaultValueSql("(getdate())")

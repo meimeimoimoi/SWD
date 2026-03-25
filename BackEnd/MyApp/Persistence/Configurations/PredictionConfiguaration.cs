@@ -33,7 +33,7 @@ namespace MyApp.Persistence.Configurations
             entity.Property(e => e.ModelVersionId).HasColumnName("model_version_id");
             entity.Property(e => e.PredictedClass)
                 .HasMaxLength(255)
-                .IsUnicode(false)
+                .IsUnicode(true)
                 .HasColumnName("predicted_class");
             entity.Property(e => e.ProcessingTimeMs).HasColumnName("processing_time_ms");
             entity.Property(e => e.TopNPredictions).HasColumnName("top_n_predictions");

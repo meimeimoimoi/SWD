@@ -25,39 +25,39 @@ namespace MyApp.Persistence.Configurations
             entity.Property(e => e.UserId).HasColumnName("user_id");
             entity.Property(e => e.AccountStatus)
                 .HasMaxLength(50)
-                .IsUnicode(false)
+                .IsUnicode(true)
                 .HasColumnName("account_status");
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnName("created_at");
             entity.Property(e => e.Email)
                 .HasMaxLength(255)
-                .IsUnicode(false)
+                .IsUnicode(true)
                 .HasColumnName("email");
             entity.Property(e => e.FirstName)
                 .HasMaxLength(100)
-                .IsUnicode(false)
+                .IsUnicode(true)
                 .HasColumnName("first_name");
             entity.Property(e => e.LastLoginAt).HasColumnName("last_login_at");
             entity.Property(e => e.LastName)
                 .HasMaxLength(100)
-                .IsUnicode(false)
+                .IsUnicode(true)
                 .HasColumnName("last_name");
             entity.Property(e => e.PasswordHash)
                 .HasMaxLength(255)
-                .IsUnicode(false)
+                .IsUnicode(true)
                 .HasColumnName("password_hash");
             entity.Property(e => e.Phone)
                 .HasMaxLength(20)
-                .IsUnicode(false)
+                .IsUnicode(true)
                 .HasColumnName("phone");
             entity.Property(e => e.ProfileImagePath)
                 .HasMaxLength(500)
-                .IsUnicode(false)
+                .IsUnicode(true)
                 .HasColumnName("profile_image_path");
             entity.Property(e => e.Role)
                 .HasMaxLength(50)
-                .IsUnicode(false)
+                .IsUnicode(true)
                 .HasColumnName("role")
                 .HasConversion<string>();
             entity.Property(e => e.UpdatedAt)
@@ -65,7 +65,7 @@ namespace MyApp.Persistence.Configurations
                 .HasColumnName("updated_at");
             entity.Property(e => e.Username)
                 .HasMaxLength(255)
-                .IsUnicode(false)
+                .IsUnicode(true)
                 .HasColumnName("username");
         }
     }
