@@ -19,7 +19,7 @@ namespace MyApp.Persistence.Configurations
             entity.Property(e => e.Description).HasColumnName("description");
             entity.Property(e => e.StageName)
                 .HasMaxLength(255)
-                .IsUnicode(false)
+                .IsUnicode(true)
                 .HasColumnName("stage_name");
         }
     }

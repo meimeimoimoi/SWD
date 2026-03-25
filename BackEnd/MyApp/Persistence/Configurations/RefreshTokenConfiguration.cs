@@ -25,7 +25,7 @@ namespace MyApp.Persistence.Configurations
                 .HasColumnName("is_revoked");
             entity.Property(e => e.JtiHash)
                 .HasMaxLength(255)
-                .IsUnicode(false)
+                .IsUnicode(true)
                 .HasColumnName("jti_hash");
             entity.Property(e => e.UpdatedAt)
                 .HasDefaultValueSql("(getdate())")

@@ -23,15 +23,15 @@ namespace MyApp.Persistence.Configurations
             entity.Property(e => e.Description).HasColumnName("description");
             entity.Property(e => e.ImagePath)
                 .HasMaxLength(500)
-                .IsUnicode(false)
+                .IsUnicode(true)
                 .HasColumnName("image_path");
             entity.Property(e => e.ScientificName)
                 .HasMaxLength(255)
-                .IsUnicode(false)
+                .IsUnicode(true)
                 .HasColumnName("scientific_name");
             entity.Property(e => e.TreeName)
                 .HasMaxLength(255)
-                .IsUnicode(false)
+                .IsUnicode(true)
                 .HasColumnName("tree_name");
             entity.Property(e => e.UpdatedAt)
                 .HasDefaultValueSql("(getdate())")

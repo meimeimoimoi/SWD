@@ -27,24 +27,24 @@ namespace MyApp.Persistence.Configurations
                 .HasDefaultValue(true)
                 .HasColumnName("is_active");
             entity.Property(e => e.IsDefault)
-                .HasDefaultValue(false)
+                .HasDefaultValue(true)
                 .HasColumnName("is_default");
             entity.Property(e => e.ModelName)
                 .HasMaxLength(255)
-                .IsUnicode(false)
+                .IsUnicode(true)
                 .HasColumnName("model_name");
             entity.Property(e => e.ModelType)
                 .HasMaxLength(100)
-                .IsUnicode(false)
+                .IsUnicode(true)
                 .HasDefaultValue("resnet18")
                 .HasColumnName("model_type");
             entity.Property(e => e.FilePath)
                 .HasMaxLength(500)
-                .IsUnicode(false)
+                .IsUnicode(true)
                 .HasColumnName("file_path");
             entity.Property(e => e.Version)
                 .HasMaxLength(50)
-                .IsUnicode(false)
+                .IsUnicode(true)
                 .HasColumnName("version");
         }
     }

@@ -25,11 +25,11 @@ namespace MyApp.Persistence.Configurations
             entity.Property(e => e.Priority).HasColumnName("priority");
             entity.Property(e => e.SolutionName)
                 .HasMaxLength(255)
-                .IsUnicode(false)
+                .IsUnicode(true)
                 .HasColumnName("solution_name");
             entity.Property(e => e.SolutionType)
                 .HasMaxLength(100)
-                .IsUnicode(false)
+                .IsUnicode(true)
                 .HasColumnName("solution_type");
             entity.Property(e => e.TreeStageId).HasColumnName("tree_stage_id");
 

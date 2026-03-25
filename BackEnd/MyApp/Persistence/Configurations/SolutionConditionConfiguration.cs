@@ -20,7 +20,7 @@ namespace MyApp.Persistence.Configurations
             entity.Property(e => e.SolutionId).HasColumnName("solution_id");
             entity.Property(e => e.WeatherCondition)
                 .HasMaxLength(255)
-                .IsUnicode(false)
+                .IsUnicode(true)
                 .HasColumnName("weather_condition");
 
             entity.HasOne(d => d.Solution).WithMany(p => p.SolutionConditions)

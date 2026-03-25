@@ -181,18 +181,18 @@ public class PredictionService : IPredictionService, IDisposable
             DiseaseName = illnessInfo?.IllnessName ?? predictedLabel,
             Symptoms = illnessInfo?.Symptoms,
             Causes = illnessInfo?.Causes,
-            Treatments = illnessInfo?.TreatmentSolutions.Where(t => t.SolutionType == "treatment")
+            Treatments = illnessInfo?.TreatmentSolutions.Where(t => t.SolutionType == "CARE")
                 .Select(t => new TreatmentDto
                 {
                     Name = t.SolutionName ?? "Treatment",
-                    Type = t.SolutionType ?? "treatment",
+                    Type = t.SolutionType ?? "CARE",
                     Description = t.Description ?? string.Empty
                 }).ToList() ?? [],
-            Medicines = illnessInfo?.TreatmentSolutions.Where(m => m.SolutionType == "medicine")
+            Medicines = illnessInfo?.TreatmentSolutions.Where(m => m.SolutionType == "MEDICINE")
                 .Select(m => new MedicineDto
                 {
                     Name = m.SolutionName ?? "Medicine",
-                    Type = m.SolutionType ?? "medicine",
+                    Type = m.SolutionType ?? "MEDICINE",
                     Description = m.Description ?? string.Empty
                 }).ToList() ?? []
         };

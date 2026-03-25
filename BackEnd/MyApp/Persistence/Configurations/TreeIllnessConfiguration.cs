@@ -22,15 +22,15 @@ namespace MyApp.Persistence.Configurations
             entity.Property(e => e.Description).HasColumnName("description");
             entity.Property(e => e.IllnessName)
                 .HasMaxLength(255)
-                .IsUnicode(false)
+                .IsUnicode(true)
                 .HasColumnName("illness_name");
             entity.Property(e => e.ScientificName)
                 .HasMaxLength(255)
-                .IsUnicode(false)
+                .IsUnicode(true)
                 .HasColumnName("scientific_name");
             entity.Property(e => e.Severity)
                 .HasMaxLength(50)
-                .IsUnicode(false)
+                .IsUnicode(true)
                 .HasColumnName("severity");
             entity.Property(e => e.Symptoms).HasColumnName("symptoms");
             entity.Property(e => e.UpdatedAt)
