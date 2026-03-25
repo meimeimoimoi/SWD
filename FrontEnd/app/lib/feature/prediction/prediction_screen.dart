@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../routes/app_router.dart';
 import '../../share/constants/api_config.dart';
@@ -76,11 +77,13 @@ class PredictionResult {
       illnessId: item.illnessId,
       diseaseName: d,
       displayName: DiseaseMapper.toDisplayName(d),
-      scientificName:
-          (sci != null && sci.isNotEmpty) ? sci : DiseaseMapper.getScientificName(d),
+      scientificName: (sci != null && sci.isNotEmpty)
+          ? sci
+          : DiseaseMapper.getScientificName(d),
       imageUrl: item.imageUrl,
       confidence: item.confidence,
-      description: _nonEmpty(item.illnessDescription) ??
+      description:
+          _nonEmpty(item.illnessDescription) ??
           _nonEmpty(item.symptoms) ??
           'No description available.',
       cause: _nonEmpty(item.causes) ?? 'No information available.',
@@ -103,18 +106,32 @@ class PredictionResult {
       final map = item as Map<String, dynamic>;
       final type = (map['type'] ?? '') as String;
       final isMedicine = type == 'medicine';
+      final rawUrl =
+          map['shopeeUrl'] ??
+          map['shopee_url'] ??
+          map['shopeeLink'] ??
+          map['shopee_link'] ??
+          map['link'] ??
+          map['url'];
+      String? shopeeUrl;
+      if (rawUrl != null) {
+        final s = rawUrl.toString().trim();
+        if (s.isNotEmpty) shopeeUrl = s;
+      }
       return TreatmentProduct(
         name: (map['name'] ?? '') as String,
-        imageUrl: '',
+        imageUrl: _buildImageUrl((map['imageUrl'] ?? '') as String),
         badge: isMedicine ? 'Medicine' : 'Care',
         instruction: (map['description'] ?? '') as String,
-        price: '',
+        price: (map['price'] ?? '') as String,
         isPrimary: isMedicine,
+        shopeeUrl: shopeeUrl,
       );
     }).toList();
   }
 
-  static String _buildImageUrl(String imageUrl) => ApiConfig.resolveMediaUrl(imageUrl);
+  static String _buildImageUrl(String imageUrl) =>
+      ApiConfig.resolveMediaUrl(imageUrl);
 }
 
 class TreatmentProduct {
@@ -124,6 +141,7 @@ class TreatmentProduct {
   final String instruction;
   final String price;
   final bool isPrimary;
+  final String? shopeeUrl;
 
   const TreatmentProduct({
     required this.name,
@@ -132,6 +150,7 @@ class TreatmentProduct {
     required this.instruction,
     required this.price,
     this.isPrimary = false,
+    this.shopeeUrl,
   });
 }
 
@@ -173,7 +192,17 @@ class _PredictionScreenState extends State<PredictionScreen> {
     cause: 'High humidity, fungal spores',
     symptoms: 'Leaf spots, wilting, yield loss',
     impact: 'Yield reduction 15–30%',
-    treatments: [],
+    treatments: [
+      TreatmentProduct(
+        name: 'Thuốc trừ nấm mẫu',
+        imageUrl: 'https://cf.shopee.vn/file/sg-11134201-22100-2v7w7w7w7w7w7w',
+        badge: 'Care',
+        instruction: 'Phun đều lên lá theo hướng dẫn.',
+        price: '120.000đ',
+        isPrimary: false,
+        shopeeUrl: 'https://vn.shp.ee/fbqWu29a',
+      ),
+    ],
     medicines: [],
     isHealthy: false,
   );
@@ -184,8 +213,9 @@ class _PredictionScreenState extends State<PredictionScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor:
-          isDark ? AppColors.darkBackground : AppColors.lightBackground,
+      backgroundColor: isDark
+          ? AppColors.darkBackground
+          : AppColors.lightBackground,
       body: SafeArea(
         child: Column(
           children: [
@@ -215,75 +245,34 @@ class _PredictionScreenState extends State<PredictionScreen> {
           ],
         ),
       ),
-      bottomNavigationBar:
-          const UserBottomNavBar(selectedIndexOverride: 1),
+      bottomNavigationBar: const UserBottomNavBar(selectedIndexOverride: 1),
     );
   }
 
   Widget _buildHeader(BuildContext context, bool isDark) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
-        border: Border(
-          bottom: BorderSide(
-            color: isDark ? AppColors.borderDark : const Color(0xFFE5E7EB),
-          ),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
+    // This header is just a placeholder. Replace with your actual header widget.
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          _buildCircleButton(
-            icon: Icons.arrow_back,
-            onTap: () => Navigator.of(context).maybePop(),
-            isDark: isDark,
-          ),
-          Text(
-            'Diagnosis result',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: isDark ? AppColors.textPrimaryDark : const Color(0xFF111827),
+          IconButton(
+            icon: Icon(
+              Icons.arrow_back,
+              color: isDark ? const Color(0xFFE5E7EB) : const Color(0xFF374151),
+              size: 22,
             ),
+            onPressed: () => Navigator.of(context).maybePop(),
           ),
-          _buildCircleButton(
-            icon: Icons.more_vert,
-            onTap: () => _showOptionsMenu(context),
-            isDark: isDark,
+          const Spacer(),
+          IconButton(
+            icon: Icon(
+              Icons.more_vert,
+              color: isDark ? const Color(0xFFE5E7EB) : const Color(0xFF374151),
+              size: 22,
+            ),
+            onPressed: () => _showOptionsMenu(context),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildCircleButton({
-    required IconData icon,
-    required VoidCallback onTap,
-    required bool isDark,
-  }) {
-    return Material(
-      color: isDark ? AppColors.darkControlFill : const Color(0xFFF3F4F6),
-      borderRadius: BorderRadius.circular(20),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(20),
-        child: SizedBox(
-          width: 40,
-          height: 40,
-          child: Icon(
-            icon,
-            color: isDark ? const Color(0xFFE5E7EB) : const Color(0xFF374151),
-            size: 22,
-          ),
-        ),
       ),
     );
   }
@@ -452,7 +441,9 @@ class _PredictionScreenState extends State<PredictionScreen> {
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
-                  color: isDark ? AppColors.textPrimaryDark : const Color(0xFF111827),
+                  color: isDark
+                      ? AppColors.textPrimaryDark
+                      : const Color(0xFF111827),
                 ),
               ),
             ],
@@ -461,7 +452,9 @@ class _PredictionScreenState extends State<PredictionScreen> {
           Container(
             height: 10,
             decoration: BoxDecoration(
-              color: isDark ? AppColors.darkControlFill : const Color(0xFFE5E7EB),
+              color: isDark
+                  ? AppColors.darkControlFill
+                  : const Color(0xFFE5E7EB),
               borderRadius: BorderRadius.circular(5),
             ),
             child: FractionallySizedBox(
@@ -527,7 +520,9 @@ class _PredictionScreenState extends State<PredictionScreen> {
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: isDark ? AppColors.textPrimaryDark : const Color(0xFF111827),
+                color: isDark
+                    ? AppColors.textPrimaryDark
+                    : const Color(0xFF111827),
               ),
             ),
           ],
@@ -580,7 +575,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: isDark
-                            ? AppColors.darkControlFill.withOpacity(0.5)
+              ? AppColors.darkControlFill.withOpacity(0.5)
               : const Color(0xFFE5E7EB),
         ),
       ),
@@ -593,7 +588,9 @@ class _PredictionScreenState extends State<PredictionScreen> {
               fontSize: 10,
               fontWeight: FontWeight.bold,
               letterSpacing: 0.5,
-              color: isDark ? AppColors.textSecondaryDark : const Color(0xFF6B7280),
+              color: isDark
+                  ? AppColors.textSecondaryDark
+                  : const Color(0xFF6B7280),
             ),
           ),
           const SizedBox(height: 6),
@@ -631,7 +628,9 @@ class _PredictionScreenState extends State<PredictionScreen> {
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: isDark ? AppColors.textPrimaryDark : const Color(0xFF111827),
+                color: isDark
+                    ? AppColors.textPrimaryDark
+                    : const Color(0xFF111827),
               ),
             ),
           ],
@@ -662,7 +661,9 @@ class _PredictionScreenState extends State<PredictionScreen> {
               return Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
+                  color: isDark
+                      ? AppColors.surfaceDark
+                      : AppColors.surfaceLight,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                     color: isDark
@@ -785,7 +786,9 @@ class _PredictionScreenState extends State<PredictionScreen> {
             width: 80,
             height: 80,
             decoration: BoxDecoration(
-              color: isDark ? AppColors.darkControlFill : const Color(0xFFF3F4F6),
+              color: isDark
+                  ? AppColors.darkControlFill
+                  : const Color(0xFFF3F4F6),
               borderRadius: BorderRadius.circular(12),
             ),
             clipBehavior: Clip.antiAlias,
@@ -837,7 +840,9 @@ class _PredictionScreenState extends State<PredictionScreen> {
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
-                    color: isDark ? AppColors.textPrimaryDark : const Color(0xFF111827),
+                    color: isDark
+                        ? AppColors.textPrimaryDark
+                        : const Color(0xFF111827),
                   ),
                 ),
                 const SizedBox(height: 2),
@@ -864,7 +869,9 @@ class _PredictionScreenState extends State<PredictionScreen> {
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
-                        color: isDark ? AppColors.textPrimaryDark : const Color(0xFF111827),
+                        color: isDark
+                            ? AppColors.textPrimaryDark
+                            : const Color(0xFF111827),
                       ),
                     ),
                     _buildDetailButton(
@@ -904,7 +911,9 @@ class _PredictionScreenState extends State<PredictionScreen> {
               fontWeight: FontWeight.bold,
               color: isPrimary
                   ? (isDark ? Colors.black : AppColors.onPrimary)
-                  : (isDark ? AppColors.textPrimaryDark : const Color(0xFF1F2937)),
+                  : (isDark
+                        ? AppColors.textPrimaryDark
+                        : const Color(0xFF1F2937)),
             ),
           ),
         ),
@@ -1063,7 +1072,9 @@ class _PredictionScreenState extends State<PredictionScreen> {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: isDark ? AppColors.darkControlFill : const Color(0xFFE5E7EB),
+              color: isDark
+                  ? AppColors.darkControlFill
+                  : const Color(0xFFE5E7EB),
             ),
           ),
           child: Column(
@@ -1273,26 +1284,113 @@ class _PredictionScreenState extends State<PredictionScreen> {
 
                   const SizedBox(height: 16),
 
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () => Navigator.pop(context),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: isDark
-                            ? const Color(0xFFE4E4E7)
-                            : const Color(0xFF27272A),
-                        foregroundColor:
-                            isDark ? Colors.black : AppColors.onPrimary,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                  Row(
+                    children: [
+                      // Cart icon button
+                      SizedBox(
+                        height: 48,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            // TODO: Implement add to cart logic
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Added to cart'),
+                                behavior: SnackBarBehavior.floating,
+                              ),
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: isDark
+                                ? const Color(0xFF27272A)
+                                : const Color(0xFFE4E4E7),
+                            foregroundColor: isDark
+                                ? Colors.white
+                                : Colors.black,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 18,
+                              vertical: 14,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            elevation: 0,
+                          ),
+                          child: const Icon(Icons.shopping_cart_outlined),
                         ),
                       ),
-                      child: const Text(
-                        'Close',
-                        style: TextStyle(fontWeight: FontWeight.bold),
+                      const SizedBox(width: 12),
+                      // Buy button
+                      Expanded(
+                        child: SizedBox(
+                          height: 48,
+                          child: ElevatedButton(
+                            onPressed: () async {
+                              final url = product.shopeeUrl;
+                              if (url == null || url.isEmpty) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Link mua hàng không có'),
+                                    behavior: SnackBarBehavior.floating,
+                                  ),
+                                );
+                                return;
+                              }
+
+                              final uri = Uri.tryParse(url);
+                              if (uri == null) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Link không hợp lệ'),
+                                    behavior: SnackBarBehavior.floating,
+                                  ),
+                                );
+                                return;
+                              }
+
+                              try {
+                                final launched = await launchUrl(
+                                  uri,
+                                  mode: LaunchMode.externalApplication,
+                                );
+                                if (!launched) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Không thể mở link'),
+                                      behavior: SnackBarBehavior.floating,
+                                    ),
+                                  );
+                                }
+                              } catch (_) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Lỗi khi mở link'),
+                                    behavior: SnackBarBehavior.floating,
+                                  ),
+                                );
+                              }
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(
+                                0xFF22C55E,
+                              ), // Green highlight
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              elevation: 0,
+                            ),
+                            child: const Text(
+                              'Buy',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
+                    ],
                   ),
                 ],
               ),
@@ -1313,9 +1411,8 @@ class _PredictionScreenState extends State<PredictionScreen> {
   }
 
   void _onFeedback(BuildContext context) {
-    Navigator.of(context).pushNamed(
-      AppRouter.feedback,
-      arguments: widget.result ?? _sampleResult,
-    );
+    Navigator.of(
+      context,
+    ).pushNamed(AppRouter.feedback, arguments: widget.result ?? _sampleResult);
   }
 }
