@@ -96,7 +96,7 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            response['message']?.toString() ?? 'Profile updated successfully',
+            response['message']?.toString() ?? 'Cập nhật hồ sơ thành công',
           ),
           backgroundColor: Colors.green,
         ),
@@ -109,7 +109,7 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          response['message']?.toString() ?? 'Failed to update profile',
+          response['message']?.toString() ?? 'Cập nhật hồ sơ thất bại',
         ),
         backgroundColor: Colors.red,
       ),
@@ -120,7 +120,7 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
   Widget build(BuildContext context) {
     return AppScaffold(
       centerContent: false,
-      title: 'Update Profile',
+      title: 'Cập nhật hồ sơ',
       child: SingleChildScrollView(
         child: AppCard(
           child: Form(
@@ -129,49 +129,49 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 AppInput(
-                  label: 'Full name',
-                  hint: 'Enter your full name',
+                  label: 'Họ và tên',
+                  hint: 'Nhập họ và tên của bạn',
                   controller: _nameController,
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
-                      return 'Name is required';
+                      return 'Vui lòng nhập họ tên';
                     }
                     return null;
                   },
                 ),
                 const SizedBox(height: 16),
                 AppInput(
-                  label: 'Phone',
-                  hint: 'Enter phone number',
+                  label: 'Số điện thoại',
+                  hint: 'Nhập số điện thoại',
                   controller: _phoneController,
                   keyboardType: TextInputType.phone,
                   validator: (value) {
                     final text = value?.trim() ?? '';
                     if (text.isEmpty) {
-                      return 'Phone is required';
+                      return 'Vui lòng nhập số điện thoại';
                     }
                     final phonePattern = RegExp(r'^[0-9+()\-\s]{8,15}$');
                     if (!phonePattern.hasMatch(text)) {
-                      return 'Invalid phone format';
+                      return 'Số điện thoại không hợp lệ';
                     }
                     return null;
                   },
                 ),
                 const SizedBox(height: 16),
                 AppInput(
-                  label: 'Address',
-                  hint: 'Enter your address',
+                  label: 'Địa chỉ',
+                  hint: 'Nhập địa chỉ của bạn',
                   controller: _addressController,
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
-                      return 'Address is required';
+                      return 'Vui lòng nhập địa chỉ';
                     }
                     return null;
                   },
                 ),
                 const SizedBox(height: 20),
                 AppButton(
-                  label: _isSubmitting ? 'Saving...' : 'Save',
+                  label: _isSubmitting ? 'Đang lưu...' : 'Lưu thay đổi',
                   onPressed: _isSubmitting ? null : _submit,
                 ),
               ],

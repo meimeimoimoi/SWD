@@ -25,9 +25,9 @@ class _ModelTypeOption {
 }
 
 const List<_ModelTypeOption> _kModelTypes = [
-  _ModelTypeOption(apiValue: 'mobilenetv3', label: 'Image classification'),
-  _ModelTypeOption(apiValue: 'yolov8', label: 'Object detection'),
-  _ModelTypeOption(apiValue: 'segmentation', label: 'Segmentation'),
+  _ModelTypeOption(apiValue: 'mobilenetv3', label: 'Phân loại hình ảnh'),
+  _ModelTypeOption(apiValue: 'yolov8', label: 'Phát hiện đối tượng'),
+  _ModelTypeOption(apiValue: 'segmentation', label: 'Phân đoạn'),
 ];
 
 class _AdminModelUploadScreenState extends State<AdminModelUploadScreen> {
@@ -59,7 +59,7 @@ class _AdminModelUploadScreenState extends State<AdminModelUploadScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Only .onnx files are accepted'),
+            content: Text('Chỉ chấp nhận tệp .onnx'),
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -78,7 +78,7 @@ class _AdminModelUploadScreenState extends State<AdminModelUploadScreen> {
     if (path == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Please select an .onnx file'),
+          content: Text('Vui lòng chọn tệp .onnx'),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -97,7 +97,7 @@ class _AdminModelUploadScreenState extends State<AdminModelUploadScreen> {
     setState(() => _submitting = false);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(ok ? 'Upload succeeded' : 'Upload failed'),
+        content: Text(ok ? 'Tải lên thành công' : 'Tải lên thất bại'),
         backgroundColor: ok ? AppColors.brandAccent : Colors.red,
         behavior: SnackBarBehavior.floating,
       ),
@@ -133,7 +133,7 @@ class _AdminModelUploadScreenState extends State<AdminModelUploadScreen> {
                     ),
                     Expanded(
                       child: Text(
-                        'Upload new model',
+                        'Tải lên mô hình mới',
                         style: GoogleFonts.spaceGrotesk(
                           fontSize: 20,
                           fontWeight: FontWeight.w700,
@@ -176,25 +176,25 @@ class _AdminModelUploadScreenState extends State<AdminModelUploadScreen> {
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
                               _LabeledField(
-                                label: 'Model name',
+                                label: 'Tên mô hình',
                                 child: TextFormField(
                                   controller: _name,
                                   style: _inputStyle(isDark),
                                   decoration: _inputDeco(
-                                    hint: 'VD: RiceBlast_ResNet18',
+                                    hint: 'VD: BenhLua_ResNet18',
                                     fill: fill,
                                     border: border,
                                     isDark: isDark,
                                   ),
                                   validator: (v) =>
                                       v == null || v.trim().isEmpty
-                                          ? 'Required'
+                                          ? 'Bắt buộc'
                                           : null,
                                 ),
                               ),
                               const SizedBox(height: 18),
                               _LabeledField(
-                                label: 'Version',
+                                label: 'Phiên bản',
                                 child: TextFormField(
                                   controller: _version,
                                   style: _inputStyle(isDark),
@@ -206,13 +206,13 @@ class _AdminModelUploadScreenState extends State<AdminModelUploadScreen> {
                                   ),
                                   validator: (v) =>
                                       v == null || v.trim().isEmpty
-                                          ? 'Required'
+                                          ? 'Bắt buộc'
                                           : null,
                                 ),
                               ),
                               const SizedBox(height: 18),
                               _LabeledField(
-                                label: 'Model type',
+                                label: 'Loại mô hình',
                                 child: DropdownButtonFormField<_ModelTypeOption>(
                                   value: _selectedType,
                                   isExpanded: true,
@@ -249,7 +249,7 @@ class _AdminModelUploadScreenState extends State<AdminModelUploadScreen> {
                               ),
                               const SizedBox(height: 18),
                               _LabeledField(
-                                label: 'Description',
+                                label: 'Mô tả',
                                 child: TextFormField(
                                   controller: _desc,
                                   maxLines: 5,
@@ -257,7 +257,7 @@ class _AdminModelUploadScreenState extends State<AdminModelUploadScreen> {
                                   style: _inputStyle(isDark),
                                   decoration: _inputDeco(
                                     hint:
-                                        'Enter detailed information about the model…',
+                                        'Nhập thông tin chi tiết về mô hình…',
                                     fill: fill,
                                     border: border,
                                     isDark: isDark,
@@ -312,7 +312,7 @@ class _AdminModelUploadScreenState extends State<AdminModelUploadScreen> {
                                     ),
                                     const SizedBox(height: 14),
                                     Text(
-                                      'Upload model file (.onnx)',
+                                      'Tải lên tệp mô hình (.onnx)',
                                       style: GoogleFonts.spaceGrotesk(
                                         fontSize: 17,
                                         fontWeight: FontWeight.w700,
@@ -323,7 +323,7 @@ class _AdminModelUploadScreenState extends State<AdminModelUploadScreen> {
                                     ),
                                     const SizedBox(height: 8),
                                     Text(
-                                      'Drag and drop or tap to pick a file from your device',
+                                      'Kéo thả hoặc nhấn để chọn tệp từ thiết bị',
                                       textAlign: TextAlign.center,
                                       style: GoogleFonts.spaceGrotesk(
                                         fontSize: 13,
@@ -370,7 +370,7 @@ class _AdminModelUploadScreenState extends State<AdminModelUploadScreen> {
                                           const SizedBox(width: 8),
                                           Flexible(
                                             child: Text(
-                                              'Only .onnx format is accepted',
+                                              'Chỉ chấp nhận định dạng .onnx',
                                               style: GoogleFonts.spaceGrotesk(
                                                 fontSize: 11,
                                                 fontWeight: FontWeight.w600,
@@ -411,7 +411,7 @@ class _AdminModelUploadScreenState extends State<AdminModelUploadScreen> {
                                     ),
                                   )
                                 : Text(
-                                    'Finish upload',
+                                    'Hoàn tất tải lên',
                                     style: GoogleFonts.spaceGrotesk(
                                       fontWeight: FontWeight.w700,
                                       fontSize: 16,

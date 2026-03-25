@@ -148,7 +148,7 @@ class _UserIllnessDetailScreenState extends State<UserIllnessDetailScreen> {
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: Text(
-          'Disease details',
+          'Chi tiết bệnh trạng',
           style: GoogleFonts.spaceGrotesk(
             fontWeight: FontWeight.w700,
             fontSize: 18,
@@ -178,7 +178,7 @@ class _UserIllnessDetailScreenState extends State<UserIllnessDetailScreen> {
                   ),
                   const SizedBox(height: 20),
                   if (desc != null && desc.isNotEmpty) ...[
-                    _sectionTitle('Detailed description', isDark),
+                    _sectionTitle('Mô tả chi tiết', isDark),
                     const SizedBox(height: 8),
                     _CardShell(
                       isDark: isDark,
@@ -207,7 +207,7 @@ class _UserIllnessDetailScreenState extends State<UserIllnessDetailScreen> {
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        'Symptoms & causes',
+                        'Triệu chứng & Nguyên nhân',
                         style: GoogleFonts.spaceGrotesk(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
@@ -220,7 +220,7 @@ class _UserIllnessDetailScreenState extends State<UserIllnessDetailScreen> {
                   if (symptoms != null && symptoms.isNotEmpty)
                     _labelCard(
                       isDark,
-                      'SYMPTOMS',
+                      'TRIỆU CHỨNG',
                       symptoms,
                     ),
                   if (symptoms != null && symptoms.isNotEmpty)
@@ -228,7 +228,7 @@ class _UserIllnessDetailScreenState extends State<UserIllnessDetailScreen> {
                   if (causes != null && causes.isNotEmpty)
                     _labelCard(
                       isDark,
-                      'CAUSES',
+                      'NGUYÊN NHÂN',
                       causes,
                     ),
                   if ((symptoms == null || symptoms.isEmpty) &&
@@ -236,7 +236,7 @@ class _UserIllnessDetailScreenState extends State<UserIllnessDetailScreen> {
                     Padding(
                       padding: const EdgeInsets.only(top: 4),
                       child: Text(
-                        'No detailed symptom or cause description yet.',
+                        'Chưa có mô tả chi tiết về triệu chứng hoặc nguyên nhân.',
                         style: GoogleFonts.spaceGrotesk(
                           fontSize: 13,
                           color: isDark
@@ -246,7 +246,7 @@ class _UserIllnessDetailScreenState extends State<UserIllnessDetailScreen> {
                       ),
                     ),
                   const SizedBox(height: 20),
-                  _sectionTitle('System information', isDark),
+                  _sectionTitle('Thông tin hệ thống', isDark),
                   const SizedBox(height: 8),
                   _CardShell(
                     isDark: isDark,
@@ -256,7 +256,7 @@ class _UserIllnessDetailScreenState extends State<UserIllnessDetailScreen> {
                         children: [
                           if (createdApi != null)
                             _metaRow(
-                              'Created',
+                              'Ngày tạo',
                               _formatDt(createdApi),
                               isDark,
                             ),
@@ -269,13 +269,13 @@ class _UserIllnessDetailScreenState extends State<UserIllnessDetailScreen> {
                             ),
                           if (updatedApi != null)
                             _metaRow(
-                              'Last updated',
+                              'Cập nhật lần cuối',
                               _formatDt(updatedApi),
                               isDark,
                             ),
                           if (createdApi == null && updatedApi == null)
                             _metaRow(
-                              'Recorded from scan',
+                              'Ghi nhận từ lần quét',
                               _formatDateTime(u.createdAt),
                               isDark,
                             ),
@@ -284,13 +284,13 @@ class _UserIllnessDetailScreenState extends State<UserIllnessDetailScreen> {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  _sectionTitle('Linked solutions', isDark),
+                  _sectionTitle('Các giải pháp liên kết', isDark),
                   const SizedBox(height: 8),
                   if (widget.recommendations.isEmpty)
                     Text(
                       u.illnessId == null
-                          ? 'Disease code not linked in the system — no automatic suggestions.'
-                          : 'No solutions linked to this disease in the library.',
+                          ? 'Mã bệnh chưa được liên kết trong hệ thống — không có gợi ý tự động.'
+                          : 'Không có giải pháp nào được liên kết với bệnh này trong thư viện.',
                       style: GoogleFonts.spaceGrotesk(
                         fontSize: 13,
                         height: 1.4,
@@ -329,21 +329,21 @@ class _UserIllnessDetailScreenState extends State<UserIllnessDetailScreen> {
 
   static String _severityBadgeText(String? severity) {
     if (severity == null || severity.trim().isEmpty) {
-      return 'LEVEL: UNKNOWN';
+      return 'MỨC ĐỘ: KHÔNG XÁC ĐỊNH';
     }
     final t = severity.trim();
     const map = {
-      'Low': 'Low',
-      'Medium': 'Medium',
-      'High': 'High',
-      'Critical': 'Critical',
-      'Thấp': 'Low',
-      'Trung bình': 'Medium',
-      'Cao': 'High',
-      'Nguy hiểm': 'Critical',
+      'Low': 'Thấp',
+      'Medium': 'Trung bình',
+      'High': 'Cao',
+      'Critical': 'Nguy hiểm',
+      'Thấp': 'Thấp',
+      'Trung bình': 'Trung bình',
+      'Cao': 'Cao',
+      'Nguy hiểm': 'Nguy hiểm',
     };
     final mapped = map[t] ?? t;
-    return 'LEVEL: ${mapped.toUpperCase()}';
+    return 'MỨC ĐỘ: ${mapped.toUpperCase()}';
   }
 
   static String _formatDateTime(DateTime d) {
@@ -449,7 +449,7 @@ class _UserIllnessDetailScreenState extends State<UserIllnessDetailScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                r.solutionName ?? 'Solution',
+                r.solutionName ?? 'Giải pháp',
                 style: GoogleFonts.spaceGrotesk(
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
@@ -470,7 +470,7 @@ class _UserIllnessDetailScreenState extends State<UserIllnessDetailScreen> {
                 Padding(
                   padding: const EdgeInsets.only(top: 8),
                   child: Text(
-                    'Plant stage: ${r.treeStageName}',
+                    'Giai đoạn cây: ${r.treeStageName}',
                     style: GoogleFonts.spaceGrotesk(
                       fontSize: 12,
                       color: Color(0xFF64748B),
@@ -656,7 +656,7 @@ class _HeroCard extends StatelessWidget {
                   children: [
                     Expanded(
                       child: _miniCol(
-                        'AGENT TYPE',
+                        'TÁC NHÂN',
                         agentType,
                         isDark,
                       ),
@@ -664,7 +664,7 @@ class _HeroCard extends StatelessWidget {
                     const SizedBox(width: 16),
                     Expanded(
                       child: _miniCol(
-                        'PRIMARY HOST',
+                        'VẬT CHỦ CHÍNH',
                         host,
                         isDark,
                       ),
@@ -773,7 +773,7 @@ class _SolutionTile extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  item.solutionName ?? 'Solution #${item.solutionId}',
+                  item.solutionName ?? 'Giải pháp #${item.solutionId}',
                   style: GoogleFonts.spaceGrotesk(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,

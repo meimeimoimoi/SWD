@@ -132,7 +132,7 @@ class _AdminIllnessEditScreenState extends State<AdminIllnessEditScreen> {
     setState(() => _saving = false);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(ok ? 'Saved' : 'Save failed'),
+        content: Text(ok ? 'Đã lưu' : 'Lưu thất bại'),
         backgroundColor: ok ? AppColors.brandAccent : Colors.red,
         behavior: SnackBarBehavior.floating,
       ),
@@ -159,7 +159,7 @@ class _AdminIllnessEditScreenState extends State<AdminIllnessEditScreen> {
         appBar: AppBar(
           backgroundColor: isDark ? AppColors.darkBackground : _kBg,
           title: Text(
-            'Loading…',
+            'Đang tải…',
             style: GoogleFonts.spaceGrotesk(color: textPrimary),
           ),
         ),
@@ -170,7 +170,7 @@ class _AdminIllnessEditScreenState extends State<AdminIllnessEditScreen> {
     }
 
     final title =
-        widget.illnessId == null ? 'Add new disease' : 'Edit disease';
+        widget.illnessId == null ? 'Thêm bệnh mới' : 'Chỉnh sửa bệnh';
 
     return Scaffold(
       backgroundColor: isDark ? AppColors.darkBackground : _kBg,
@@ -222,22 +222,22 @@ class _AdminIllnessEditScreenState extends State<AdminIllnessEditScreen> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       _LabeledField(
-                        label: 'Disease name',
+                        label: 'Tên bệnh',
                         requiredMark: true,
                         child: _GuideTextField(
                           controller: _name,
-                          hint: 'e.g. Bacterial leaf spot',
+                          hint: 'VD: Đốm lá do vi khuẩn',
                           validator: (v) => v == null || v.trim().isEmpty
-                              ? 'Please enter a disease name'
+                              ? 'Vui lòng nhập tên bệnh'
                               : null,
                         ),
                       ),
                       const SizedBox(height: 20),
                       _LabeledField(
-                        label: 'Scientific name',
+                        label: 'Tên khoa học',
                         child: _GuideTextField(
                           controller: _sci,
-                          hint: 'e.g. Xanthomonas campestris',
+                          hint: 'VD: Xanthomonas campestris',
                           style: GoogleFonts.spaceGrotesk(
                             fontStyle: FontStyle.italic,
                             fontSize: 15,
@@ -246,7 +246,7 @@ class _AdminIllnessEditScreenState extends State<AdminIllnessEditScreen> {
                       ),
                       const SizedBox(height: 20),
                       _LabeledField(
-                        label: 'Severity',
+                        label: 'Mức độ nghiêm trọng',
                         child: _SeverityDropdown(
                           value: _severity,
                           onChanged: (v) =>
@@ -255,41 +255,41 @@ class _AdminIllnessEditScreenState extends State<AdminIllnessEditScreen> {
                       ),
                       const SizedBox(height: 20),
                       _LabeledField(
-                        label: 'Detailed description',
+                        label: 'Mô tả chi tiết',
                         child: _GuideTextField(
                           controller: _desc,
-                          hint: 'Enter an overview of the disease…',
+                          hint: 'Nhập tổng quan về bệnh…',
                           maxLines: 3,
                         ),
                       ),
                       const SizedBox(height: 20),
                       _LabeledField(
-                        label: 'Recognizable symptoms',
+                        label: 'Triệu chứng nhận biết',
                         child: _GuideTextField(
                           controller: _symptoms,
                           hint:
-                              'Describe signs on leaves, stems, fruit…',
+                              'Mô tả các dấu hiệu trên lá, thân, quả…',
                           maxLines: 3,
                         ),
                       ),
                       const SizedBox(height: 20),
                       _LabeledField(
-                        label: 'Causes',
+                        label: 'Nguyên nhân',
                         child: _GuideTextField(
                           controller: _causes,
                           hint:
-                              'Fungal, bacterial, or environmental conditions?',
+                              'Do nấm, vi khuẩn hay điều kiện môi trường?',
                           maxLines: 3,
                         ),
                       ),
                       const SizedBox(height: 20),
                       _LabeledField(
-                        label: 'Illustration images',
+                        label: 'Hình ảnh minh họa',
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Images are shown on device only — the API does not save attachments yet.',
+                              'Hình ảnh chỉ hiển thị trên thiết bị — API chưa hỗ trợ lưu tệp đính kèm.',
                               style: GoogleFonts.spaceGrotesk(
                                 fontSize: 11,
                                 height: 1.3,
@@ -344,7 +344,7 @@ class _AdminIllnessEditScreenState extends State<AdminIllnessEditScreen> {
                             ),
                           )
                         : Text(
-                            'Save',
+                            'Lưu',
                             style: GoogleFonts.spaceGrotesk(
                               fontWeight: FontWeight.w700,
                               fontSize: 16,
@@ -512,12 +512,19 @@ class _SeverityDropdown extends StatelessWidget {
           .map(
             (e) => DropdownMenuItem(
               value: e,
-              child: Text(e),
+              child: Text(_severityLabels[e] ?? e),
             ),
           )
           .toList(),
     );
   }
+
+  static const Map<String, String> _severityLabels = {
+    'Low': 'Thấp',
+    'Medium': 'Trung bình',
+    'High': 'Cao',
+    'Critical': 'Nguy hiểm',
+  };
 }
 
 class _ImageGrid extends StatelessWidget {
@@ -582,7 +589,7 @@ class _AddTile extends StatelessWidget {
               Icon(Icons.add_a_photo_outlined, color: AppColors.brandAccent.withValues(alpha: 0.7)),
               const SizedBox(height: 4),
               Text(
-                'Add image',
+                'Thêm ảnh',
                 style: GoogleFonts.spaceGrotesk(
                   fontSize: 10,
                   fontWeight: FontWeight.w600,

@@ -862,7 +862,7 @@ class _UrgentPlantRowVm {
         summary.predictions.isNotEmpty ? summary.predictions.first : null;
     final disease = latest?.diseaseName.trim().isNotEmpty == true
         ? latest!.diseaseName
-        : 'Disease detected';
+        : 'Đã phát hiện bệnh';
     final time = latest != null
         ? _dashboardRelativeTime(latest.createdAt, now)
         : '';
@@ -1053,7 +1053,7 @@ class _RecentScanTile extends StatelessWidget {
   static String? _treeLine(HistoryItem item) {
     final n = item.treeName?.trim();
     if (n != null && n.isNotEmpty) return n;
-    if (item.treeId != null) return 'Plant #${item.treeId}';
+    if (item.treeId != null) return 'Cây #${item.treeId}';
     return null;
   }
 

@@ -59,9 +59,9 @@ class PredictionResult {
       scientificName: scientificName,
       imageUrl: imageUrl,
       confidence: data.confidence,
-      description: data.symptoms ?? 'No description available.',
-      cause: data.causes ?? 'No information available.',
-      symptoms: data.symptoms ?? 'No symptom information available.',
+      description: data.symptoms ?? 'Không có mô tả.',
+      cause: data.causes ?? 'Không có thông tin.',
+      symptoms: data.symptoms ?? 'Không có thông tin triệu chứng.',
       impact: DiseaseMapper.getImpact(englishName),
       treatments: _mapTreatments(data.treatments),
       medicines: _mapTreatments(data.medicines),
@@ -85,9 +85,9 @@ class PredictionResult {
       description:
           _nonEmpty(item.illnessDescription) ??
           _nonEmpty(item.symptoms) ??
-          'No description available.',
-      cause: _nonEmpty(item.causes) ?? 'No information available.',
-      symptoms: _nonEmpty(item.symptoms) ?? 'No symptom information available.',
+          'Không có mô tả.',
+      cause: _nonEmpty(item.causes) ?? 'Không có thông tin.',
+      symptoms: _nonEmpty(item.symptoms) ?? 'Không có thông tin triệu chứng.',
       impact: DiseaseMapper.getImpact(d),
       treatments: const [],
       medicines: const [],
@@ -457,7 +457,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'AI confidence',
+                'Độ tin cậy AI',
                 style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
               ),
               Text(
@@ -507,7 +507,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  'Very high accuracy based on current data.',
+                  'Độ chính xác rất cao dựa trên dữ liệu hiện tại.',
                   style: TextStyle(
                     fontSize: 12,
                     color: isDark
@@ -540,7 +540,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
             ),
             const SizedBox(width: 8),
             Text(
-              'Disease description',
+              'Mô tả bệnh',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -566,7 +566,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
           children: [
             Expanded(
               child: _buildInfoCard(
-                title: 'Cause',
+                title: 'Nguyên nhân',
                 content: data.cause,
                 isDark: isDark,
               ),
@@ -574,7 +574,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
             const SizedBox(width: 12),
             Expanded(
               child: _buildInfoCard(
-                title: 'Impact',
+                title: 'Ảnh hưởng',
                 content: data.impact,
                 isDark: isDark,
               ),
@@ -648,7 +648,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
             ),
             const SizedBox(width: 8),
             Text(
-              'Treatment suggestions',
+              'Gợi ý điều trị',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -931,7 +931,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           child: Text(
-            'Details',
+            'Chi tiết',
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.bold,
@@ -969,7 +969,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
                 if (!context.mounted) return;
                 if (ok == true) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Scan linked to plant.')),
+                    const SnackBar(content: Text('Kết quả quét đã được liên kết với cây.')),
                   );
                 }
               },
@@ -991,7 +991,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      'ASSIGN TO PLANT',
+                      'LIÊN KẾT VỚI CÂY',
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w800,
@@ -1040,7 +1040,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    'SUGGEST SOLUTIONS',
+                    'GỢI Ý GIẢI PHÁP',
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w800,
@@ -1061,7 +1061,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
             Expanded(
               child: _buildActionButton(
                 icon: Icons.save,
-                label: 'Save',
+                label: 'Lưu',
                 onTap: () => _onSave(context),
                 isDark: isDark,
               ),
@@ -1070,7 +1070,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
             Expanded(
               child: _buildActionButton(
                 icon: Icons.feedback,
-                label: 'Feedback',
+                label: 'Phản hồi',
                 onTap: () => _onFeedback(context),
                 isDark: isDark,
               ),
@@ -1140,21 +1140,21 @@ class _PredictionScreenState extends State<PredictionScreen> {
           children: [
             ListTile(
               leading: const Icon(Icons.share),
-              title: const Text('Share result'),
+              title: const Text('Chia sẻ kết quả'),
               onTap: () {
                 Navigator.pop(context);
               },
             ),
             ListTile(
               leading: const Icon(Icons.download),
-              title: const Text('Download report'),
+              title: const Text('Tải báo cáo'),
               onTap: () {
                 Navigator.pop(context);
               },
             ),
             ListTile(
               leading: const Icon(Icons.help_outline),
-              title: const Text('Help'),
+              title: const Text('Hỗ trợ'),
               onTap: () {
                 Navigator.pop(context);
               },
@@ -1298,7 +1298,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
                           const SizedBox(height: 24),
 
                           Text(
-                            'Description',
+                            'Mô tả',
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
@@ -1405,7 +1405,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
                               // TODO: Implement add to cart logic
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
-                                  content: Text('Added to cart'),
+                                  content: Text('Đã thêm vào giỏ hàng'),
                                   behavior: SnackBarBehavior.floating,
                                 ),
                               );
@@ -1494,7 +1494,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
                                 elevation: 0,
                               ),
                               child: const Text(
-                                'Buy',
+                                'Mua ngay',
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 16,
@@ -1517,7 +1517,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
   void _onSave(BuildContext context) {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('Diagnosis result saved'),
+        content: Text('Kết quả chẩn đoán đã được lưu'),
         behavior: SnackBarBehavior.floating,
       ),
     );

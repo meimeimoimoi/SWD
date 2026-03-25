@@ -77,7 +77,7 @@ class _TreeDetailScreenState extends State<TreeDetailScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Plant details',
+          'Chi tiết cây trồng',
           style: GoogleFonts.spaceGrotesk(fontWeight: FontWeight.w700),
         ),
       ),
@@ -145,11 +145,11 @@ class _TreeDetailScreenState extends State<TreeDetailScreen> {
               ),
             ],
             const SizedBox(height: 24),
-            _sectionTitle(context, 'Disease & treatment'),
+            _sectionTitle(context, 'Bệnh trạng & Điều trị'),
             const SizedBox(height: 10),
             if (_illnessRows.isEmpty)
               Text(
-                'No disease recorded from scans yet.',
+                'Chưa ghi nhận bệnh trạng nào từ các lần quét.',
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
                 ),
@@ -175,14 +175,14 @@ class _TreeDetailScreenState extends State<TreeDetailScreen> {
                     },
                   )),
             const SizedBox(height: 28),
-            _sectionTitle(context, 'Monitoring history'),
+            _sectionTitle(context, 'Lịch sử theo dõi'),
             const SizedBox(height: 10),
             ...s.predictions.map((p) => _TimelineTile(item: p)),
             const SizedBox(height: 28),
-            _sectionTitle(context, 'Recovery suggestions'),
+            _sectionTitle(context, 'Gợi ý phục hồi'),
             const SizedBox(height: 8),
             Text(
-              'Suggestions from the ${AppBrand.name} treatment library (when a disease code is linked).',
+              'Gợi ý từ thư viện điều trị của ${AppBrand.name} (khi có mã bệnh trạng liên kết).',
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
               ),
@@ -198,8 +198,8 @@ class _TreeDetailScreenState extends State<TreeDetailScreen> {
             else if (_allHealingSteps.isEmpty)
               Text(
                 s.illnessIds.isEmpty
-                    ? 'Disease code not linked — record it in the system for detailed steps.'
-                    : 'No treatment options in the database for this disease (these diseases).',
+                    ? 'Chưa liên kết mã bệnh — hãy ghi nhận vào hệ thống để xem các bước chi tiết.'
+                    : 'Không có phương pháp điều trị nào trong cơ sở dữ liệu cho (các) bệnh này.',
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
                 ),
@@ -213,7 +213,7 @@ class _TreeDetailScreenState extends State<TreeDetailScreen> {
               onPressed: () =>
                   Navigator.pushNamed(context, AppRouter.history),
               icon: const Icon(Icons.history),
-              label: const Text('View full scan history'),
+              label: const Text('Xem toàn bộ lịch sử quét'),
             ),
           ],
         ),
@@ -254,7 +254,7 @@ class _IllnessSolutionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final name = item.diseaseName.trim().isEmpty
-        ? 'Unknown'
+        ? 'Không xác định'
         : item.diseaseName;
     final sci = item.scientificName?.trim().isNotEmpty == true
         ? item.scientificName!
@@ -304,7 +304,7 @@ class _IllnessSolutionCard extends StatelessWidget {
             if (item.symptoms != null && item.symptoms!.trim().isNotEmpty) ...[
               const SizedBox(height: 8),
               Text(
-                'Symptoms',
+                'Triệu chứng',
                 style: theme.textTheme.labelLarge?.copyWith(
                   fontWeight: FontWeight.w700,
                 ),
@@ -319,7 +319,7 @@ class _IllnessSolutionCard extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.only(top: 8),
                 child: Text(
-                  'Status: no serious disease detected.',
+                  'Trạng thái: không phát hiện bệnh nghiêm trọng.',
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: Colors.green.shade800,
                     fontWeight: FontWeight.w600,
@@ -329,7 +329,7 @@ class _IllnessSolutionCard extends StatelessWidget {
             if (!healthy) ...[
               const SizedBox(height: 10),
               Text(
-                'Suggested actions',
+                'Hành động gợi ý',
                 style: theme.textTheme.labelLarge?.copyWith(
                   fontWeight: FontWeight.w700,
                 ),
@@ -340,8 +340,8 @@ class _IllnessSolutionCard extends StatelessWidget {
               else if (recommendations.isEmpty)
                 Text(
                   item.illnessId == null
-                      ? 'No illness code — automatic treatments unavailable.'
-                      : 'No treatment for this illness code.',
+                      ? 'Không có mã bệnh — không thể cung cấp phương pháp điều trị tự động.'
+                      : 'Không có phương pháp điều trị cho mã bệnh này.',
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: theme.colorScheme.onSurfaceVariant,
                   ),
@@ -360,7 +360,7 @@ class _IllnessSolutionCard extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                r.solutionName ?? 'Solution #${r.solutionId}',
+                                r.solutionName ?? 'Giải pháp #${r.solutionId}',
                                 style: theme.textTheme.bodyMedium?.copyWith(
                                   fontWeight: FontWeight.w700,
                                 ),
@@ -376,7 +376,7 @@ class _IllnessSolutionCard extends StatelessWidget {
                                 ),
                               if (r.treeStageName != null)
                                 Text(
-                                  'Plant stage: ${r.treeStageName}',
+                                  'Giai đoạn cây: ${r.treeStageName}',
                                   style: theme.textTheme.labelSmall?.copyWith(
                                     color: theme.colorScheme.outline,
                                   ),
@@ -405,7 +405,7 @@ class _TimelineTile extends StatelessWidget {
   static String _treeLabel(HistoryItem item) {
     final n = item.treeName?.trim();
     if (n != null && n.isNotEmpty) return n;
-    if (item.treeId != null) return 'Plant #${item.treeId}';
+    if (item.treeId != null) return 'Cây #${item.treeId}';
     return '';
   }
 
@@ -423,7 +423,7 @@ class _TimelineTile extends StatelessWidget {
         '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year} ${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}';
 
     final diseaseLabel = DiseaseMapper.toDisplayName(
-      item.diseaseName.trim().isEmpty ? 'Unknown' : item.diseaseName,
+      item.diseaseName.trim().isEmpty ? 'Không xác định' : item.diseaseName,
     );
     final treeLine = _treeLabel(item);
 
@@ -462,7 +462,7 @@ class _TimelineTile extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.only(top: 2),
                   child: Text(
-                    treeLine.isNotEmpty ? treeLine : 'No plant linked',
+                    treeLine.isNotEmpty ? treeLine : 'Chưa liên kết cây',
                     style: theme.textTheme.labelSmall?.copyWith(
                       color: treeLine.isNotEmpty
                           ? AppColors.primary
@@ -485,7 +485,7 @@ class _TimelineTile extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  'Confidence: ${(item.confidence * 100).toStringAsFixed(1)}%',
+                  'Độ tin cậy: ${(item.confidence * 100).toStringAsFixed(1)}%',
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: bodyColor,
                     fontWeight: FontWeight.w500,
@@ -538,7 +538,7 @@ class _HealingStepCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  item.solutionName ?? 'Treatment step',
+                  item.solutionName ?? 'Bước điều trị',
                   style: theme.textTheme.titleSmall?.copyWith(
                     fontWeight: FontWeight.w800,
                   ),

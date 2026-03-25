@@ -77,13 +77,13 @@ class _AdminServerManagementScreenState
       child: Scaffold(
         appBar: AppBar(
           title: Text(
-            'Server',
+            'Máy chủ',
             style: theme.textTheme.titleLarge?.copyWith(color: textPrimary),
           ),
           actions: [
             ...adminSecondaryAppBarActions(context),
             IconButton(
-              tooltip: 'Refresh',
+              tooltip: 'Làm mới',
               onPressed: _load,
               icon: const Icon(Icons.refresh),
             ),
@@ -98,7 +98,7 @@ class _AdminServerManagementScreenState
                     padding: const EdgeInsets.fromLTRB(16, 12, 16, 88),
                     children: [
                       Text(
-                        'Host overview',
+                        'Tổng quan máy chủ',
                         style: theme.textTheme.titleMedium?.copyWith(
                           color: textPrimary,
                           fontWeight: FontWeight.w700,
@@ -106,7 +106,7 @@ class _AdminServerManagementScreenState
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Live metrics from the API process and machine (admin only).',
+                        'Các thông số trực tiếp từ tiến trình API và thiết bị (chỉ dành cho quản trị viên).',
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: textSecondary,
                         ),
@@ -120,7 +120,7 @@ class _AdminServerManagementScreenState
                       ),
                       const SizedBox(height: 20),
                       Text(
-                        'Services',
+                        'Dịch vụ',
                         style: theme.textTheme.titleMedium?.copyWith(
                           color: textPrimary,
                           fontWeight: FontWeight.w700,
@@ -136,7 +136,7 @@ class _AdminServerManagementScreenState
                       const SizedBox(height: 20),
                       if (_detail != null) ...[
                         Text(
-                          'Runtime detail',
+                          'Chi tiết thực thi',
                           style: theme.textTheme.titleMedium?.copyWith(
                             color: textPrimary,
                             fontWeight: FontWeight.w700,
@@ -181,7 +181,7 @@ class _OverviewCard extends StatelessWidget {
       return AppCard(
         padding: const EdgeInsets.all(16),
         child: Text(
-          'No metrics available',
+          'Không có thông số',
           style: theme.textTheme.bodyMedium?.copyWith(color: textSecondary),
         ),
       );
@@ -211,7 +211,7 @@ class _OverviewCard extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      '${s.environmentName} · ${s.processorCount} logical CPUs · .NET ${s.dotNetVersion}',
+                      '${s.environmentName} · ${s.processorCount} CPU logic · .NET ${s.dotNetVersion}',
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: textSecondary,
                       ),
@@ -224,7 +224,7 @@ class _OverviewCard extends StatelessWidget {
           const SizedBox(height: 16),
           _metricRow(
             theme,
-            'Uptime',
+            'Thời gian hoạt động',
             _formatUptime(s.processUptimeSeconds),
             textPrimary,
             textSecondary,
@@ -233,17 +233,17 @@ class _OverviewCard extends StatelessWidget {
           if (memPct != null) ...[
             _labeledProgress(
               theme,
-              label: 'Machine memory in use',
+              label: 'Bộ nhớ thiết bị đang sử dụng',
               value: (memPct / 100).clamp(0.0, 1.0),
               caption:
-                  '${memPct.toStringAsFixed(1)}% · ${_fmtMb(s.machineTotalMemoryMb)} total · ${_fmtMb(s.machineAvailableMemoryMb)} avail.',
+                  '${memPct.toStringAsFixed(1)}% · ${_fmtMb(s.machineTotalMemoryMb)} tổng · ${_fmtMb(s.machineAvailableMemoryMb)} trống.',
               textPrimary: textPrimary,
               textSecondary: textSecondary,
             ),
             const SizedBox(height: 12),
           ] else ...[
             Text(
-              'Machine memory: not available on this host',
+              'Bộ nhớ thiết bị: không khả dụng trên máy chủ này',
               style: theme.textTheme.bodySmall?.copyWith(color: textSecondary),
             ),
             const SizedBox(height: 12),
@@ -251,19 +251,19 @@ class _OverviewCard extends StatelessWidget {
           if (s.machineTotalMemoryMb != null && s.machineTotalMemoryMb! > 0)
             _labeledProgress(
               theme,
-              label: 'API process working set',
+              label: 'Bộ nhớ tiến trình API (Working set)',
               value: _processRamFraction(s),
               caption:
-                  '${s.processWorkingSetMb.toStringAsFixed(1)} MB working set · ${s.processPrivateMemoryMb.toStringAsFixed(1)} MB private',
+                  '${s.processWorkingSetMb.toStringAsFixed(1)} MB working set · ${s.processPrivateMemoryMb.toStringAsFixed(1)} MB riêng tư',
               textPrimary: textPrimary,
               textSecondary: textSecondary,
             )
           else
             _metricRow(
               theme,
-              'Process RAM',
+              'RAM tiến trình',
               '${s.processWorkingSetMb.toStringAsFixed(1)} MB working set · '
-                  '${s.processPrivateMemoryMb.toStringAsFixed(1)} MB private',
+                  '${s.processPrivateMemoryMb.toStringAsFixed(1)} MB riêng tư',
               textPrimary,
               textSecondary,
             ),
@@ -271,9 +271,9 @@ class _OverviewCard extends StatelessWidget {
             const SizedBox(height: 12),
             _labeledProgress(
               theme,
-              label: 'API process CPU (sampled)',
+              label: 'CPU tiến trình API (mẫu)',
               value: (cpu / 100).clamp(0.0, 1.0),
-              caption: '${cpu.toStringAsFixed(1)}% over ~120 ms window',
+              caption: '${cpu.toStringAsFixed(1)}% trong khoảng ~120 ms',
               textPrimary: textPrimary,
               textSecondary: textSecondary,
             ),
@@ -394,7 +394,7 @@ class _DetailCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Process & GC',
+            'Tiến trình & Dọn rác (GC)',
             style: theme.textTheme.titleSmall?.copyWith(
               color: textPrimary,
               fontWeight: FontWeight.w700,
@@ -402,14 +402,14 @@ class _DetailCard extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           _kv(theme, 'PID', '${detail.processId}', textPrimary, textSecondary),
-          _kv(theme, 'Threads', '${detail.threadCount}', textPrimary,
+          _kv(theme, 'Luồng', '${detail.threadCount}', textPrimary,
               textSecondary),
-          _kv(theme, 'Handles', '${detail.handleCount}', textPrimary,
+          _kv(theme, 'Tay cầm (Handles)', '${detail.handleCount}', textPrimary,
               textSecondary),
           if (detail.processStartTimeUtc != null)
             _kv(
               theme,
-              'Started (UTC)',
+              'Bắt đầu (UTC)',
               detail.processStartTimeUtc!.toIso8601String(),
               textPrimary,
               textSecondary,
@@ -422,16 +422,16 @@ class _DetailCard extends StatelessWidget {
           const SizedBox(height: 12),
           Text(
             'GC heap ${bytesToMb(detail.gcHeapSizeBytes)} MB · '
-            'total tracked ${bytesToMb(detail.gcTotalMemoryBytes)} MB',
+            'tổng theo dõi ${bytesToMb(detail.gcTotalMemoryBytes)} MB',
             style: theme.textTheme.bodySmall?.copyWith(color: textPrimary),
           ),
           Text(
-            'High load threshold ${bytesToMb(detail.gcHighMemoryLoadThresholdBytes)} MB',
+            'Ngưỡng tải cao ${bytesToMb(detail.gcHighMemoryLoadThresholdBytes)} MB',
             style: theme.textTheme.bodySmall?.copyWith(color: textSecondary),
           ),
           const SizedBox(height: 6),
           Text(
-            'Collections  gen0 ${detail.gcGen0Collections} · '
+            'Lượt thu gom  gen0 ${detail.gcGen0Collections} · '
             'gen1 ${detail.gcGen1Collections} · gen2 ${detail.gcGen2Collections}',
             style: theme.textTheme.bodySmall?.copyWith(color: textSecondary),
           ),

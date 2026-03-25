@@ -109,7 +109,7 @@ class _AdminTreatmentAddScreenState extends State<AdminTreatmentAddScreen> {
     if (_selectedIllnessIds.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Select at least one disease.'),
+          content: Text('Chọn ít nhất một loại bệnh.'),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -118,7 +118,7 @@ class _AdminTreatmentAddScreenState extends State<AdminTreatmentAddScreen> {
     if (_treeStageId == null || _treeStageId! <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Choose a tree stage.'),
+          content: Text('Chọn giai đoạn cây.'),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -133,7 +133,7 @@ class _AdminTreatmentAddScreenState extends State<AdminTreatmentAddScreen> {
       if (minConf == null || minConf < 0 || minConf > 1) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Min confidence must be between 0 and 1.'),
+            content: Text('Độ tin cậy tối thiểu phải từ 0 đến 1.'),
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -146,7 +146,7 @@ class _AdminTreatmentAddScreenState extends State<AdminTreatmentAddScreen> {
       if (priority == null || priority < 1) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Priority must be a positive integer.'),
+            content: Text('Độ ưu tiên phải là số nguyên dương.'),
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -190,8 +190,8 @@ class _AdminTreatmentAddScreenState extends State<AdminTreatmentAddScreen> {
         SnackBar(
           content: Text(
             ok == 1
-                ? 'Solution added.'
-                : 'Added $ok solutions (one per disease).',
+                ? 'Đã thêm giải pháp.'
+                : 'Đã thêm $ok giải pháp (mỗi giải pháp cho một loại bệnh).',
           ),
           backgroundColor: theme.colorScheme.primary,
           behavior: SnackBarBehavior.floating,
@@ -203,8 +203,8 @@ class _AdminTreatmentAddScreenState extends State<AdminTreatmentAddScreen> {
         SnackBar(
           content: Text(
             failed.isEmpty
-                ? 'Some requests failed.'
-                : 'Created $ok of ${_selectedIllnessIds.length}. Failed: ${failed.take(3).join(', ')}${failed.length > 3 ? '…' : ''}',
+                ? 'Một số yêu cầu thất bại.'
+                : 'Đã tạo $ok trên ${_selectedIllnessIds.length}. Thất bại: ${failed.take(3).join(', ')}${failed.length > 3 ? '…' : ''}',
           ),
           backgroundColor: theme.colorScheme.error,
           behavior: SnackBarBehavior.floating,
@@ -230,12 +230,12 @@ class _AdminTreatmentAddScreenState extends State<AdminTreatmentAddScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Add solution',
+          'Thêm giải pháp',
           style: theme.textTheme.titleLarge?.copyWith(color: textPrimary),
         ),
         actions: [
           IconButton(
-            tooltip: 'Reload lists',
+            tooltip: 'Tải lại danh sách',
             onPressed: _loadingMeta ? null : _loadMeta,
             icon: const Icon(Icons.refresh),
           ),
@@ -253,17 +253,17 @@ class _AdminTreatmentAddScreenState extends State<AdminTreatmentAddScreen> {
                           padding: const EdgeInsets.only(bottom: 12),
                           child: Text(
                             _illnesses.isEmpty && _stages.isEmpty
-                                ? 'Disease and tree-stage lists are empty. Add data or pull to refresh from the Diseases tab, then reopen this screen.'
+                                ? 'Danh sách bệnh và giai đoạn cây đang trống. Thêm dữ liệu hoặc làm mới từ tab Bệnh hại, sau đó mở lại màn hình này.'
                                 : _illnesses.isEmpty
-                                    ? 'No diseases in the list yet. Add diseases first, then try again.'
-                                    : 'No tree stages available. Define stages before linking solutions.',
+                                    ? 'Chưa có bệnh nào trong danh sách. Hãy thêm bệnh trước rồi thử lại.'
+                                    : 'Không có giai đoạn cây nào khả dụng. Hãy định nghĩa giai đoạn trước khi liên kết giải pháp.',
                             style: theme.textTheme.bodySmall?.copyWith(
                               color: textSecondary,
                             ),
                           ),
                         ),
                       Text(
-                        '1 · Select diseases',
+                        '1 · Chọn bệnh hại',
                         style: theme.textTheme.titleMedium?.copyWith(
                           color: textPrimary,
                           fontWeight: FontWeight.w700,
@@ -271,7 +271,7 @@ class _AdminTreatmentAddScreenState extends State<AdminTreatmentAddScreen> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'The same solution will be registered once per selected disease.',
+                        'Giải pháp giống nhau sẽ được đăng ký cho mỗi loại bệnh được chọn.',
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: textSecondary,
                         ),
@@ -288,16 +288,16 @@ class _AdminTreatmentAddScreenState extends State<AdminTreatmentAddScreen> {
                                 }
                               });
                             },
-                            child: const Text('Select all'),
+                            child: const Text('Chọn tất cả'),
                           ),
                           TextButton(
                             onPressed: () =>
                                 setState(_selectedIllnessIds.clear),
-                            child: const Text('Clear'),
+                            child: const Text('Xóa chọn'),
                           ),
                           const Spacer(),
                           Text(
-                            '${_selectedIllnessIds.length} selected',
+                            'Đã chọn ${_selectedIllnessIds.length}',
                             style: theme.textTheme.labelMedium?.copyWith(
                               color: AppColors.primary,
                               fontWeight: FontWeight.w600,
@@ -308,7 +308,7 @@ class _AdminTreatmentAddScreenState extends State<AdminTreatmentAddScreen> {
                       TextField(
                         controller: _diseaseSearch,
                         decoration: InputDecoration(
-                          hintText: 'Filter diseases…',
+                          hintText: 'Lọc bệnh hại…',
                           prefixIcon: const Icon(Icons.filter_list),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -364,7 +364,7 @@ class _AdminTreatmentAddScreenState extends State<AdminTreatmentAddScreen> {
                       ),
                       const SizedBox(height: 24),
                       Text(
-                        '2 · Solution details',
+                        '2 · Chi tiết giải pháp',
                         style: theme.textTheme.titleMedium?.copyWith(
                           color: textPrimary,
                           fontWeight: FontWeight.w700,
@@ -372,7 +372,7 @@ class _AdminTreatmentAddScreenState extends State<AdminTreatmentAddScreen> {
                       ),
                       const SizedBox(height: 12),
                       Text(
-                        'Tree stage',
+                        'Giai đoạn cây',
                         style: theme.textTheme.labelLarge?.copyWith(
                           color: textPrimary,
                         ),
@@ -389,7 +389,7 @@ class _AdminTreatmentAddScreenState extends State<AdminTreatmentAddScreen> {
                             vertical: 8,
                           ),
                         ),
-                        hint: const Text('Choose stage'),
+                        hint: const Text('Chọn giai đoạn'),
                         items: _stages
                             .map(
                               (s) => DropdownMenuItem<int>(
@@ -404,7 +404,7 @@ class _AdminTreatmentAddScreenState extends State<AdminTreatmentAddScreen> {
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        'Solution type',
+                        'Loại giải pháp',
                         style: theme.textTheme.labelLarge?.copyWith(
                           color: textPrimary,
                         ),
@@ -414,12 +414,12 @@ class _AdminTreatmentAddScreenState extends State<AdminTreatmentAddScreen> {
                         segments: const [
                           ButtonSegment(
                             value: 'treatment',
-                            label: Text('Treatment'),
+                            label: Text('Điều trị'),
                             icon: Icon(Icons.healing_outlined, size: 18),
                           ),
                           ButtonSegment(
                             value: 'medicine',
-                            label: Text('Medicine'),
+                            label: Text('Thuốc'),
                             icon: Icon(Icons.medication_outlined, size: 18),
                           ),
                         ],
@@ -430,19 +430,19 @@ class _AdminTreatmentAddScreenState extends State<AdminTreatmentAddScreen> {
                       ),
                       const SizedBox(height: 16),
                       AppInput(
-                        label: 'Solution name',
-                        hint: 'e.g. Foliar fungicide rotation',
+                        label: 'Tên giải pháp',
+                        hint: 'VD: Phun thuốc diệt nấm định kỳ',
                         controller: _nameController,
                         validator: (v) {
                           if (v == null || v.trim().isEmpty) {
-                            return 'Name is required';
+                            return 'Tên là bắt buộc';
                           }
                           return null;
                         },
                       ),
                       const SizedBox(height: 12),
                       Text(
-                        'Description (optional)',
+                        'Mô tả (tùy chọn)',
                         style: theme.textTheme.titleMedium,
                       ),
                       const SizedBox(height: 8),
@@ -451,13 +451,13 @@ class _AdminTreatmentAddScreenState extends State<AdminTreatmentAddScreen> {
                         minLines: 2,
                         maxLines: 5,
                         decoration: const InputDecoration(
-                          hintText: 'Application notes, timing, safety…',
+                          hintText: 'Ghi chú sử dụng, thời điểm, an toàn…',
                           border: OutlineInputBorder(),
                         ),
                       ),
                       const SizedBox(height: 12),
                       AppInput(
-                        label: 'Min confidence (0–1, optional)',
+                        label: 'Độ tin cậy tối thiểu (0–1, tùy chọn)',
                         hint: '0.5',
                         controller: _minConfController,
                         keyboardType: const TextInputType.numberWithOptions(
@@ -466,7 +466,7 @@ class _AdminTreatmentAddScreenState extends State<AdminTreatmentAddScreen> {
                       ),
                       const SizedBox(height: 12),
                       AppInput(
-                        label: 'Priority (optional)',
+                        label: 'Độ ưu tiên (tùy chọn)',
                         hint: '1',
                         controller: _priorityController,
                         keyboardType: TextInputType.number,
@@ -474,10 +474,10 @@ class _AdminTreatmentAddScreenState extends State<AdminTreatmentAddScreen> {
                       const SizedBox(height: 24),
                       AppButton(
                         label: _submitting
-                            ? 'Saving…'
+                            ? 'Đang lưu…'
                             : _selectedIllnessIds.isEmpty
-                                ? 'Select diseases first'
-                                : 'Create for ${_selectedIllnessIds.length} disease(s)',
+                                ? 'Hãy chọn bệnh hại trước'
+                                : 'Tạo cho ${_selectedIllnessIds.length} loại bệnh',
                         onPressed: _submitting
                             ? null
                             : () {
@@ -485,7 +485,7 @@ class _AdminTreatmentAddScreenState extends State<AdminTreatmentAddScreen> {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
                                       content: Text(
-                                        'Choose at least one disease above.',
+                                        'Chọn ít nhất một loại bệnh ở trên.',
                                       ),
                                       behavior: SnackBarBehavior.floating,
                                     ),

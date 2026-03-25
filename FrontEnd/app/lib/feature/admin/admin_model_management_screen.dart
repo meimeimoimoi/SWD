@@ -91,7 +91,7 @@ class _AdminModelManagementScreenState
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(ok ? 'Model activated' : 'Activation failed'),
+        content: Text(ok ? 'Đã kích hoạt mô hình' : 'Kích hoạt thất bại'),
         backgroundColor: ok ? AppColors.brandAccent : Colors.red,
         behavior: SnackBarBehavior.floating,
       ),
@@ -125,7 +125,7 @@ class _AdminModelManagementScreenState
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text(
-          'To switch the running model, activate another version from the list.',
+          'Để thay đổi mô hình đang chạy, hãy kích hoạt một phiên bản khác từ danh sách.',
         ),
         behavior: SnackBarBehavior.floating,
       ),
@@ -221,7 +221,7 @@ class _AdminModelManagementScreenState
                                   ),
                                   const SizedBox(width: 8),
                                   Text(
-                                    'Model list',
+                                    'Danh sách mô hình',
                                     style: GoogleFonts.spaceGrotesk(
                                       fontSize: 17,
                                       fontWeight: FontWeight.w700,
@@ -240,7 +240,7 @@ class _AdminModelManagementScreenState
                                   borderRadius: BorderRadius.circular(20),
                                 ),
                                 child: Text(
-                                  '$_runningCount Running',
+                                  '$_runningCount Đang hoạt động',
                                   style: GoogleFonts.spaceGrotesk(
                                     fontSize: 11,
                                     fontWeight: FontWeight.w600,
@@ -258,8 +258,8 @@ class _AdminModelManagementScreenState
                           sliver: SliverToBoxAdapter(
                             child: Text(
                               _models.isEmpty && _accuracy.isEmpty
-                                  ? 'No models yet.'
-                                  : 'No search results.',
+                                  ? 'Chưa có mô hình nào.'
+                                  : 'Không tìm thấy kết quả.',
                               textAlign: TextAlign.center,
                               style: TextStyle(color: textMuted),
                             ),
@@ -297,7 +297,7 @@ class _AdminModelManagementScreenState
                                   child: _GuideModelCard(
                                     name: name.isEmpty ? 'Model #$id' : name,
                                     versionLine:
-                                        'Version: ${ver.isEmpty ? '—' : ver} • ONNX Runtime'
+                                        'Phiên bản: ${ver.isEmpty ? '—' : ver} • ONNX Runtime'
                                         '${desc.isNotEmpty ? ' • $desc' : ''}',
                                     accuracyPct: _pct(conf),
                                     latencyLabel: '—',
@@ -366,13 +366,13 @@ class _ModelsAppBar extends StatelessWidget {
           IconButton(
             onPressed: () => Navigator.of(context).pop(),
             icon: Icon(Icons.arrow_back_rounded, color: textMuted),
-            tooltip: 'Back',
+            tooltip: 'Quay lại',
           )
         else
           const SizedBox(width: 8),
         Expanded(
           child: Text(
-            'Manage models',
+            'Quản lý mô hình',
             style: GoogleFonts.spaceGrotesk(
               fontSize: 20,
               fontWeight: FontWeight.w700,
@@ -385,14 +385,14 @@ class _ModelsAppBar extends StatelessWidget {
           icon: Icon(Icons.more_vert_rounded, color: textMuted),
           onSelected: onMenuSelected,
           itemBuilder: (ctx) => [
-            const PopupMenuItem(value: 'refresh', child: Text('Refresh')),
+            const PopupMenuItem(value: 'refresh', child: Text('Làm mới')),
             const PopupMenuItem(
               value: 'feedback',
-              child: Text('Feedback'),
+              child: Text('Phản hồi'),
             ),
             const PopupMenuItem(
               value: 'settings',
-              child: Text('Settings'),
+              child: Text('Cài đặt'),
             ),
           ],
         ),
@@ -419,7 +419,7 @@ class _SearchField extends StatelessWidget {
         color: isDark ? AppColors.textPrimaryDark : const Color(0xFF0F172A),
       ),
       decoration: InputDecoration(
-        hintText: 'Search models…',
+        hintText: 'Tìm kiếm mô hình…',
         hintStyle: GoogleFonts.spaceGrotesk(
           fontSize: 14,
           color: isDark ? Colors.white38 : Colors.grey.shade500,
@@ -473,7 +473,7 @@ class _UploadBannerButton extends StatelessWidget {
               const Icon(Icons.upload_file_rounded, color: AppColors.onPrimary),
               const SizedBox(width: 10),
               Text(
-                'Upload new model (.onnx)',
+                'Tải lên mô hình mới (.onnx)',
                 style: GoogleFonts.spaceGrotesk(
                   color: AppColors.onPrimary,
                   fontWeight: FontWeight.w700,
@@ -588,7 +588,7 @@ class _GuideModelCard extends StatelessWidget {
                 children: [
                   Expanded(
                     child: _MetricBox(
-                      label: 'ACCURACY',
+                      label: 'ĐỘ CHÍNH XÁC',
                       value: accuracyPct,
                       background: isActive ? metricBgActive : metricBgIdle,
                       valueColor: valueColor,
@@ -599,7 +599,7 @@ class _GuideModelCard extends StatelessWidget {
                   const SizedBox(width: 12),
                   Expanded(
                     child: _MetricBox(
-                      label: 'LATENCY',
+                      label: 'ĐỘ TRỄ',
                       value: latencyLabel,
                       background: isActive ? metricBgActive : metricBgIdle,
                       valueColor: valueColor,
@@ -627,7 +627,7 @@ class _GuideModelCard extends StatelessWidget {
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        isActive ? 'Active' : 'Paused',
+                        isActive ? 'Đang hoạt động' : 'Tạm dừng',
                         style: GoogleFonts.spaceGrotesk(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
@@ -647,7 +647,7 @@ class _GuideModelCard extends StatelessWidget {
                     icon: const Icon(Icons.chevron_right_rounded, size: 18),
                     iconAlignment: IconAlignment.end,
                     label: Text(
-                      'Details',
+                      'Chi tiết',
                       style: GoogleFonts.spaceGrotesk(
                         fontWeight: FontWeight.w700,
                         fontSize: 13,

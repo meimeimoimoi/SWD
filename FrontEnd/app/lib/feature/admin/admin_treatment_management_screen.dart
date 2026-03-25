@@ -102,18 +102,18 @@ class _AdminTreatmentManagementScreenState
       child: Scaffold(
         appBar: AppBar(
           title: Text(
-            'Treatments',
+            'Giải pháp điều trị',
             style: theme.textTheme.titleLarge?.copyWith(color: textPrimary),
           ),
           actions: [
             IconButton(
-              tooltip: 'Add solution',
+              tooltip: 'Thêm giải pháp',
               onPressed: _openAddSolution,
               icon: const Icon(Icons.add),
             ),
             ...adminSecondaryAppBarActions(context),
             IconButton(
-              tooltip: 'Refresh',
+              tooltip: 'Làm mới',
               onPressed: _load,
               icon: const Icon(Icons.refresh),
             ),
@@ -130,7 +130,7 @@ class _AdminTreatmentManagementScreenState
                       child: TextField(
                         controller: _search,
                         decoration: InputDecoration(
-                          hintText: 'Search solutions, diseases…',
+                          hintText: 'Tìm kiếm giải pháp, bệnh hại…',
                           prefixIcon: const Icon(Icons.search),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -156,8 +156,8 @@ class _AdminTreatmentManagementScreenState
                                   const SizedBox(height: 16),
                                   Text(
                                     _rows.isEmpty
-                                        ? 'No treatment solutions yet.\nAdd one and link it to diseases.'
-                                        : 'No matches for your search.',
+                                        ? 'Chưa có giải pháp điều trị nào.\nHãy thêm mới và liên kết với bệnh hại.'
+                                        : 'Không tìm thấy kết quả phù hợp.',
                                     textAlign: TextAlign.center,
                                     style: theme.textTheme.bodyMedium?.copyWith(
                                       color: textSecondary,
@@ -232,7 +232,7 @@ class _AdminTreatmentManagementScreenState
                                                     ),
                                                     const SizedBox(height: 4),
                                                     Text(
-                                                      'Disease: $ill',
+                                                      'Bệnh: $ill',
                                                       style: theme
                                                           .textTheme.bodySmall
                                                           ?.copyWith(
@@ -240,7 +240,7 @@ class _AdminTreatmentManagementScreenState
                                                       ),
                                                     ),
                                                     Text(
-                                                      'Tree stage: $stage · ID $id',
+                                                      'Giai đoạn cây: $stage · ID $id',
                                                       style: theme
                                                           .textTheme.bodySmall
                                                           ?.copyWith(
@@ -295,7 +295,7 @@ class _AdminTreatmentManagementScreenState
             heroTag: 'admin_treatment_add_fab',
             onPressed: _openAddSolution,
             icon: const Icon(Icons.add),
-            label: const Text('Add solution'),
+            label: const Text('Thêm giải pháp'),
           ),
         ),
         bottomNavigationBar:
@@ -411,7 +411,7 @@ class _EditSheetState extends State<_EditSheet> {
                 children: [
                   Expanded(
                     child: Text(
-                      'Edit Solution #$id',
+                      'Chỉnh sửa giải pháp #$id',
                       style: theme.textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -425,16 +425,16 @@ class _EditSheetState extends State<_EditSheet> {
                             final confirm = await showDialog<bool>(
                               context: context,
                               builder: (d) => AlertDialog(
-                                title: const Text('Delete Solution?'),
+                                title: const Text('Xóa giải pháp?'),
                                 content: const Text(
-                                    'This will remove this specific solution mapping. Continue?'),
+                                    'Thao tác này sẽ xóa liên kết giải pháp cụ thể này. Tiếp tục?'),
                                 actions: [
                                   TextButton(
                                       onPressed: () => Navigator.pop(d, false),
-                                      child: const Text('Cancel')),
+                                      child: const Text('Hủy')),
                                   TextButton(
                                       onPressed: () => Navigator.pop(d, true),
-                                      child: const Text('Delete',
+                                      child: const Text('Xóa',
                                           style:
                                               TextStyle(color: Colors.red))),
                                 ],
@@ -453,7 +453,7 @@ class _EditSheetState extends State<_EditSheet> {
                                 if (mounted) {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
-                                        content: Text('Delete failed')),
+                                        content: Text('Xóa thất bại')),
                                   );
                                 }
                               }
@@ -464,7 +464,7 @@ class _EditSheetState extends State<_EditSheet> {
               ),
               const SizedBox(height: 16),
               Text(
-                'Type',
+                'Loại',
                 style: theme.textTheme.labelLarge,
               ),
               const SizedBox(height: 8),
@@ -472,12 +472,12 @@ class _EditSheetState extends State<_EditSheet> {
                 segments: const [
                   ButtonSegment(
                     value: 'treatment',
-                    label: Text('Treatment'),
+                    label: Text('Điều trị'),
                     icon: Icon(Icons.healing_outlined, size: 18),
                   ),
                   ButtonSegment(
                     value: 'medicine',
-                    label: Text('Medicine'),
+                    label: Text('Thuốc'),
                     icon: Icon(Icons.medication_outlined, size: 18),
                   ),
                 ],
@@ -487,14 +487,14 @@ class _EditSheetState extends State<_EditSheet> {
               ),
               const SizedBox(height: 16),
               AppInput(
-                label: 'Solution name',
+                label: 'Tên giải pháp',
                 controller: _nameCtrl,
                 validator: (v) =>
-                    v == null || v.trim().isEmpty ? 'Required' : null,
+                    v == null || v.trim().isEmpty ? 'Bắt buộc' : null,
               ),
               const SizedBox(height: 16),
               AppInput(
-                label: 'Description',
+                label: 'Mô tả',
                 controller: _descCtrl,
                 minLines: 2,
                 maxLines: 4,
@@ -523,7 +523,7 @@ class _EditSheetState extends State<_EditSheet> {
                                 setState(() => _updating = false);
                                 if (mounted) {
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text('Update failed')),
+                                    const SnackBar(content: Text('Cập nhật thất bại')),
                                   );
                                 }
                               }
