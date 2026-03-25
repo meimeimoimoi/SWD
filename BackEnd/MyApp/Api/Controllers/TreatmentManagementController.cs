@@ -22,6 +22,7 @@ namespace MyApp.Api.Controllers
         }
 
         [HttpGet]
+        [AllowAnonymous]
         public async Task<IActionResult> GetAllTreatments()
         {
             try
@@ -37,6 +38,7 @@ namespace MyApp.Api.Controllers
         }
 
         [HttpGet("{id}/images")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetImages(int id)
         {
             try
@@ -114,6 +116,12 @@ namespace MyApp.Api.Controllers
                     return BadRequest(new { success = false, message = "Invalid input.",
                         errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage) });
 
+                // Xử lý nhận nhiều ảnh từ multipart/form-data
+                var files = Request.Form.Files;
+                if (files != null && files.Count > 0)
+                {
+                    dto.Images = files.ToList();
+                }
                 var result = await _technicianService.CreateTreatmentAsync(dto);
                 return StatusCode(201, new { success = true, message = "Treatment created successfully.", data = result });
             }

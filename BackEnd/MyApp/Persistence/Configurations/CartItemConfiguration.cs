@@ -18,6 +18,9 @@ namespace MyApp.Persistence.Configurations
             entity.Property(e => e.AddedAt)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnName("added_at");
+            entity.Property(e => e.Quantity)
+                .HasDefaultValue(1)
+                .HasColumnName("quantity");
 
             entity.HasOne(d => d.Cart).WithMany(p => p.CartItems)
                 .HasForeignKey(d => d.CartId)

@@ -337,6 +337,11 @@ class _EditSheetState extends State<_EditSheet> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _nameCtrl;
   late final TextEditingController _descCtrl;
+  late final TextEditingController _ingredientsCtrl;
+  late final TextEditingController _shoppeUrlCtrl;
+  late final TextEditingController _instructionsCtrl;
+  late final TextEditingController _minConfidenceCtrl;
+  late final TextEditingController _priorityCtrl;
   late String _solType;
   bool _updating = false;
 
@@ -350,18 +355,38 @@ class _EditSheetState extends State<_EditSheet> {
         '${row['description'] ?? row['Description'] ?? ''}'.trim();
     final initialType =
         '${row['solutionType'] ?? row['SolutionType'] ?? 'treatment'}'
-            .toLowerCase()
+            .toUpperCase()
             .trim();
+    final initialIngredients =
+        '${row['ingredients'] ?? row['Ingredients'] ?? ''}'.trim();
+    final initialShoppeUrl =
+        '${row['shoppeUrl'] ?? row['ShoppeUrl'] ?? ''}'.trim();
+    final initialInstructions =
+        '${row['instructions'] ?? row['Instructions'] ?? ''}'.trim();
+    final initialMinConfidence =
+        '${row['minConfidence'] ?? row['MinConfidence'] ?? '0.0'}';
+    final initialPriority = '${row['priority'] ?? row['Priority'] ?? '1'}';
 
     _nameCtrl = TextEditingController(text: initialName);
     _descCtrl = TextEditingController(text: initialDesc);
-    _solType = initialType == 'medicine' ? 'medicine' : 'treatment';
+    _ingredientsCtrl = TextEditingController(text: initialIngredients);
+    _shoppeUrlCtrl = TextEditingController(text: initialShoppeUrl);
+    _instructionsCtrl = TextEditingController(text: initialInstructions);
+    _minConfidenceCtrl = TextEditingController(text: initialMinConfidence);
+    _priorityCtrl = TextEditingController(text: initialPriority);
+
+    _solType = initialType == 'MEDICINE' ? 'MEDICINE' : 'TREATMENT';
   }
 
   @override
   void dispose() {
     _nameCtrl.dispose();
     _descCtrl.dispose();
+    _ingredientsCtrl.dispose();
+    _shoppeUrlCtrl.dispose();
+    _instructionsCtrl.dispose();
+    _minConfidenceCtrl.dispose();
+    _priorityCtrl.dispose();
     super.dispose();
   }
 
@@ -375,8 +400,26 @@ class _EditSheetState extends State<_EditSheet> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final id = _asInt(widget.row['solutionId'] ?? widget.row['SolutionId']);
+    final row = widget.row;
+    final id = _asInt(row['solutionId'] ?? row['SolutionId']);
     final isDarkSheet = theme.brightness == Brightness.dark;
+
+    final illnessName = '${row['illnessName'] ?? row['IllnessName'] ?? '—'}';
+    final treeStageName =
+        '${row['treeStageName'] ?? row['TreeStageName'] ?? '—'}';
+
+    Widget sectionTitle(String title) {
+      return Padding(
+        padding: const EdgeInsets.only(top: 16, bottom: 8),
+        child: Text(
+          title,
+          style: theme.textTheme.titleSmall?.copyWith(
+            color: theme.colorScheme.primary,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      );
+    }
 
     return Container(
       decoration: BoxDecoration(
@@ -394,7 +437,7 @@ class _EditSheetState extends State<_EditSheet> {
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Center(
                 child: Container(
@@ -411,7 +454,7 @@ class _EditSheetState extends State<_EditSheet> {
                 children: [
                   Expanded(
                     child: Text(
-                      'Chỉnh sửa giải pháp #$id',
+                      'Chi tiết giải pháp #$id',
                       style: theme.textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -427,7 +470,7 @@ class _EditSheetState extends State<_EditSheet> {
                               builder: (d) => AlertDialog(
                                 title: const Text('Xóa giải pháp?'),
                                 content: const Text(
-                                    'Thao tác này sẽ xóa liên kết giải pháp cụ thể này. Tiếp tục?'),
+                                    'Thao tác này sẽ xóa vĩnh viễn giải pháp này. Tiếp tục?'),
                                 actions: [
                                   TextButton(
                                       onPressed: () => Navigator.pop(d, false),
@@ -462,28 +505,53 @@ class _EditSheetState extends State<_EditSheet> {
                   ),
                 ],
               ),
+              const SizedBox(height: 8),
+
+              // Category: Information
+              sectionTitle('Thông tin chung'),
+              Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Bệnh', style: theme.textTheme.labelSmall),
+                        Text(illnessName, style: theme.textTheme.bodyMedium),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Giai đoạn', style: theme.textTheme.labelSmall),
+                        Text(treeStageName, style: theme.textTheme.bodyMedium),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
               const SizedBox(height: 16),
               Text(
-                'Loại',
-                style: theme.textTheme.labelLarge,
+                'Loại giải pháp',
+                style: theme.textTheme.labelSmall,
               ),
               const SizedBox(height: 8),
               SegmentedButton<String>(
                 segments: const [
                   ButtonSegment(
-                    value: 'treatment',
+                    value: 'TREATMENT',
                     label: Text('Điều trị'),
                     icon: Icon(Icons.healing_outlined, size: 18),
                   ),
                   ButtonSegment(
-                    value: 'medicine',
+                    value: 'MEDICINE',
                     label: Text('Thuốc'),
                     icon: Icon(Icons.medication_outlined, size: 18),
                   ),
                 ],
                 selected: {_solType},
-                onSelectionChanged: (s) =>
-                    setState(() => _solType = s.first),
+                onSelectionChanged: (s) => setState(() => _solType = s.first),
               ),
               const SizedBox(height: 16),
               AppInput(
@@ -499,7 +567,55 @@ class _EditSheetState extends State<_EditSheet> {
                 minLines: 2,
                 maxLines: 4,
               ),
-              const SizedBox(height: 24),
+
+              // Category: Medicine (dynamic)
+              if (_solType == 'MEDICINE') ...[
+                sectionTitle('Chi tiết thuốc'),
+                AppInput(
+                  label: 'Thành phần',
+                  controller: _ingredientsCtrl,
+                  minLines: 1,
+                  maxLines: 2,
+                ),
+                const SizedBox(height: 16),
+                AppInput(
+                  label: 'Hướng dẫn sử dụng',
+                  controller: _instructionsCtrl,
+                  minLines: 2,
+                  maxLines: 5,
+                ),
+                const SizedBox(height: 16),
+                AppInput(
+                  label: 'Link Shopee',
+                  controller: _shoppeUrlCtrl,
+                  keyboardType: TextInputType.url,
+                ),
+              ],
+
+              // Category: System Metrics
+              sectionTitle('Thông số hệ thống'),
+              Row(
+                children: [
+                  Expanded(
+                    child: AppInput(
+                      label: 'Ưu tiên',
+                      controller: _priorityCtrl,
+                      keyboardType: TextInputType.number,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: AppInput(
+                      label: 'Độ tin cậy (0-1)',
+                      controller: _minConfidenceCtrl,
+                      keyboardType:
+                          const TextInputType.numberWithOptions(decimal: true),
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 32),
               Row(
                 children: [
                   Expanded(
@@ -510,12 +626,19 @@ class _EditSheetState extends State<_EditSheet> {
                           : () async {
                               if (!_formKey.currentState!.validate()) return;
                               setState(() => _updating = true);
-                              final ok =
-                                  await widget.api.updateTreatmentManagement(id, {
+                              
+                              final body = {
                                 'solutionName': _nameCtrl.text.trim(),
                                 'solutionType': _solType,
                                 'description': _descCtrl.text.trim(),
-                              });
+                                'minConfidence': double.tryParse(_minConfidenceCtrl.text) ?? 0.0,
+                                'priority': int.tryParse(_priorityCtrl.text) ?? 1,
+                                'ingredients': _solType == 'MEDICINE' ? _ingredientsCtrl.text.trim() : null,
+                                'shoppeUrl': _solType == 'MEDICINE' ? _shoppeUrlCtrl.text.trim() : null,
+                                'instructions': _solType == 'MEDICINE' ? _instructionsCtrl.text.trim() : null,
+                              };
+
+                              final ok = await widget.api.updateTreatmentManagement(id, body);
                               if (ok) {
                                 if (mounted) Navigator.pop(context);
                                 widget.onRefresh();
@@ -523,7 +646,8 @@ class _EditSheetState extends State<_EditSheet> {
                                 setState(() => _updating = false);
                                 if (mounted) {
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text('Cập nhật thất bại')),
+                                    const SnackBar(
+                                        content: Text('Cập nhật thất bại')),
                                   );
                                 }
                               }

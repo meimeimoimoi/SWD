@@ -878,6 +878,24 @@ class DashboardService {
     }
   }
 
+  Future<bool> uploadTreatmentImage(int treatmentId, String filePath) async {
+    try {
+      final accessToken = await StorageService.getAccessToken();
+      final fileName = filePath.split(RegExp(r'[\\/]')).last;
+      final formData = FormData.fromMap({
+        'file': await MultipartFile.fromFile(filePath, filename: fileName),
+      });
+      final response = await _dio.post(
+        '/api/treatments/$treatmentId/images',
+        data: formData,
+        options: Options(headers: {'Authorization': 'Bearer $accessToken'}),
+      );
+      return response.data['success'] == true;
+    } catch (e) {
+      return false;
+    }
+  }
+
   Future<Response> _authorizedGet(String path) async {
     final accessToken = await StorageService.getAccessToken();
     return await _dio.get(

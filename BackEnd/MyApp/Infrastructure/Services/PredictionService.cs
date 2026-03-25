@@ -195,7 +195,9 @@ public class PredictionService : IPredictionService, IDisposable
                     Type = m.SolutionType ?? "MEDICINE",
                     Description = m.Description ?? string.Empty,
                     Ingredients = m.Ingredients,
-                    ShoppeUrl = m.ShoppeUrl,
+                    ShoppeUrl = string.IsNullOrWhiteSpace(m.ShoppeUrl) 
+                        ? new List<string>() 
+                        : m.ShoppeUrl.Split(new[] { ',', ';', '\n', '\r', '|' }, StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim()).ToList(),
                     Instructions = m.Instructions,
                     ImageUrl = m.Images.OrderBy(i => i.DisplayOrder).FirstOrDefault()?.ImageUrl ?? string.Empty
                 }).ToList() ?? []

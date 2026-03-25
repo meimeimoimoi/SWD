@@ -35,7 +35,7 @@ namespace MyApp.Application.Features.Prediction
                 public string ImageUrl { get; set; } = string.Empty;
         public string? Ingredients { get; set; }
 
-        public string? ShoppeUrl { get; set; }
+        public List<string> ShoppeUrl { get; set; } = new List<string>();
 
         public string? Instructions { get; set; }
 

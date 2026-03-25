@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using MyApp.Application.Features.Treatment.DTOs;
 using MyApp.Application.Interfaces;
 using MyApp.Persistence.Context;
@@ -87,6 +87,7 @@ namespace MyApp.Infrastructure.Services
             var solution = await _context.TreatmentSolutions
                 .Include(s => s.TreeStage)
                 .Include(s => s.SolutionConditions)
+                .Include(s => s.Images)
                 .FirstOrDefaultAsync(s => s.SolutionId == solutionId);
 
             if (solution == null) return null;
@@ -101,6 +102,9 @@ namespace MyApp.Infrastructure.Services
             SolutionName = s.SolutionName,
             SolutionType = s.SolutionType,
             Description = s.Description,
+            ShoppeUrl = s.ShoppeUrl,
+            Instructions = s.Instructions,
+            Ingredients = s.Ingredients,
             IllnessStageId = s.IllnessStageId,
             TreeStageId = s.TreeStageId,
             TreeStageName = s.TreeStage?.StageName,
@@ -112,7 +116,15 @@ namespace MyApp.Infrastructure.Services
                 MinConfidence = c.MinConfidence,
                 WeatherCondition = c.WeatherCondition,
                 Note = c.Note
-            }).ToList()
+            }).ToList(),
+            Images = s.Images
+                .OrderBy(i => i.DisplayOrder)
+                .Select(i => new SolutionImageDto
+                {
+                    ImageId = i.ImageId,
+                    ImageUrl = i.ImageUrl,
+                    DisplayOrder = i.DisplayOrder
+                }).ToList()
         };
 
         private static TreatmentRecommendationDto MapToRecommendationDto(Domain.Entities.TreatmentSolution s) => new()

@@ -11,6 +11,7 @@ public partial class CartItem
     public int SolutionId { get; set; }
 
     public DateTime? AddedAt { get; set; }
+    public int Quantity { get; set; } = 1;
 
     public virtual Cart Cart { get; set; } = null!;
 

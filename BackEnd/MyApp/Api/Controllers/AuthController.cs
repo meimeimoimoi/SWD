@@ -163,10 +163,16 @@ namespace MyApp.Api.Controllers
             {
                 var rawAuth = Request.Headers.Authorization.FirstOrDefault();
                 string? jwt = null;
-                if (!string.IsNullOrEmpty(rawAuth) &&
-                    rawAuth.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+                if (!string.IsNullOrEmpty(rawAuth))
                 {
-                    jwt = rawAuth["Bearer ".Length..].Trim();
+                    if (rawAuth.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+                    {
+                        jwt = rawAuth["Bearer ".Length..].Trim();
+                    }
+                    else
+                    {
+                        jwt = rawAuth.Trim();
+                    }
                 }
 
                 if (string.IsNullOrEmpty(jwt))

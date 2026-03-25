@@ -85,6 +85,9 @@ namespace MyApp.Application.Features.Admin.DTOs
         public decimal? MinConfidence { get; set; }
         public int? Priority { get; set; }
         public DateTime? CreatedAt { get; set; }
+
+        // Thêm danh sách ảnh trả về
+        public List<MyApp.Application.Features.Technician.DTOs.SolutionImageDto> Images { get; set; } = new();
     }
 
     public class UpdateTreatmentDto
