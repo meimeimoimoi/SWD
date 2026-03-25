@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using MyApp.Domain.Entities;
 using MyApp.Persistence.Context;
 
@@ -28,6 +28,12 @@ namespace MyApp.Persistence.Repositories
                 .Include(p => p.ModelVersion)
                 .Include(p => p.Upload)
                 .FirstOrDefaultAsync(p => p.PredictionId == predictionId);
+        }
+
+        public async Task UpdatePredictionAsync(Prediction prediction)
+        {
+            _context.Predictions.Update(prediction);
+            await _context.SaveChangesAsync();
         }
     }
 

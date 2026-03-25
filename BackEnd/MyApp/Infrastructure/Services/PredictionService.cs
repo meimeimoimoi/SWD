@@ -1,4 +1,4 @@
-﻿using Microsoft.ML.OnnxRuntime;
+using Microsoft.ML.OnnxRuntime;
 using Microsoft.ML.OnnxRuntime.Tensors;
 using MyApp.Application.Features.Prediction;
 using MyApp.Application.Features.Treatment.DTOs;
@@ -186,15 +186,18 @@ public class PredictionService : IPredictionService, IDisposable
                 {
                     Name = t.SolutionName ?? "Treatment",
                     Type = t.SolutionType ?? "CARE",
-                    Description = t.Description ?? string.Empty,
-                    Ingredients = t.Ingredients
+                    Description = t.Description ?? string.Empty
                 }).ToList() ?? [],
             Medicines = illnessInfo?.TreatmentSolutions.Where(m => m.SolutionType == "MEDICINE")
                 .Select(m => new MedicineDto
                 {
                     Name = m.SolutionName ?? "Medicine",
                     Type = m.SolutionType ?? "MEDICINE",
-                    Description = m.Description ?? string.Empty
+                    Description = m.Description ?? string.Empty,
+                    Ingredients = m.Ingredients,
+                    ShoppeUrl = m.ShoppeUrl,
+                    Instructions = m.Instructions,
+                    ImageUrl = m.Images.OrderBy(i => i.DisplayOrder).FirstOrDefault()?.ImageUrl ?? string.Empty
                 }).ToList() ?? []
         };
     }

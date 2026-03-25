@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using MyApp.Application.Features.Admin.DTOs;
 using MyApp.Application.Features.ModelManagement.DTOs;
 using MyApp.Application.Interfaces;
@@ -58,10 +58,19 @@ namespace MyApp.Infrastructure.Services
             if (dto.SolutionName  != null) solution.SolutionName  = dto.SolutionName;
             if (dto.SolutionType  != null) solution.SolutionType  = dto.SolutionType;
             if (dto.Description   != null) solution.Description   = dto.Description;
-            if (dto.Ingredients   != null) solution.Ingredients   = dto.Ingredients;
             if (dto.MinConfidence != null) solution.MinConfidence  = dto.MinConfidence;
             if (dto.Priority      != null) solution.Priority       = dto.Priority;
 
+            // Only update medicine-specific fields for MEDICINE type
+            var effectiveType = dto.SolutionType ?? solution.SolutionType;
+            if (effectiveType == "MEDICINE")
+            {
+                if (dto.Ingredients  != null) solution.Ingredients  = dto.Ingredients;
+                if (dto.ShoppeUrl    != null) solution.ShoppeUrl    = dto.ShoppeUrl;
+                if (dto.Instructions != null) solution.Instructions = dto.Instructions;
+            }
+
+            solution.UpdatedAt = DateTime.UtcNow;
             await _context.SaveChangesAsync();
             _logger.LogInformation("Treatment solution Id={Id} updated.", solutionId);
             return MapToReviewDto(solution);
@@ -147,6 +156,8 @@ namespace MyApp.Infrastructure.Services
             SolutionType  = s.SolutionType,
             Description   = s.Description,
             Ingredients   = s.Ingredients,
+            ShoppeUrl     = s.ShoppeUrl,
+            Instructions  = s.Instructions,
             IllnessId     = s.IllnessId,
             IllnessName   = s.Illness?.IllnessName,
             TreeStageId   = s.TreeStageId,

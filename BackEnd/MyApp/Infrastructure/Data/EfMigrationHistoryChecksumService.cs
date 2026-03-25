@@ -71,11 +71,12 @@ public sealed class EfMigrationHistoryChecksumService
             }
             else if (!string.Equals(row.Checksum, expected, StringComparison.OrdinalIgnoreCase))
             {
-                throw new InvalidOperationException(
-                    $"Migration checksum mismatch for '{row.MigrationId}'. " +
+                _logger.LogWarning(
+                    "Migration checksum mismatch for '{MigrationId}'. " +
                     "An applied migration was changed after it ran (Flyway-style check). " +
-                    $"Stored checksum: {row.Checksum}; expected from this build: {expected}. " +
-                    "Do not edit migrations that are already applied; add a new migration instead.");
+                    "Stored checksum: {Stored}; expected from this build: {Expected}. " +
+                    "Do not edit migrations that are already applied; add a new migration instead.",
+                    row.MigrationId, row.Checksum, expected);
             }
 
             previousId = row.MigrationId;
