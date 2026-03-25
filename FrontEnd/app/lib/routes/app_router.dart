@@ -1,4 +1,5 @@
 import 'package:app/feature/admin/feedback/admin_feebackList_sceern.dart';
+import 'package:app/feature/cart/cart_screen.dart';
 import 'package:flutter/material.dart';
 
 import '../share/services/storage_service.dart';
@@ -63,6 +64,7 @@ class AppRouter {
   static const String userIllnessDetail = '/trees/illness';
   static const String treatmentHub = '/treatments';
   static const String notifications = '/notifications';
+  static const String cart = '/cart';
   static const String appSettings = '/settings';
 
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
@@ -147,6 +149,8 @@ class AppRouter {
         return MaterialPageRoute(builder: (_) => const HistoryScreen());
       case notifications:
         return MaterialPageRoute(builder: (_) => const NotificationsScreen());
+      case cart:
+        return MaterialPageRoute(builder: (_) => const CartScreen());
       case appSettings:
         return MaterialPageRoute(builder: (_) => const SettingsScreen());
       case trees:

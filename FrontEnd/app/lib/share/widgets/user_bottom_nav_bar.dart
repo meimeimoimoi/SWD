@@ -34,10 +34,9 @@ class UserBottomNavBar extends StatelessWidget {
       onDestinationSelected: (i) {
         switch (i) {
           case 0:
-            Navigator.of(context).pushNamedAndRemoveUntil(
-              AppRouter.dashboard,
-              (route) => false,
-            );
+            Navigator.of(
+              context,
+            ).pushNamedAndRemoveUntil(AppRouter.dashboard, (route) => false);
             break;
           case 1:
             Navigator.of(context).pushNamed(AppRouter.scan);
@@ -54,22 +53,22 @@ class UserBottomNavBar extends StatelessWidget {
         NavigationDestination(
           icon: Icon(Icons.dashboard_outlined),
           selectedIcon: Icon(Icons.dashboard),
-          label: 'Overview',
+          label: 'Tổng quan',
         ),
         NavigationDestination(
           icon: Icon(Icons.document_scanner_outlined),
           selectedIcon: Icon(Icons.document_scanner),
-          label: 'Scan',
+          label: 'Quét',
         ),
         NavigationDestination(
           icon: Icon(Icons.park_outlined),
           selectedIcon: Icon(Icons.park),
-          label: 'Plants',
+          label: 'Cây trồng',
         ),
         NavigationDestination(
           icon: Icon(Icons.account_circle_outlined),
           selectedIcon: Icon(Icons.account_circle),
-          label: 'Profile',
+          label: 'Cá nhân',
         ),
       ],
     );

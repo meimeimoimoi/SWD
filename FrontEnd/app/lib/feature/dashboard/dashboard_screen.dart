@@ -218,7 +218,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ],
             const SizedBox(height: 28),
             Text(
-              'GET A CLEAR SCAN',
+              'HƯỚNG DẪN QUÉT',
               style: Theme.of(context).textTheme.labelSmall?.copyWith(
                     letterSpacing: 1.2,
                     fontWeight: FontWeight.w700,
@@ -229,7 +229,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             const _ScanTipsCard(),
             const SizedBox(height: 28),
             Text(
-              'COMMON THREATS',
+              'CÁC MỐI ĐE DỌA PHỔ BIẾN',
               style: Theme.of(context).textTheme.labelSmall?.copyWith(
                     letterSpacing: 1.2,
                     fontWeight: FontWeight.w800,
@@ -240,7 +240,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
             const SizedBox(height: 6),
             Text(
-              'Spot symptoms early—scan a leaf if something looks off.',
+              'Phát hiện sớm các triệu chứng—quét lá nếu thấy điều gì bất thường.',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: Theme.of(context).brightness == Brightness.dark
                         ? AppColors.textSecondaryDark
@@ -265,10 +265,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
 String _dashboardRelativeTime(DateTime dt, DateTime now) {
   final diff = now.difference(dt);
-  if (diff.inSeconds < 60) return 'Just now';
-  if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
-  if (diff.inHours < 24) return '${diff.inHours}h ago';
-  if (diff.inDays < 7) return '${diff.inDays}d ago';
+  if (diff.inSeconds < 60) return 'Vừa xong';
+  if (diff.inMinutes < 60) return '${diff.inMinutes} phút trước';
+  if (diff.inHours < 24) return '${diff.inHours} giờ trước';
+  if (diff.inDays < 7) return '${diff.inDays} ngày trước';
   return '${dt.day}/${dt.month}/${dt.year}';
 }
 
@@ -276,7 +276,7 @@ String _formatCommonThreatSubtitle(CommonThreatItem it) {
   final sci = it.scientificName?.trim();
   final n = it.reportCount;
   final rep =
-      n >= 1000 ? '${(n / 1000).toStringAsFixed(1)}k reports' : '$n reports';
+      n >= 1000 ? '${(n / 1000).toStringAsFixed(1)}k báo cáo' : '$n báo cáo';
   if (sci != null && sci.isNotEmpty) return '$sci • $rep';
   return rep;
 }
@@ -309,13 +309,13 @@ int _predictionConcernScore(HistoryItem p) {
 ) {
   switch (level) {
     case TreeHealthLevel.healthy:
-      return ('Healthy', const Color(0xFF16A34A), 1.0);
+      return ('Khỏe mạnh', const Color(0xFF16A34A), 1.0);
     case TreeHealthLevel.low:
-      return ('Low concern', const Color(0xFFCA8A04), 0.7);
+      return ('Cảnh báo thấp', const Color(0xFFCA8A04), 0.7);
     case TreeHealthLevel.medium:
-      return ('Needs watch', const Color(0xFFEA580C), 0.45);
+      return ('Cần theo dõi', const Color(0xFFEA580C), 0.45);
     case TreeHealthLevel.high:
-      return ('Urgent', const Color(0xFFDC2626), 0.18);
+      return ('Khẩn cấp', const Color(0xFFDC2626), 0.18);
   }
 }
 
@@ -327,12 +327,12 @@ int _predictionConcernScore(HistoryItem p) {
   final newest = _predictionConcernScore(p.first);
   final oldest = _predictionConcernScore(p.last);
   if (newest < oldest) {
-    return ('Improving', const Color(0xFF16A34A));
+    return ('Đang cải thiện', const Color(0xFF16A34A));
   }
   if (newest > oldest) {
-    return ('Worsening', const Color(0xFFDC2626));
+    return ('Đang tệ đi', const Color(0xFFDC2626));
   }
-  return ('Stable', const Color(0xFF6B7280));
+  return ('Ổn định', const Color(0xFF6B7280));
 }
 
 class _TreeOverviewVm {
@@ -482,7 +482,7 @@ class _CompactDashboardEmpty extends StatelessWidget {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  'Health & activity',
+                  'Sức khỏe & Hoạt động',
                   style: Theme.of(context).textTheme.titleSmall?.copyWith(
                         fontWeight: FontWeight.w800,
                       ),
@@ -492,7 +492,7 @@ class _CompactDashboardEmpty extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'Scan a leaf to see plant insights, urgency alerts, and your history — all in one place.',
+            'Quét lá để xem tình trạng cây, cảnh báo khẩn cấp và lịch sử của bạn — tất cả ở một nơi.',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: cs.onSurfaceVariant,
                   height: 1.35,
@@ -511,7 +511,7 @@ class _CompactDashboardEmpty extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   elevation: 0,
                 ),
-                child: const Text('Open scanner'),
+                child: const Text('Mở máy quét'),
               ),
               TextButton(
                 onPressed: onTrees,
@@ -519,7 +519,7 @@ class _CompactDashboardEmpty extends StatelessWidget {
                   foregroundColor: AppColors.brandAccentReadable(context),
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                 ),
-                child: const Text('My plant'),
+                child: const Text('Cây của tôi'),
               ),
             ],
           ),
@@ -578,14 +578,14 @@ class _TreeIllnessOverviewCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Plant overview',
+                    'Tổng quan cây trồng',
                     style: Theme.of(context).textTheme.titleSmall?.copyWith(
                           fontWeight: FontWeight.w800,
                         ),
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    'Per-plant health appears after you scan and link plants.',
+                    'Sức khỏe từng cây sẽ hiển thị sau khi bạn quét và liên kết cây.',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: Theme.of(context).colorScheme.onSurfaceVariant,
                           height: 1.25,
@@ -602,9 +602,9 @@ class _TreeIllnessOverviewCard extends StatelessWidget {
     final total = o.totalPlants;
     final variants = <({int n, Color c, String short})>[
       (n: o.healthyCount, c: const Color(0xFF22C55E), short: 'OK'),
-      (n: o.lowCount, c: const Color(0xFFEAB308), short: 'Low'),
-      (n: o.mediumCount, c: const Color(0xFFF97316), short: 'Med'),
-      (n: o.highCount, c: const Color(0xFFEF4444), short: 'Hi'),
+      (n: o.lowCount, c: const Color(0xFFEAB308), short: 'Thấp'),
+      (n: o.mediumCount, c: const Color(0xFFF97316), short: 'Vừa'),
+      (n: o.highCount, c: const Color(0xFFEF4444), short: 'Cao'),
     ];
 
     return Container(
@@ -640,7 +640,7 @@ class _TreeIllnessOverviewCard extends StatelessWidget {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  'PLANT HEALTH OVERVIEW',
+                  'TỔNG QUAN SỨC KHỎE CÂY',
                   style: Theme.of(context).textTheme.labelSmall?.copyWith(
                         letterSpacing: 1.0,
                         fontWeight: FontWeight.w800,
@@ -658,13 +658,13 @@ class _TreeIllnessOverviewCard extends StatelessWidget {
                     fontSize: 12,
                   ),
                 ),
-                child: const Text('All plants'),
+                child: const Text('Tất cả cây'),
               ),
             ],
           ),
           const SizedBox(height: 6),
           Text(
-            '$total ${total == 1 ? 'plant' : 'plants'} · ${o.totalScans} scans in history',
+            '$total cây · ${o.totalScans} lần quét trong lịch sử',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
@@ -720,7 +720,7 @@ class _TreeIllnessOverviewCard extends StatelessWidget {
           ),
           const Divider(height: 22),
           Text(
-            'Status & progress (latest activity)',
+            'Trạng thái & Tiến độ (Hoạt động mới nhất)',
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
                   fontWeight: FontWeight.w700,
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -797,7 +797,7 @@ class _TreeProgressRowTile extends StatelessWidget {
               ),
               const SizedBox(height: 4),
               Text(
-                '${row.statusLabel} · ${row.scanCount} ${row.scanCount == 1 ? 'scan' : 'scans'} · ${row.lastScanLabel}',
+                '${row.statusLabel} · ${row.scanCount} lần quét · ${row.lastScanLabel}',
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: Theme.of(context).colorScheme.onSurfaceVariant,
                       fontSize: 11,
@@ -817,7 +817,7 @@ class _TreeProgressRowTile extends StatelessWidget {
               ),
               const SizedBox(height: 4),
               Text(
-                'Illness risk level (bar = relative status for this plant)',
+                'Mức độ rủi ro bệnh tật (thanh = trạng thái tương đối của cây này)',
                 style: Theme.of(context).textTheme.labelSmall?.copyWith(
                       fontSize: 9,
                       color: Colors.grey.shade500,
@@ -938,7 +938,7 @@ class _InsightsPanel extends StatelessWidget {
             const SizedBox(width: 6),
             Expanded(
               child: Text(
-                'NEEDS URGENT ATTENTION',
+                'CẦN CHÚ Ý KHẨN CẤP',
                 style: Theme.of(context).textTheme.labelSmall?.copyWith(
                       letterSpacing: 1.0,
                       fontWeight: FontWeight.w800,
@@ -950,14 +950,14 @@ class _InsightsPanel extends StatelessWidget {
               TextButton(
                 onPressed: onSeeTrees,
                 style: _linkButtonStyle(context),
-                child: const Text('Plants'),
+                child: const Text('Cây trồng'),
               ),
           ],
         ),
         if (urgentRows.isNotEmpty) ...[
           const SizedBox(height: 6),
           Text(
-            'High-severity findings from your scans.',
+            'Kết quả quét có mức độ nghiêm trọng cao.',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                   height: 1.3,
@@ -988,7 +988,7 @@ class _InsightsPanel extends StatelessWidget {
           children: [
             Expanded(
               child: Text(
-                'RECENT SCANS',
+                'QUÉT GẦN ĐÂY',
                 style: Theme.of(context).textTheme.labelSmall?.copyWith(
                       letterSpacing: 1.2,
                       fontWeight: FontWeight.w700,
@@ -1002,7 +1002,7 @@ class _InsightsPanel extends StatelessWidget {
               TextButton(
                 onPressed: onSeeAll,
                 style: _linkButtonStyle(context),
-                child: const Text('See all'),
+                child: const Text('Xem tất cả'),
               ),
           ],
         ),
@@ -1160,7 +1160,7 @@ class _RecentScanTile extends StatelessWidget {
                     ),
                     const SizedBox(height: 3),
                     Text(
-                      healthy ? 'Healthy' : 'Review',
+                      healthy ? 'Khỏe mạnh' : 'Xem xét',
                       style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w800,
@@ -1205,7 +1205,7 @@ class _RecentScansEmpty extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'No scans yet',
+                  'Chưa có bản quét nào',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         fontWeight: FontWeight.w600,
                         color: Theme.of(context).brightness == Brightness.dark
@@ -1215,7 +1215,7 @@ class _RecentScansEmpty extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Use the scanner card above, then pull to refresh.',
+                  'Sử dụng thẻ quét ở trên, sau đó kéo để làm mới.',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: Theme.of(context).brightness == Brightness.dark
                             ? AppColors.textSecondaryDark
@@ -1231,7 +1231,7 @@ class _RecentScansEmpty extends StatelessWidget {
                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     foregroundColor: AppColors.brandAccentReadable(context),
                   ),
-                  child: const Text('Open full history'),
+                  child: const Text('Mở lịch sử đầy đủ'),
                 ),
               ],
             ),
@@ -1309,7 +1309,7 @@ class _UrgentPlantTile extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      row.diseaseLabel,
+                      row.diseaseLabel.isEmpty ? 'Phát hiện bệnh' : row.diseaseLabel,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -1337,7 +1337,7 @@ class _UrgentPlantTile extends StatelessWidget {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: const Text(
-                  'HIGH',
+                  'CAO',
                   style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.w800,
@@ -1374,7 +1374,7 @@ class _UrgentAllClearCard extends StatelessWidget {
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              'No high-severity plants right now.',
+              'Hiện không có cây nào ở mức độ nghiêm trọng cao.',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     height: 1.3,
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -1468,6 +1468,13 @@ class _ArgivisionAppBar extends StatelessWidget implements PreferredSizeWidget {
             color: Colors.grey.shade600,
           ),
         ),
+        IconButton(
+          onPressed: () => Navigator.pushNamed(context, AppRouter.cart),
+          icon: Icon(
+            Icons.shopping_cart_outlined,
+            color: Colors.grey.shade600,
+          ),
+        ),
         Padding(
           padding: const EdgeInsets.only(right: 12, left: 4),
           child: Material(
@@ -1558,7 +1565,7 @@ class _OwnerScanHero extends StatelessWidget {
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: const Text(
-                          'LEAF SCAN',
+                          'QUÉT LÁ',
                           style: TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.w800,
@@ -1571,7 +1578,7 @@ class _OwnerScanHero extends StatelessWidget {
                   ),
                   const SizedBox(height: 14),
                   const Text(
-                    'Scan for disease',
+                    'Quét sâu bệnh',
                     style: TextStyle(
                       color: AppColors.onPrimary,
                       fontSize: 22,
@@ -1581,7 +1588,7 @@ class _OwnerScanHero extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Upload or take a clear photo—we’ll analyze it in seconds.',
+                    'Tải lên hoặc chụp ảnh rõ nét—chúng tôi sẽ phân tích trong vài giây.',
                     style: TextStyle(
                       color: Colors.grey.shade400,
                       fontSize: 13,
@@ -1593,7 +1600,7 @@ class _OwnerScanHero extends StatelessWidget {
                     onPressed: onScan,
                     icon: const Icon(Icons.photo_camera_outlined, size: 22),
                     label: const Text(
-                      'Start scan',
+                      'Bắt đầu quét',
                       style: TextStyle(
                         fontWeight: FontWeight.w800,
                         fontSize: 15,
@@ -1627,9 +1634,9 @@ class _ScanTipsCard extends StatelessWidget {
   const _ScanTipsCard();
 
   static const _tips = <String>[
-    'Fill the frame with one leaf; avoid harsh shadow on the spot you care about.',
-    'Natural daylight works best—avoid yellow indoor bulbs if you can.',
-    'Hold steady; blurry photos are harder for the model to read.',
+    'Chụp đầy khung hình với một chiếc lá; tránh bóng râm gay gắt tại điểm bạn quan tâm.',
+    'Ánh sáng ban ngày tự nhiên là tốt nhất—tránh bóng đèn vàng trong nhà nếu có thể.',
+    'Giữ chắc tay; ảnh bị nhòe sẽ khiến mô hình khó đọc hơn.',
   ];
 
   @override
@@ -1658,7 +1665,7 @@ class _ScanTipsCard extends StatelessWidget {
               ),
               const SizedBox(width: 10),
               Text(
-                'Photo tips',
+                'Mẹo chụp ảnh',
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
                       fontWeight: FontWeight.w700,
                     ),
@@ -1752,7 +1759,7 @@ class _PopularDiseasesCard extends StatelessWidget {
           border: Border.all(color: borderColor),
         ),
         child: Text(
-          'No scan data yet. As predictions accumulate, the most common conditions will appear here.',
+          'Chưa có dữ liệu quét. Khi các kết quả tích lũy, các bệnh phổ biến nhất sẽ xuất hiện ở đây.',
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
                 height: 1.35,
@@ -1795,7 +1802,7 @@ class _PopularDiseasesCard extends StatelessWidget {
               child: TextButton(
                 onPressed: onSeeAll,
                 child: Text(
-                  'Open my plants',
+                  'Mở cây của tôi',
                   style: TextStyle(
                     fontWeight: FontWeight.w700,
                     fontSize: 13,

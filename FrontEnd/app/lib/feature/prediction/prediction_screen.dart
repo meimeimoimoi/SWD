@@ -101,11 +101,32 @@ class PredictionResult {
     return t;
   }
 
+  static List<String> _parseIngredients(dynamic v) {
+    if (v == null) return [];
+    if (v is String) {
+      return v
+          .split(',')
+          .map((s) => s.trim())
+          .where((s) => s.isNotEmpty)
+          .toList();
+    }
+    if (v is List) {
+      return v
+          .map((e) => e.toString().trim())
+          .where((s) => s.isNotEmpty)
+          .toList();
+    }
+    return [];
+  }
+
   static List<TreatmentProduct> _mapTreatments(List<dynamic> items) {
     return items.map((item) {
       final map = item as Map<String, dynamic>;
       final type = (map['type'] ?? '') as String;
-      final isMedicine = type == 'medicine';
+      final isMedicine = type.toUpperCase() == 'MEDICINE';
+      final ingredients = _parseIngredients(
+        map['ingredients'] ?? map['composition'] ?? map['components'],
+      );
       final rawUrl =
           map['shopeeUrl'] ??
           map['shopee_url'] ??
@@ -121,11 +142,12 @@ class PredictionResult {
       return TreatmentProduct(
         name: (map['name'] ?? '') as String,
         imageUrl: _buildImageUrl((map['imageUrl'] ?? '') as String),
-        badge: isMedicine ? 'Medicine' : 'Care',
+        badge: isMedicine ? 'MEDICINE' : 'CARE',
         instruction: (map['description'] ?? '') as String,
         price: (map['price'] ?? '') as String,
         isPrimary: isMedicine,
         shopeeUrl: shopeeUrl,
+        ingredients: ingredients,
       );
     }).toList();
   }
@@ -142,6 +164,7 @@ class TreatmentProduct {
   final String price;
   final bool isPrimary;
   final String? shopeeUrl;
+  final List<String> ingredients;
 
   const TreatmentProduct({
     required this.name,
@@ -151,6 +174,7 @@ class TreatmentProduct {
     required this.price,
     this.isPrimary = false,
     this.shopeeUrl,
+    this.ingredients = const [],
   });
 }
 
@@ -196,7 +220,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
       TreatmentProduct(
         name: 'Thuốc trừ nấm mẫu',
         imageUrl: 'https://cf.shopee.vn/file/sg-11134201-22100-2v7w7w7w7w7w7w',
-        badge: 'Care',
+        badge: 'CARE',
         instruction: 'Phun đều lên lá theo hướng dẫn.',
         price: '120.000đ',
         isPrimary: false,
@@ -646,9 +670,9 @@ class _PredictionScreenState extends State<PredictionScreen> {
           ),
           child: Row(
             children: [
-              _buildTabItem(title: 'Care', index: 0, isDark: isDark),
+              _buildTabItem(title: 'Chăm sóc', index: 0, isDark: isDark),
               const SizedBox(width: 4),
-              _buildTabItem(title: 'Medicine', index: 1, isDark: isDark),
+              _buildTabItem(title: 'Thuốc', index: 1, isDark: isDark),
             ],
           ),
         ),
@@ -674,8 +698,8 @@ class _PredictionScreenState extends State<PredictionScreen> {
                 child: Center(
                   child: Text(
                     _selectedTab == 0
-                        ? 'No care suggestions yet.'
-                        : 'No medicine suggestions yet.',
+                        ? 'Chưa có gợi ý chăm sóc.'
+                        : 'Chưa có gợi ý thuốc.',
                     style: TextStyle(
                       color: isDark
                           ? const Color(0xFFD1D5DB)
@@ -782,53 +806,55 @@ class _PredictionScreenState extends State<PredictionScreen> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: 80,
-            height: 80,
-            decoration: BoxDecoration(
-              color: isDark
-                  ? AppColors.darkControlFill
-                  : const Color(0xFFF3F4F6),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            clipBehavior: Clip.antiAlias,
-            child: ColorFiltered(
-              colorFilter: const ColorFilter.matrix([
-                0.2126,
-                0.7152,
-                0.0722,
-                0,
-                0,
-                0.2126,
-                0.7152,
-                0.0722,
-                0,
-                0,
-                0.2126,
-                0.7152,
-                0.0722,
-                0,
-                0,
-                0,
-                0,
-                0,
-                1,
-                0,
-              ]),
-              child: Image.network(
-                treatment.imageUrl,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Icon(
-                    Icons.medication,
-                    size: 32,
-                    color: isDark ? Colors.white38 : Colors.black26,
-                  );
-                },
+          if (treatment.badge != 'CARE') ...[
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                color: isDark
+                    ? AppColors.darkControlFill
+                    : const Color(0xFFF3F4F6),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: ColorFiltered(
+                colorFilter: const ColorFilter.matrix([
+                  0.2126,
+                  0.7152,
+                  0.0722,
+                  0,
+                  0,
+                  0.2126,
+                  0.7152,
+                  0.0722,
+                  0,
+                  0,
+                  0.2126,
+                  0.7152,
+                  0.0722,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  1,
+                  0,
+                ]),
+                child: Image.network(
+                  treatment.imageUrl,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Icon(
+                      Icons.medication,
+                      size: 32,
+                      color: isDark ? Colors.white38 : Colors.black26,
+                    );
+                  },
+                ),
               ),
             ),
-          ),
-          const SizedBox(width: 16),
+            const SizedBox(width: 16),
+          ],
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -1178,6 +1204,49 @@ class _PredictionScreenState extends State<PredictionScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          if (product.badge != 'CARE') ...[
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: product.imageUrl.isNotEmpty
+                                  ? Image.network(
+                                      product.imageUrl,
+                                      height: 220,
+                                      width: double.infinity,
+                                      fit: BoxFit.cover,
+                                      errorBuilder:
+                                          (context, error, stackTrace) {
+                                            return Container(
+                                              height: 220,
+                                              color: isDark
+                                                  ? AppColors.darkControlFill
+                                                  : AppColors.surfaceLight,
+                                              child: Icon(
+                                                Icons.image_not_supported,
+                                                size: 56,
+                                                color: isDark
+                                                    ? Colors.white38
+                                                    : Colors.black26,
+                                              ),
+                                            );
+                                          },
+                                    )
+                                  : Container(
+                                      height: 220,
+                                      color: isDark
+                                          ? AppColors.darkControlFill
+                                          : AppColors.surfaceLight,
+                                      child: Icon(
+                                        Icons.image,
+                                        size: 56,
+                                        color: isDark
+                                            ? Colors.white38
+                                            : Colors.black26,
+                                      ),
+                                    ),
+                            ),
+                            const SizedBox(height: 12),
+                          ],
+
                           Text(
                             product.name,
                             style: TextStyle(
@@ -1209,7 +1278,9 @@ class _PredictionScreenState extends State<PredictionScreen> {
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Text(
-                              product.badge,
+                              product.badge == 'MEDICINE'
+                                  ? 'Thuốc'
+                                  : 'Chăm sóc',
                               style: TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w500,
@@ -1250,11 +1321,10 @@ class _PredictionScreenState extends State<PredictionScreen> {
                             ),
                           ),
 
-                          if (product.isPrimary) ...[
-                            const SizedBox(height: 24),
-
+                          if (product.badge != 'CARE') ...[
+                            const SizedBox(height: 16),
                             Text(
-                              'Ingredients',
+                              'Thành phần',
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
@@ -1263,19 +1333,59 @@ class _PredictionScreenState extends State<PredictionScreen> {
                                     : const Color(0xFF111827),
                               ),
                             ),
-
                             const SizedBox(height: 8),
-
-                            Text(
-                              'Detailed ingredients for this product are not available yet.',
-                              style: TextStyle(
-                                fontSize: 14,
-                                height: 1.6,
-                                color: isDark
-                                    ? const Color(0xFFD1D5DB)
-                                    : const Color(0xFF4B5563),
+                            if (product.ingredients.isNotEmpty) ...[
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: product.ingredients
+                                    .map(
+                                      (i) => Padding(
+                                        padding: const EdgeInsets.only(
+                                          bottom: 6,
+                                        ),
+                                        child: Row(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            const Padding(
+                                              padding: EdgeInsets.only(
+                                                top: 6,
+                                                right: 8,
+                                              ),
+                                              child: Icon(
+                                                Icons.circle,
+                                                size: 8,
+                                              ),
+                                            ),
+                                            Expanded(
+                                              child: Text(
+                                                i,
+                                                style: TextStyle(
+                                                  fontSize: 14,
+                                                  color: isDark
+                                                      ? const Color(0xFFD1D5DB)
+                                                      : const Color(0xFF4B5563),
+                                                  height: 1.4,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    )
+                                    .toList(),
                               ),
-                            ),
+                            ] else ...[
+                              Text(
+                                'Không có thông tin thành phần',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: isDark
+                                      ? const Color(0xFFD1D5DB)
+                                      : const Color(0xFF4B5563),
+                                ),
+                              ),
+                            ],
                           ],
                         ],
                       ),
@@ -1284,114 +1394,117 @@ class _PredictionScreenState extends State<PredictionScreen> {
 
                   const SizedBox(height: 16),
 
-                  Row(
-                    children: [
-                      // Cart icon button
-                      SizedBox(
-                        height: 48,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            // TODO: Implement add to cart logic
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Added to cart'),
-                                behavior: SnackBarBehavior.floating,
-                              ),
-                            );
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: isDark
-                                ? const Color(0xFF27272A)
-                                : const Color(0xFFE4E4E7),
-                            foregroundColor: isDark
-                                ? Colors.white
-                                : Colors.black,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 18,
-                              vertical: 14,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            elevation: 0,
-                          ),
-                          child: const Icon(Icons.shopping_cart_outlined),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      // Buy button
-                      Expanded(
-                        child: SizedBox(
+                  if (product.badge != 'CARE')
+                    Row(
+                      children: [
+                        // Cart icon button
+                        SizedBox(
                           height: 48,
                           child: ElevatedButton(
-                            onPressed: () async {
-                              final url = product.shopeeUrl;
-                              if (url == null || url.isEmpty) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('Link mua hàng không có'),
-                                    behavior: SnackBarBehavior.floating,
-                                  ),
-                                );
-                                return;
-                              }
-
-                              final uri = Uri.tryParse(url);
-                              if (uri == null) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('Link không hợp lệ'),
-                                    behavior: SnackBarBehavior.floating,
-                                  ),
-                                );
-                                return;
-                              }
-
-                              try {
-                                final launched = await launchUrl(
-                                  uri,
-                                  mode: LaunchMode.externalApplication,
-                                );
-                                if (!launched) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text('Không thể mở link'),
-                                      behavior: SnackBarBehavior.floating,
-                                    ),
-                                  );
-                                }
-                              } catch (_) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('Lỗi khi mở link'),
-                                    behavior: SnackBarBehavior.floating,
-                                  ),
-                                );
-                              }
+                            onPressed: () {
+                              // TODO: Implement add to cart logic
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Added to cart'),
+                                  behavior: SnackBarBehavior.floating,
+                                ),
+                              );
                             },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(
-                                0xFF22C55E,
-                              ), // Green highlight
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              backgroundColor: isDark
+                                  ? const Color(0xFF27272A)
+                                  : const Color(0xFFE4E4E7),
+                              foregroundColor: isDark
+                                  ? Colors.white
+                                  : Colors.black,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 18,
+                                vertical: 14,
+                              ),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               elevation: 0,
                             ),
-                            child: const Text(
-                              'Buy',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
+                            child: const Icon(Icons.shopping_cart_outlined),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        // Buy button
+                        Expanded(
+                          child: SizedBox(
+                            height: 48,
+                            child: ElevatedButton(
+                              onPressed: () async {
+                                final url = product.shopeeUrl;
+                                if (url == null || url.isEmpty) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Link mua hàng không có'),
+                                      behavior: SnackBarBehavior.floating,
+                                    ),
+                                  );
+                                  return;
+                                }
+
+                                final uri = Uri.tryParse(url);
+                                if (uri == null) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Link không hợp lệ'),
+                                      behavior: SnackBarBehavior.floating,
+                                    ),
+                                  );
+                                  return;
+                                }
+
+                                try {
+                                  final launched = await launchUrl(
+                                    uri,
+                                    mode: LaunchMode.externalApplication,
+                                  );
+                                  if (!launched) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text('Không thể mở link'),
+                                        behavior: SnackBarBehavior.floating,
+                                      ),
+                                    );
+                                  }
+                                } catch (_) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Lỗi khi mở link'),
+                                      behavior: SnackBarBehavior.floating,
+                                    ),
+                                  );
+                                }
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(
+                                  0xFF22C55E,
+                                ), // Green highlight
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 14,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                elevation: 0,
+                              ),
+                              child: const Text(
+                                'Buy',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
                               ),
                             ),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
+                      ],
+                    ),
                 ],
               ),
             ),

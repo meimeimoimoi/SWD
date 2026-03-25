@@ -10,6 +10,8 @@ class AppInput extends StatelessWidget {
     this.keyboardType = TextInputType.text,
     this.validator,
     this.suffix,
+    this.minLines,
+    this.maxLines = 1,
   });
 
   final String label;
@@ -19,6 +21,8 @@ class AppInput extends StatelessWidget {
   final TextInputType keyboardType;
   final String? Function(String?)? validator;
   final Widget? suffix;
+  final int? minLines;
+  final int? maxLines;
 
   @override
   Widget build(BuildContext context) {
@@ -32,6 +36,8 @@ class AppInput extends StatelessWidget {
           obscureText: obscureText,
           keyboardType: keyboardType,
           validator: validator,
+          minLines: minLines,
+          maxLines: maxLines,
           decoration: InputDecoration(hintText: hint, suffixIcon: suffix),
         ),
       ],

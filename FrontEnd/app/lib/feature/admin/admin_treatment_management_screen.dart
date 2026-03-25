@@ -7,6 +7,8 @@ import '../../share/widgets/admin_app_bar_actions.dart';
 import '../../share/widgets/admin_bottom_nav.dart';
 import '../../share/widgets/admin_pop_scope.dart';
 import '../../share/widgets/app_card.dart';
+import '../../share/widgets/app_button.dart';
+import '../../share/widgets/app_input.dart';
 
 class AdminTreatmentManagementScreen extends StatefulWidget {
   const AdminTreatmentManagementScreen({super.key});
@@ -191,8 +193,11 @@ class _AdminTreatmentManagementScreenState
 
                                   return Padding(
                                     padding: const EdgeInsets.only(bottom: 10),
-                                    child: AppCard(
-                                      padding: const EdgeInsets.all(14),
+                                    child: InkWell(
+                                      onTap: () => _showEditSheet(r),
+                                      borderRadius: BorderRadius.circular(16),
+                                      child: AppCard(
+                                        padding: const EdgeInsets.all(14),
                                       child: Column(
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
@@ -211,7 +216,7 @@ class _AdminTreatmentManagementScreenState
                                               ),
                                               const SizedBox(width: 10),
                                               Expanded(
-                                                child: Column(
+                                                  child: Column(
                                                   crossAxisAlignment:
                                                       CrossAxisAlignment.start,
                                                   children: [
@@ -274,7 +279,8 @@ class _AdminTreatmentManagementScreenState
                                         ],
                                       ),
                                     ),
-                                  );
+                                  ),
+                                );
                                 },
                               ),
                       ),
@@ -294,6 +300,249 @@ class _AdminTreatmentManagementScreenState
         ),
         bottomNavigationBar:
             const AdminBottomNav(selected: AdminShellTab.treatments),
+      ),
+    );
+  }
+
+  Future<void> _showEditSheet(Map<String, dynamic> row) async {
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => _EditSheet(
+        row: row,
+        api: _api,
+        onRefresh: _load,
+      ),
+    );
+  }
+}
+
+class _EditSheet extends StatefulWidget {
+  final Map<String, dynamic> row;
+  final DashboardService api;
+  final VoidCallback onRefresh;
+
+  const _EditSheet({
+    required this.row,
+    required this.api,
+    required this.onRefresh,
+  });
+
+  @override
+  State<_EditSheet> createState() => _EditSheetState();
+}
+
+class _EditSheetState extends State<_EditSheet> {
+  final _formKey = GlobalKey<FormState>();
+  late final TextEditingController _nameCtrl;
+  late final TextEditingController _descCtrl;
+  late String _solType;
+  bool _updating = false;
+
+  @override
+  void initState() {
+    super.initState();
+    final row = widget.row;
+    final initialName =
+        '${row['solutionName'] ?? row['SolutionName'] ?? ''}'.trim();
+    final initialDesc =
+        '${row['description'] ?? row['Description'] ?? ''}'.trim();
+    final initialType =
+        '${row['solutionType'] ?? row['SolutionType'] ?? 'treatment'}'
+            .toLowerCase()
+            .trim();
+
+    _nameCtrl = TextEditingController(text: initialName);
+    _descCtrl = TextEditingController(text: initialDesc);
+    _solType = initialType == 'medicine' ? 'medicine' : 'treatment';
+  }
+
+  @override
+  void dispose() {
+    _nameCtrl.dispose();
+    _descCtrl.dispose();
+    super.dispose();
+  }
+
+  int _asInt(dynamic v) {
+    if (v == null) return 0;
+    if (v is int) return v;
+    if (v is num) return v.toInt();
+    return int.tryParse('$v') ?? 0;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final id = _asInt(widget.row['solutionId'] ?? widget.row['SolutionId']);
+    final isDarkSheet = theme.brightness == Brightness.dark;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: isDarkSheet ? const Color(0xFF18181B) : Colors.white,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      padding: EdgeInsets.only(
+        left: 20,
+        right: 20,
+        top: 12,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 32,
+      ),
+      child: Form(
+        key: _formKey,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.withAlpha(80),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      'Edit Solution #$id',
+                      style: theme.textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.delete_outline, color: Colors.red),
+                    onPressed: _updating
+                        ? null
+                        : () async {
+                            final confirm = await showDialog<bool>(
+                              context: context,
+                              builder: (d) => AlertDialog(
+                                title: const Text('Delete Solution?'),
+                                content: const Text(
+                                    'This will remove this specific solution mapping. Continue?'),
+                                actions: [
+                                  TextButton(
+                                      onPressed: () => Navigator.pop(d, false),
+                                      child: const Text('Cancel')),
+                                  TextButton(
+                                      onPressed: () => Navigator.pop(d, true),
+                                      child: const Text('Delete',
+                                          style:
+                                              TextStyle(color: Colors.red))),
+                                ],
+                              ),
+                            );
+
+                            if (confirm == true) {
+                              setState(() => _updating = true);
+                              final ok = await widget.api
+                                  .deleteTreatmentManagement(id);
+                              if (ok) {
+                                if (mounted) Navigator.pop(context);
+                                widget.onRefresh();
+                              } else {
+                                setState(() => _updating = false);
+                                if (mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                        content: Text('Delete failed')),
+                                  );
+                                }
+                              }
+                            }
+                          },
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Type',
+                style: theme.textTheme.labelLarge,
+              ),
+              const SizedBox(height: 8),
+              SegmentedButton<String>(
+                segments: const [
+                  ButtonSegment(
+                    value: 'treatment',
+                    label: Text('Treatment'),
+                    icon: Icon(Icons.healing_outlined, size: 18),
+                  ),
+                  ButtonSegment(
+                    value: 'medicine',
+                    label: Text('Medicine'),
+                    icon: Icon(Icons.medication_outlined, size: 18),
+                  ),
+                ],
+                selected: {_solType},
+                onSelectionChanged: (s) =>
+                    setState(() => _solType = s.first),
+              ),
+              const SizedBox(height: 16),
+              AppInput(
+                label: 'Solution name',
+                controller: _nameCtrl,
+                validator: (v) =>
+                    v == null || v.trim().isEmpty ? 'Required' : null,
+              ),
+              const SizedBox(height: 16),
+              AppInput(
+                label: 'Description',
+                controller: _descCtrl,
+                minLines: 2,
+                maxLines: 4,
+              ),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(
+                    child: AppButton(
+                      label: _updating ? 'Đang lưu...' : 'Lưu thay đổi',
+                      onPressed: _updating
+                          ? null
+                          : () async {
+                              if (!_formKey.currentState!.validate()) return;
+                              setState(() => _updating = true);
+                              final ok =
+                                  await widget.api.updateTreatmentManagement(id, {
+                                'solutionName': _nameCtrl.text.trim(),
+                                'solutionType': _solType,
+                                'description': _descCtrl.text.trim(),
+                              });
+                              if (ok) {
+                                if (mounted) Navigator.pop(context);
+                                widget.onRefresh();
+                              } else {
+                                setState(() => _updating = false);
+                                if (mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('Update failed')),
+                                  );
+                                }
+                              }
+                            },
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: AppButton(
+                      label: 'Đóng',
+                      variant: AppButtonVariant.outlined,
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
