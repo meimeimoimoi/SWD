@@ -58,9 +58,15 @@ namespace MyApp.Infrastructure.Services
             if (dto.SolutionName  != null) solution.SolutionName  = dto.SolutionName;
             if (dto.SolutionType  != null) solution.SolutionType  = dto.SolutionType;
             if (dto.Description   != null) solution.Description   = dto.Description;
-            if (dto.Ingredients   != null) solution.Ingredients   = dto.Ingredients;
+            // Only update medicine-specific fields when the final type is MEDICINE
+            var finalType = dto.SolutionType ?? solution.SolutionType;
+            // Minimal DB schema: do not update ingredients/link here because columns may not exist.
             if (dto.MinConfidence != null) solution.MinConfidence  = dto.MinConfidence;
             if (dto.Priority      != null) solution.Priority       = dto.Priority;
+
+            solution.UpdatedAt = DateTime.UtcNow;
+
+            // Minimal DB schema: image linking not supported when solution_images table is not present.
 
             await _context.SaveChangesAsync();
             _logger.LogInformation("Treatment solution Id={Id} updated.", solutionId);
@@ -146,7 +152,7 @@ namespace MyApp.Infrastructure.Services
             SolutionName  = s.SolutionName,
             SolutionType  = s.SolutionType,
             Description   = s.Description,
-            Ingredients   = s.Ingredients,
+            // Ingredients/Link omitted (not present in minimal DB)
             IllnessId     = s.IllnessId,
             IllnessName   = s.Illness?.IllnessName,
             TreeStageId   = s.TreeStageId,

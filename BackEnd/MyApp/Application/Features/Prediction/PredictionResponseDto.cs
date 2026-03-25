@@ -1,4 +1,5 @@
 ﻿using MyApp.Application.Features.Treatment.DTOs;
+using MyApp.Application.Features.Technician.DTOs;
 
 namespace MyApp.Application.Features.Prediction
 {
@@ -25,6 +26,8 @@ namespace MyApp.Application.Features.Prediction
         public string Type { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
         public string? Ingredients { get; set; }
+        public string? ShoppeUrl { get; set; }
+        public List<SolutionImageDto> Images { get; set; } = new();
     }
     
 
@@ -35,8 +38,11 @@ namespace MyApp.Application.Features.Prediction
     
                 public string ImageUrl { get; set; } = string.Empty;
         public string? Ingredients { get; set; }
-
      public string Description { get; set; } = string.Empty;
+
+    public string? ShoppeUrl { get; set; }
+
+    public List<SolutionImageDto> Images { get; set; } = new();
 
 
     }

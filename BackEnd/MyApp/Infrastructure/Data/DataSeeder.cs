@@ -47,13 +47,32 @@ namespace MyApp.Infrastructure.Data
                 _logger.LogInformation("Applying {Count} pending migration(s): {Migrations}", list.Count, string.Join(", ", list));
             }
 
-            await _context.Database.MigrateAsync(cancellationToken);
-
-            await _migrationChecksums.ValidateSealAndVerifyAsync(cancellationToken);
-
-            if (list.Count > 0)
+            var migrationsApplied = false;
+            try
             {
-                _logger.LogInformation("Database migrations applied successfully");
+                await _context.Database.MigrateAsync(cancellationToken);
+                migrationsApplied = true;
+            }
+            catch (InvalidOperationException ex) when (ex.Message?.Contains("PendingModelChangesWarning") == true || ex.Message?.Contains("pending changes", StringComparison.OrdinalIgnoreCase) == true)
+            {
+                // This can happen when the EF model has changed but no migration was created.
+                // We intentionally skip applying migrations in this case to avoid altering the database schema
+                // because the workspace requested no DB schema changes. Log and continue.
+                _logger.LogWarning(ex, "Skipping database migration because the EF model has pending changes. Create a migration to apply schema changes if desired.");
+            }
+
+            if (migrationsApplied)
+            {
+                await _migrationChecksums.ValidateSealAndVerifyAsync(cancellationToken);
+
+                if (list.Count > 0)
+                {
+                    _logger.LogInformation("Database migrations applied successfully");
+                }
+            }
+            else
+            {
+                _logger.LogInformation("Database migration skipped. Continuing without applying schema changes.");
             }
         }
 

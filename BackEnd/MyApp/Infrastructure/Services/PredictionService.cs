@@ -181,13 +181,13 @@ public class PredictionService : IPredictionService, IDisposable
             DiseaseName = illnessInfo?.IllnessName ?? predictedLabel,
             Symptoms = illnessInfo?.Symptoms,
             Causes = illnessInfo?.Causes,
+            // Minimal DB: return only basic treatment/medicine info (no ingredients/link/images)
             Treatments = illnessInfo?.TreatmentSolutions.Where(t => t.SolutionType == "CARE")
                 .Select(t => new TreatmentDto
                 {
                     Name = t.SolutionName ?? "Treatment",
                     Type = t.SolutionType ?? "CARE",
-                    Description = t.Description ?? string.Empty,
-                    Ingredients = t.Ingredients
+                    Description = t.Description ?? string.Empty
                 }).ToList() ?? [],
             Medicines = illnessInfo?.TreatmentSolutions.Where(m => m.SolutionType == "MEDICINE")
                 .Select(m => new MedicineDto

@@ -31,19 +31,14 @@ namespace MyApp.Persistence.Configurations
                 .HasMaxLength(100)
                 .IsUnicode(true)
                 .HasColumnName("solution_type");
-            entity.Property(e => e.ShoppeUrl)
-                .HasMaxLength(500)
-                .IsUnicode(true)
-                .HasColumnName("shoppe_url");
-            entity.Property(e => e.Instructions)
-                .HasColumnType("nvarchar(max)")
-                .IsUnicode(true)
-                .HasColumnName("instructions");
-            entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
-            entity.Property(e => e.Ingredients)
-                .HasColumnType("nvarchar(max)")
-                .IsUnicode(true)
-                .HasColumnName("ingredients");
+            // Some deployments may not have optional columns/tables (shoppe_url/instructions/ingredients/updated_at/solution_images).
+            // To keep the application running without modifying the database, ignore these CLR properties so EF Core
+            // does not expect the corresponding columns/tables at runtime.
+            entity.Ignore(e => e.ShoppeUrl);
+            entity.Ignore(e => e.Instructions);
+            entity.Ignore(e => e.UpdatedAt);
+            entity.Ignore(e => e.Ingredients);
+            entity.Ignore(e => e.Images);
             entity.Property(e => e.TreeStageId).HasColumnName("tree_stage_id");
 
             entity.HasOne(d => d.Illness).WithMany(p => p.TreatmentSolutions)
