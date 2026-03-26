@@ -21,6 +21,7 @@ class HistoryItem {
   final String? treeScientificName;
   final String? treeDescription;
   final String? treeImageUrl;
+  final List<String> productImages;
 
   HistoryItem({
     required this.predictionId,
@@ -39,9 +40,11 @@ class HistoryItem {
     this.treeScientificName,
     this.treeDescription,
     this.treeImageUrl,
+    this.productImages = const [],
   });
 
-  static String resolveImageUrl(String rawUrl) => ApiConfig.resolveMediaUrl(rawUrl);
+  static String resolveImageUrl(String rawUrl) =>
+      ApiConfig.resolveMediaUrl(rawUrl);
 
   factory HistoryItem.fromJson(Map<String, dynamic> json) {
     final rawUrl = (json['imageUrl'] ?? '') as String;
@@ -68,6 +71,26 @@ class HistoryItem {
         ? null
         : HistoryItem.resolveImageUrl(treePath);
 
+    // collect product images from medicines list
+    final List<String> productImages = [];
+    try {
+      final meds = json['medicines'];
+      if (meds is List) {
+        for (final m in meds) {
+          if (m is Map && m['images'] is List) {
+            for (final img in (m['images'] as List)) {
+              if (img is Map) {
+                final path = img['imageUrl'] ?? img['ImageUrl'];
+                if (path is String && path.isNotEmpty) {
+                  productImages.add(HistoryItem.resolveImageUrl(path));
+                }
+              }
+            }
+          }
+        }
+      }
+    } catch (_) {}
+
     return HistoryItem(
       predictionId: json['predictionId'] ?? 0,
       imageUrl: imageUrl,
@@ -87,6 +110,7 @@ class HistoryItem {
       treeScientificName: json['treeScientificName'] as String?,
       treeDescription: json['treeDescription'] as String?,
       treeImageUrl: treeImageUrl,
+      productImages: productImages,
     );
   }
 }

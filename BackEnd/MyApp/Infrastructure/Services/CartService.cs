@@ -39,6 +39,7 @@ namespace MyApp.Infrastructure.Services
                     ImageUrl = i.Solution?.Images
                         .OrderBy(img => img.DisplayOrder)
                         .FirstOrDefault()?.ImageUrl,
+                    ShoppeUrl = i.Solution?.ShoppeUrl,
                     AddedAt = i.AddedAt,
                     Quantity = i.Quantity
                 }).ToList()
@@ -47,6 +48,12 @@ namespace MyApp.Infrastructure.Services
 
         public async Task<bool> AddToCartAsync(AddToCartDto dto)
         {
+            // Validate solution exists to avoid FK constraint violations
+            var solution = await _context.TreatmentSolutions.FindAsync(dto.SolutionId);
+            if (solution == null)
+            {
+                return false;
+            }
             var cart = await _context.Carts.FirstOrDefaultAsync(c => c.UserId == dto.UserId);
             if (cart == null)
             {
@@ -83,6 +90,11 @@ namespace MyApp.Infrastructure.Services
                 return true;
             }
             return false;
+        }
+
+        public async Task<bool> SolutionExistsAsync(int solutionId)
+        {
+            return await _context.TreatmentSolutions.AnyAsync(ts => ts.SolutionId == solutionId);
         }
     }
 }

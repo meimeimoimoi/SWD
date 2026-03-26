@@ -7,6 +7,7 @@ import '../../share/services/history_service.dart';
 import '../../share/services/prediction_service.dart';
 import '../../share/services/storage_service.dart';
 import '../../share/theme/app_colors.dart';
+import '../../share/services/cart_api_service.dart';
 import '../../share/utils/disease_mapper.dart';
 import '../../share/widgets/user_bottom_nav_bar.dart';
 import 'prediction_solutions_sheet.dart';
@@ -139,33 +140,39 @@ class PredictionResult {
         final s = rawUrl.toString().trim();
         if (s.isNotEmpty) shopeeUrl = s;
       }
-      // Determine image: prefer direct imageUrl, else try first item in images list
-      String imageRaw = '';
+      // Collect images: prefer explicit images list, else fallback to single imageUrl
+      List<String> imagesList = [];
       try {
-        final direct = map['imageUrl'] ?? map['ImageUrl'];
-        if (direct != null && direct.toString().trim().isNotEmpty) {
-          imageRaw = direct.toString();
-        } else if (map['images'] is List &&
-            (map['images'] as List).isNotEmpty) {
-          final first = (map['images'] as List).first;
-          if (first is Map) {
-            final f = first['imageUrl'] ?? first['ImageUrl'];
-            if (f != null) imageRaw = f.toString();
-          } else if (first is String) {
-            imageRaw = first;
+        if (map['images'] is List && (map['images'] as List).isNotEmpty) {
+          for (final it in (map['images'] as List)) {
+            if (it is Map) {
+              final f = it['imageUrl'] ?? it['ImageUrl'];
+              if (f != null) imagesList.add(_buildImageUrl(f.toString()));
+            } else if (it is String) {
+              imagesList.add(_buildImageUrl(it));
+            }
+          }
+        } else {
+          final direct = map['imageUrl'] ?? map['ImageUrl'];
+          if (direct != null && direct.toString().trim().isNotEmpty) {
+            imagesList.add(_buildImageUrl(direct.toString()));
           }
         }
       } catch (_) {}
 
+      final firstImage = imagesList.isNotEmpty ? imagesList.first : '';
+
       return TreatmentProduct(
+        solutionId: (map['solutionId'] as num?)?.toInt() ?? (map['id'] as num?)?.toInt(),
         name: (map['name'] ?? '') as String,
-        imageUrl: _buildImageUrl(imageRaw),
+        imageUrl: firstImage,
         badge: isMedicine ? 'Medicine' : 'Care',
         instruction: (map['description'] ?? '') as String,
         price: (map['price'] ?? '') as String,
         isPrimary: isMedicine,
         shopeeUrl: shopeeUrl,
         ingredients: ingredients,
+        images: imagesList,
       );
     }).toList();
   }
@@ -175,8 +182,10 @@ class PredictionResult {
 }
 
 class TreatmentProduct {
+  final int? solutionId;
   final String name;
   final String imageUrl;
+  final List<String> images;
   final String badge;
   final String instruction;
   final String price;
@@ -185,8 +194,10 @@ class TreatmentProduct {
   final List<String> ingredients;
 
   const TreatmentProduct({
+    this.solutionId,
     required this.name,
     required this.imageUrl,
+    this.images = const [],
     required this.badge,
     required this.instruction,
     required this.price,
@@ -208,6 +219,7 @@ class PredictionScreen extends StatefulWidget {
 class _PredictionScreenState extends State<PredictionScreen> {
   int _selectedTab = 0;
   bool _showAiConfidence = false;
+  final Map<int, int> _productImageIndex = {};
 
   @override
   void initState() {
@@ -828,47 +840,66 @@ class _PredictionScreenState extends State<PredictionScreen> {
             width: 80,
             height: 80,
             decoration: BoxDecoration(
-              color: isDark
-                  ? AppColors.darkControlFill
-                  : const Color(0xFFF3F4F6),
+              color: isDark ? AppColors.darkControlFill : const Color(0xFFF3F4F6),
               borderRadius: BorderRadius.circular(12),
             ),
             clipBehavior: Clip.antiAlias,
-            child: ColorFiltered(
-              colorFilter: const ColorFilter.matrix([
-                0.2126,
-                0.7152,
-                0.0722,
-                0,
-                0,
-                0.2126,
-                0.7152,
-                0.0722,
-                0,
-                0,
-                0.2126,
-                0.7152,
-                0.0722,
-                0,
-                0,
-                0,
-                0,
-                0,
-                1,
-                0,
-              ]),
-              child: Image.network(
-                treatment.imageUrl,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Icon(
-                    Icons.medication,
-                    size: 32,
-                    color: isDark ? Colors.white38 : Colors.black26,
-                  );
-                },
-              ),
-            ),
+            child: Builder(builder: (context) {
+              final images = treatment.images.isNotEmpty ? treatment.images : (treatment.imageUrl.isNotEmpty ? [treatment.imageUrl] : []);
+              final keyId = (treatment.solutionId ?? treatment.name.hashCode).abs();
+              final currentIndex = _productImageIndex[keyId] ?? 0;
+
+              if (images.isEmpty) {
+                return Icon(
+                  Icons.medication,
+                  size: 32,
+                  color: isDark ? Colors.white38 : Colors.black26,
+                );
+              }
+
+              return Stack(
+                fit: StackFit.expand,
+                children: [
+                  PageView.builder(
+                    itemCount: images.length,
+                    onPageChanged: (idx) {
+                      setState(() => _productImageIndex[keyId] = idx);
+                    },
+                    itemBuilder: (context, index) {
+                      return Image.network(
+                        images[index],
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => Icon(
+                          Icons.broken_image,
+                          color: isDark ? Colors.white38 : Colors.black26,
+                        ),
+                      );
+                    },
+                  ),
+                  if (images.length > 1)
+                    Positioned(
+                      bottom: 4,
+                      left: 0,
+                      right: 0,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: List.generate(images.length, (i) {
+                          final active = i == currentIndex;
+                          return Container(
+                            width: active ? 8 : 6,
+                            height: active ? 8 : 6,
+                            margin: const EdgeInsets.symmetric(horizontal: 2),
+                            decoration: BoxDecoration(
+                              color: active ? Colors.white : Colors.white54,
+                              shape: BoxShape.circle,
+                            ),
+                          );
+                        }),
+                      ),
+                    ),
+                ],
+              );
+            }),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -1412,11 +1443,37 @@ class _PredictionScreenState extends State<PredictionScreen> {
                       SizedBox(
                         height: 48,
                         child: ElevatedButton(
-                          onPressed: () {
-                            // TODO: Implement add to cart logic
+                          onPressed: () async {
+                            final solutionId = product.solutionId;
+                            if (solutionId == null || solutionId == 0) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Không có mã sản phẩm'),
+                                  behavior: SnackBarBehavior.floating,
+                                ),
+                              );
+                              return;
+                            }
+                            final api = CartApiService();
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
-                                content: Text('Đã thêm vào giỏ hàng'),
+                                content: Text('Đang thêm vào giỏ...'),
+                                behavior: SnackBarBehavior.floating,
+                              ),
+                            );
+                            final ok = await api.addToCart(
+                              solutionId: solutionId,
+                              quantity: 1,
+                            );
+                            if (!context.mounted) return;
+                            ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  ok
+                                      ? 'Đã thêm vào giỏ hàng'
+                                      : 'Thêm vào giỏ thất bại',
+                                ),
                                 behavior: SnackBarBehavior.floating,
                               ),
                             );

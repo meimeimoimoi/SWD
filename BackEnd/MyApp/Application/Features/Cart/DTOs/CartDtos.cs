@@ -18,6 +18,7 @@ namespace MyApp.Application.Features.Cart.DTOs
         public string? SolutionType { get; set; }
         public string? Description { get; set; }
         public string? ImageUrl { get; set; }
+        public string? ShoppeUrl { get; set; }
         public DateTime? AddedAt { get; set; }
         public int Quantity { get; set; }
     }

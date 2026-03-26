@@ -7,5 +7,6 @@ namespace MyApp.Application.Interfaces
         Task<CartDto?> GetCartByUserIdAsync(int userId);
         Task<bool> AddToCartAsync(AddToCartDto dto);
         Task<bool> RemoveFromCartAsync(int cartItemId);
+        Task<bool> SolutionExistsAsync(int solutionId);
     }
 }

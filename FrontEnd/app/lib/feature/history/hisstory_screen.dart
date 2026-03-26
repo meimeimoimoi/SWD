@@ -57,7 +57,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
     });
   }
 
-
   String _dateGroupKey(DateTime dt) {
     return '${dt.year}-${dt.month}-${dt.day}';
   }
@@ -77,7 +76,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
   String _timeOf(DateTime dt) =>
       '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
 
-
   List<MapEntry<String, List<HistoryItem>>> _grouped() {
     final map = <String, List<HistoryItem>>{};
     for (final item in _items) {
@@ -86,7 +84,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
     }
     return map.entries.toList();
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -173,7 +170,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
     );
   }
 
-
   Widget _buildCard(HistoryItem item, bool isDark) {
     final severity = _severityOf(item.diseaseName);
     final displayName = DiseaseMapper.toDisplayName(item.diseaseName);
@@ -207,9 +203,16 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 child: SizedBox(
                   width: 80,
                   height: 80,
-                  child: item.imageUrl.isNotEmpty
-                      ? Image.network(
-                          item.imageUrl,
+                  child: Builder(
+                    builder: (context) {
+                      final images = item.productImages.isNotEmpty
+                          ? item.productImages
+                          : (item.imageUrl.isNotEmpty ? [item.imageUrl] : []);
+                      if (images.isEmpty) return _placeholderThumb(isDark);
+
+                      if (images.length == 1) {
+                        return Image.network(
+                          images.first,
                           fit: BoxFit.cover,
                           loadingBuilder: (context, child, progress) {
                             if (progress == null) return child;
@@ -227,8 +230,24 @@ class _HistoryScreenState extends State<HistoryScreen> {
                           },
                           errorBuilder: (_, __, ___) =>
                               _placeholderThumb(isDark),
-                        )
-                      : _placeholderThumb(isDark),
+                        );
+                      }
+
+                      // multiple images: show a small PageView
+                      return PageView.builder(
+                        itemCount: images.length,
+                        controller: PageController(viewportFraction: 1.0),
+                        itemBuilder: (context, index) {
+                          return Image.network(
+                            images[index],
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) =>
+                                _placeholderThumb(isDark),
+                          );
+                        },
+                      );
+                    },
+                  ),
                 ),
               ),
               const SizedBox(width: 14),
@@ -393,7 +412,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
     );
   }
 
-
   Widget _buildEmptyState(bool isDark) {
     return Center(
       child: Column(
@@ -490,7 +508,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
       ),
     );
   }
-
 
   void _openDetail(HistoryItem item) {
     final result = PredictionResult.fromHistoryItem(item);

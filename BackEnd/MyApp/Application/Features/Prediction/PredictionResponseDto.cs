@@ -29,6 +29,7 @@ namespace MyApp.Application.Features.Prediction
 
  public class MedicineDto
     {  
+        public int solutionId { get; set; } = 0;
         public string Name { get; set; } = string.Empty;
         public string Type { get; set; } = string.Empty;
         public List<MyApp.Application.Features.Technician.DTOs.SolutionImageDto> Images { get; set; } = new();

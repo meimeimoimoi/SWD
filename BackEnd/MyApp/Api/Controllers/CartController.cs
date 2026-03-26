@@ -37,6 +37,28 @@ namespace MyApp.Api.Controllers
         public async Task<IActionResult> AddToCart([FromBody] AddToCartDto dto)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            // Ensure user id comes from token rather than client payload
+            var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
+                ?? User.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub)?.Value;
+            if (!int.TryParse(userIdClaim, out var uid))
+            {
+                return Unauthorized(new { success = false, message = "Không xác định được người dùng." });
+            }
+            dto.UserId = uid;
+
+            if (dto.SolutionId <= 0)
+            {
+                return BadRequest(new { success = false, message = "solutionId is required." });
+            }
+
+            // Validate solution exists
+            var solExists = await _cartService.SolutionExistsAsync(dto.SolutionId);
+            if (!solExists)
+            {
+                return NotFound(new { success = false, message = $"Solution with id {dto.SolutionId} not found." });
+            }
+
             var result = await _cartService.AddToCartAsync(dto);
             return Ok(new { success = result, message = result ? "Đã thêm vào giỏ hàng." : "Không thể thêm vào giỏ hàng." });
         }

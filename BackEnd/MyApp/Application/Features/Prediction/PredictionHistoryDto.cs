@@ -17,6 +17,8 @@ namespace MyApp.Application.Features.Prediction
         public string? IllnessDescription { get; set; }
         public string? Symptoms { get; set; }
         public string? Causes { get; set; }
+        public List<TreatmentDto> Treatments { get; set; } = new List<TreatmentDto>();
+        public List<MedicineDto> Medicines { get; set; } = new List<MedicineDto>();
         public int? TreeId { get; set; }
         public string? TreeName { get; set; }
         public string? TreeScientificName { get; set; }

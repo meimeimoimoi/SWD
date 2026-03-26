@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../share/theme/app_colors.dart';
 import '../../share/services/cart_api_service.dart';
 
@@ -195,8 +196,44 @@ class _CartScreenState extends State<CartScreen> {
                               Icons.shopping_bag_outlined,
                               color: AppColors.brandAccent,
                             ),
-                            onPressed: () {
-                              // TODO: Xử lý mua hàng
+                            onPressed: () async {
+                              final url = item.shopeeUrl;
+                              if (url == null || url.isEmpty) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Link mua hàng không có'),
+                                  ),
+                                );
+                                return;
+                              }
+                              final uri = Uri.tryParse(url);
+                              if (uri == null) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Link mua hàng không hợp lệ'),
+                                  ),
+                                );
+                                return;
+                              }
+                              try {
+                                final launched = await launchUrl(
+                                  uri,
+                                  mode: LaunchMode.externalApplication,
+                                );
+                                if (!launched) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Không thể mở link'),
+                                    ),
+                                  );
+                                }
+                              } catch (_) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Lỗi khi mở link'),
+                                  ),
+                                );
+                              }
                             },
                             tooltip: 'Mua',
                           ),

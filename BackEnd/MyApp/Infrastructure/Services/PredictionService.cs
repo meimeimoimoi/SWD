@@ -191,6 +191,7 @@ public class PredictionService : IPredictionService, IDisposable
             Medicines = illnessInfo?.TreatmentSolutions.Where(m => m.SolutionType == "MEDICINE")
                 .Select(m => new MedicineDto
                 {
+                    solutionId = m.SolutionId,
                     Name = m.SolutionName ?? "Medicine",
                     Type = m.SolutionType ?? "MEDICINE",
                     Description = m.Description ?? string.Empty,
