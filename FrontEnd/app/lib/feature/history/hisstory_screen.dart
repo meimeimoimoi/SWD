@@ -305,21 +305,29 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     ),
                     const SizedBox(height: 10),
                     Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         _buildSeverityBadge(severity, isDark),
                         const SizedBox(width: 8),
-                        Text(
-                          'Mức độ',
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontStyle: FontStyle.italic,
-                            color: isDark
-                                ? AppColors.textSecondaryDark.withOpacity(0.6)
-                                : AppColors.textSecondaryLight.withOpacity(0.6),
+                        Expanded(
+                          child: Text(
+                            'Mức độ',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontStyle: FontStyle.italic,
+                              color: isDark
+                                  ? AppColors.textSecondaryDark.withOpacity(0.6)
+                                  : AppColors.textSecondaryLight.withOpacity(
+                                      0.6,
+                                    ),
+                            ),
                           ),
                         ),
                       ],
                     ),
+                    const SizedBox(height: 8),
+                    // Treatments and medicines are hidden in list view
+                    const SizedBox.shrink(),
                   ],
                 ),
               ),
