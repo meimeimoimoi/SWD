@@ -148,7 +148,8 @@ abstract final class ApiPaths {
   static const treatments = '/api/treatments';
   static String treatmentAssign(int id) => '/api/treatments/$id/assign';
 
-  static const treatmentsRecommendationsPath = '/api/treatments/recommendations';
+  static const treatmentsRecommendationsPath =
+      '/api/treatments/recommendations';
 
   static String treatmentsRecommendations({
     int? illnessId,
@@ -166,5 +167,9 @@ abstract final class ApiPaths {
   static String treatmentSolution(int id) => '/api/treatments/solutions/$id';
   static const treatmentsAiSuggest = '/api/treatments/ai-suggest';
   static const predictionsHistory = '/api/predictions/history';
-  static String predictionsHistoryItem(int id) => '/api/predictions/history/$id';
+  static String predictionsHistoryItem(int id) =>
+      '/api/predictions/history/$id';
+  static const cart = '/api/cart';
+  static const cartAdd = '/api/cart/add';
+  static String cartRemoveItem(int id) => '/api/cart/item/$id';
 }

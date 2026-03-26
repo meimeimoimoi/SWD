@@ -17,9 +17,14 @@ namespace MyApp.Api.Controllers
             _cartService = cartService;
         }
 
-        [HttpGet("{userId}")]
-        public async Task<IActionResult> GetUserCart(int userId)
+        [HttpGet]
+        public async Task<IActionResult> GetUserCart()
         {
+            var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
+                ?? User.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub)?.Value;
+            if (!int.TryParse(userIdClaim, out var userId))
+                return Unauthorized(new { success = false, message = "Không xác định được người dùng." });
+
             var cart = await _cartService.GetCartByUserIdAsync(userId);
             if (cart == null)
             {

@@ -59,9 +59,9 @@ class PredictionResult {
       scientificName: scientificName,
       imageUrl: imageUrl,
       confidence: data.confidence,
-      description: data.symptoms ?? 'No description available.',
-      cause: data.causes ?? 'No information available.',
-      symptoms: data.symptoms ?? 'No symptom information available.',
+      description: data.symptoms ?? 'Chưa có mô tả.',
+      cause: data.causes ?? 'Chưa có thông tin.',
+      symptoms: data.symptoms ?? 'Chưa có thông tin triệu chứng.',
       impact: DiseaseMapper.getImpact(englishName),
       treatments: _mapTreatments(data.treatments),
       medicines: _mapTreatments(data.medicines),
@@ -85,9 +85,9 @@ class PredictionResult {
       description:
           _nonEmpty(item.illnessDescription) ??
           _nonEmpty(item.symptoms) ??
-          'No description available.',
-      cause: _nonEmpty(item.causes) ?? 'No information available.',
-      symptoms: _nonEmpty(item.symptoms) ?? 'No symptom information available.',
+          'Chưa có mô tả.',
+      cause: _nonEmpty(item.causes) ?? 'Chưa có thông tin.',
+      symptoms: _nonEmpty(item.symptoms) ?? 'Chưa có thông tin triệu chứng.',
       impact: DiseaseMapper.getImpact(d),
       treatments: const [],
       medicines: const [],
@@ -122,7 +122,7 @@ class PredictionResult {
   static List<TreatmentProduct> _mapTreatments(List<dynamic> items) {
     return items.map((item) {
       final map = item as Map<String, dynamic>;
-      final type = (map['type'] ?? '') as String;
+      final type = ((map['type'] ?? '') as String).toLowerCase();
       final isMedicine = type == 'medicine';
       final ingredients = _parseIngredients(
         map['ingredients'] ?? map['composition'] ?? map['components'],
@@ -139,9 +139,27 @@ class PredictionResult {
         final s = rawUrl.toString().trim();
         if (s.isNotEmpty) shopeeUrl = s;
       }
+      // Determine image: prefer direct imageUrl, else try first item in images list
+      String imageRaw = '';
+      try {
+        final direct = map['imageUrl'] ?? map['ImageUrl'];
+        if (direct != null && direct.toString().trim().isNotEmpty) {
+          imageRaw = direct.toString();
+        } else if (map['images'] is List &&
+            (map['images'] as List).isNotEmpty) {
+          final first = (map['images'] as List).first;
+          if (first is Map) {
+            final f = first['imageUrl'] ?? first['ImageUrl'];
+            if (f != null) imageRaw = f.toString();
+          } else if (first is String) {
+            imageRaw = first;
+          }
+        }
+      } catch (_) {}
+
       return TreatmentProduct(
         name: (map['name'] ?? '') as String,
-        imageUrl: _buildImageUrl((map['imageUrl'] ?? '') as String),
+        imageUrl: _buildImageUrl(imageRaw),
         badge: isMedicine ? 'Medicine' : 'Care',
         instruction: (map['description'] ?? '') as String,
         price: (map['price'] ?? '') as String,
@@ -205,17 +223,17 @@ class _PredictionScreenState extends State<PredictionScreen> {
   static const _sampleResult = PredictionResult(
     predictionId: 0,
     illnessId: null,
-    diseaseName: 'Leaf Blast',
-    displayName: 'Rice blast (fungal leaf blight)',
+    diseaseName: 'Bệnh cháy lá',
+    displayName: 'Bệnh nấm lá lúa (Rice blast)',
     scientificName: 'Magnaporthe oryzae',
     imageUrl:
         'https://lh3.googleusercontent.com/aida-public/AB6AXuA998KIbzaAWHJSTjnx-DfsJtgPMFNyeETxvOnpYgoua7rzPHly7c4NTeriJVTVkEJH_CjMXLxDMjzZxHXzgQKmmv-E_NzGBnWIPOn8_kVsF5a2eQ34JF-a-ZsFk9EU4DS78O1ZIp9y85lKfIPp6snaGQ_rpTjBuKD6_ngh-DPVUeIynJXCTN07eXgLJgGzepqSgf07FPym-d3zP_EGCU8_skAI4DWlvzYEaj8RIvEuwTiBRwv2XaNc0GdSayp2myoLHrmXx2YXzdY',
     confidence: 0.98,
     description:
-        'A fungal leaf spot disease that appears as small brown or gray spots on leaf surfaces. Without treatment, spots can spread, wilt leaves, and seriously reduce photosynthesis.',
-    cause: 'High humidity, fungal spores',
-    symptoms: 'Leaf spots, wilting, yield loss',
-    impact: 'Yield reduction 15–30%',
+        'Bệnh do nấm xuất hiện dưới dạng các đốm nâu hoặc xám nhỏ trên bề mặt lá. Nếu không điều trị, đốm có thể lan rộng, làm lá héo và giảm khả năng quang hợp.',
+    cause: 'Độ ẩm cao, bào tử nấm',
+    symptoms: 'Đốm lá, lá héo, giảm năng suất',
+    impact: 'Giảm sản lượng 15–30%',
     treatments: [
       TreatmentProduct(
         name: 'Thuốc trừ nấm mẫu',
@@ -457,7 +475,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'AI confidence',
+                'Độ tin cậy AI',
                 style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
               ),
               Text(
@@ -507,7 +525,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  'Very high accuracy based on current data.',
+                  'Độ chính xác rất cao dựa trên dữ liệu hiện tại.',
                   style: TextStyle(
                     fontSize: 12,
                     color: isDark
@@ -540,7 +558,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
             ),
             const SizedBox(width: 8),
             Text(
-              'Disease description',
+              'Mô tả bệnh',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -566,7 +584,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
           children: [
             Expanded(
               child: _buildInfoCard(
-                title: 'Cause',
+                title: 'Nguyên nhân',
                 content: data.cause,
                 isDark: isDark,
               ),
@@ -574,7 +592,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
             const SizedBox(width: 12),
             Expanded(
               child: _buildInfoCard(
-                title: 'Impact',
+                title: 'Tác động',
                 content: data.impact,
                 isDark: isDark,
               ),
@@ -648,7 +666,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
             ),
             const SizedBox(width: 8),
             Text(
-              'Treatment suggestions',
+              'Gợi ý điều trị',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -670,9 +688,9 @@ class _PredictionScreenState extends State<PredictionScreen> {
           ),
           child: Row(
             children: [
-              _buildTabItem(title: 'Care', index: 0, isDark: isDark),
+              _buildTabItem(title: 'Chăm sóc', index: 0, isDark: isDark),
               const SizedBox(width: 4),
-              _buildTabItem(title: 'Medicine', index: 1, isDark: isDark),
+              _buildTabItem(title: 'Thuốc', index: 1, isDark: isDark),
             ],
           ),
         ),
@@ -698,8 +716,8 @@ class _PredictionScreenState extends State<PredictionScreen> {
                 child: Center(
                   child: Text(
                     _selectedTab == 0
-                        ? 'No care suggestions yet.'
-                        : 'No medicine suggestions yet.',
+                        ? 'Chưa có gợi ý chăm sóc.'
+                        : 'Chưa có gợi ý thuốc.',
                     style: TextStyle(
                       color: isDark
                           ? const Color(0xFFD1D5DB)
@@ -929,7 +947,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           child: Text(
-            'Details',
+            'Chi tiết',
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.bold,
@@ -967,7 +985,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
                 if (!context.mounted) return;
                 if (ok == true) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Scan linked to plant.')),
+                    const SnackBar(content: Text('Đã gán vào cây.')),
                   );
                 }
               },
@@ -989,7 +1007,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      'ASSIGN TO PLANT',
+                      'GÁN VÀO CÂY',
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w800,
@@ -1038,7 +1056,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    'SUGGEST SOLUTIONS',
+                    'GỢI Ý GIẢI PHÁP',
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w800,
@@ -1059,7 +1077,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
             Expanded(
               child: _buildActionButton(
                 icon: Icons.save,
-                label: 'Save',
+                label: 'Lưu',
                 onTap: () => _onSave(context),
                 isDark: isDark,
               ),
@@ -1068,7 +1086,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
             Expanded(
               child: _buildActionButton(
                 icon: Icons.feedback,
-                label: 'Feedback',
+                label: 'Phản hồi',
                 onTap: () => _onFeedback(context),
                 isDark: isDark,
               ),
@@ -1138,21 +1156,21 @@ class _PredictionScreenState extends State<PredictionScreen> {
           children: [
             ListTile(
               leading: const Icon(Icons.share),
-              title: const Text('Share result'),
+              title: const Text('Chia sẻ kết quả'),
               onTap: () {
                 Navigator.pop(context);
               },
             ),
             ListTile(
               leading: const Icon(Icons.download),
-              title: const Text('Download report'),
+              title: const Text('Tải báo cáo'),
               onTap: () {
                 Navigator.pop(context);
               },
             ),
             ListTile(
               leading: const Icon(Icons.help_outline),
-              title: const Text('Help'),
+              title: const Text('Trợ giúp'),
               onTap: () {
                 Navigator.pop(context);
               },
@@ -1274,7 +1292,11 @@ class _PredictionScreenState extends State<PredictionScreen> {
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Text(
-                              product.badge,
+                              product.badge == 'Care'
+                                  ? 'Chăm sóc'
+                                  : (product.badge == 'Medicine'
+                                        ? 'Thuốc'
+                                        : product.badge),
                               style: TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w500,
@@ -1292,7 +1314,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
                           const SizedBox(height: 24),
 
                           Text(
-                            'Description',
+                            'Mô tả',
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
@@ -1394,7 +1416,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
                             // TODO: Implement add to cart logic
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
-                                content: Text('Added to cart'),
+                                content: Text('Đã thêm vào giỏ hàng'),
                                 behavior: SnackBarBehavior.floating,
                               ),
                             );
@@ -1481,7 +1503,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
                               elevation: 0,
                             ),
                             child: const Text(
-                              'Buy',
+                              'Mua',
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 16,
@@ -1504,7 +1526,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
   void _onSave(BuildContext context) {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('Diagnosis result saved'),
+        content: Text('Đã lưu kết quả chẩn đoán'),
         behavior: SnackBarBehavior.floating,
       ),
     );

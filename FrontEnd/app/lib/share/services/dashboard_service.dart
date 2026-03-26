@@ -827,11 +827,9 @@ class DashboardService {
     }
   }
 
-  Future<Map<String, dynamic>?> createTreatmentManagement(
-    Map<String, dynamic> body,
-  ) async {
+  Future<Map<String, dynamic>?> createTreatmentManagement(dynamic data) async {
     try {
-      final response = await _authorizedPost(ApiPaths.treatments, body);
+      final response = await _authorizedPost(ApiPaths.treatments, data);
       if (response.data['success'] == true) {
         final d = response.data['data'];
         if (d is Map) {
@@ -862,7 +860,10 @@ class DashboardService {
     Map<String, dynamic> body,
   ) async {
     try {
-      final response = await _authorizedPut('/api/treatments/$treatmentId', body);
+      final response = await _authorizedPut(
+        '/api/treatments/$treatmentId',
+        body,
+      );
       return response.data['success'] == true;
     } catch (e) {
       return false;
@@ -878,7 +879,10 @@ class DashboardService {
     }
   }
 
-  Future<bool> uploadTreatmentImage(int treatmentId, String filePath) async {
+  Future<Map<String, dynamic>?> uploadTreatmentImage(
+    int treatmentId,
+    String filePath,
+  ) async {
     try {
       final accessToken = await StorageService.getAccessToken();
       final fileName = filePath.split(RegExp(r'[\\/]')).last;
@@ -889,6 +893,22 @@ class DashboardService {
         '/api/treatments/$treatmentId/images',
         data: formData,
         options: Options(headers: {'Authorization': 'Bearer $accessToken'}),
+      );
+      if (response.data['success'] == true) {
+        final d = response.data['data'];
+        if (d is Map) return Map<String, dynamic>.from(d);
+        return {};
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  Future<bool> deleteTreatmentImage(int imageId) async {
+    try {
+      final response = await _authorizedDelete(
+        '/api/treatments/images/$imageId',
       );
       return response.data['success'] == true;
     } catch (e) {
@@ -906,16 +926,17 @@ class DashboardService {
 
   Future<Response> _authorizedPost(String path, dynamic data) async {
     final accessToken = await StorageService.getAccessToken();
+    final isFormData = data is FormData;
+    final headers = <String, dynamic>{
+      'Authorization': 'Bearer $accessToken',
+      'Accept': 'application/json',
+    };
+    if (!isFormData)
+      headers[Headers.contentTypeHeader] = Headers.jsonContentType;
     return await _dio.post(
       path,
       data: data,
-      options: Options(
-        headers: {
-          'Authorization': 'Bearer $accessToken',
-          Headers.contentTypeHeader: Headers.jsonContentType,
-          'Accept': 'application/json',
-        },
-      ),
+      options: Options(headers: headers),
     );
   }
 

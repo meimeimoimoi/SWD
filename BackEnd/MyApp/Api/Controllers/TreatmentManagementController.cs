@@ -108,7 +108,7 @@ namespace MyApp.Api.Controllers
             }
         }
         [HttpPost]
-        public async Task<IActionResult> CreateTreatment([FromBody] CreateTreatmentDto dto)
+        public async Task<IActionResult> CreateTreatment(CreateTreatmentDto dto)
         {
             try
             {

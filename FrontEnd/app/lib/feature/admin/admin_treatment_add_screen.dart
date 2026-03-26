@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../share/services/dashboard_service.dart';
+import 'package:dio/dio.dart';
 import '../../share/theme/app_colors.dart';
 import '../../share/widgets/app_button.dart';
 import '../../share/widgets/app_card.dart';
@@ -34,7 +35,7 @@ class _AdminTreatmentAddScreenState extends State<AdminTreatmentAddScreen> {
 
   List<Map<String, dynamic>> _illnesses = [];
   List<Map<String, dynamic>> _stages = [];
-  final Set<int> _selectedIllnessIds = {};
+  int? _selectedIllnessId;
   int? _treeStageId;
   String _solutionType = 'CARE';
 
@@ -138,7 +139,7 @@ class _AdminTreatmentAddScreenState extends State<AdminTreatmentAddScreen> {
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
-    if (_selectedIllnessIds.isEmpty) {
+    if (_selectedIllnessId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Chọn ít nhất một loại bệnh.'),
@@ -172,7 +173,7 @@ class _AdminTreatmentAddScreenState extends State<AdminTreatmentAddScreen> {
         return;
       }
     }
-    
+
     final ingredients = _ingredientsController.text.trim();
     final shoppeUrl = _shoppeUrlController.text.trim();
     final instructions = _instructionsController.text.trim();
@@ -194,61 +195,53 @@ class _AdminTreatmentAddScreenState extends State<AdminTreatmentAddScreen> {
     var ok = 0;
     final failed = <String>[];
 
-    for (final illnessId in _selectedIllnessIds) {
-      final body = <String, dynamic>{
-        'illnessId': illnessId,
-        'treeStageId': _treeStageId,
-        'solutionName': name,
-        'solutionType': _solutionType,
-        if (desc.isNotEmpty) 'description': desc,
-        if (minConf != null) 'minConfidence': minConf,
-        if (priority != null) 'priority': priority,
-        if (ingredients.isNotEmpty) 'ingredients': ingredients,
-        if (shoppeUrl.isNotEmpty) 'shoppeUrl': shoppeUrl,
-        if (instructions.isNotEmpty) 'instructions': instructions,
-      };
-      final r = await _api.createTreatmentManagement(body);
-      if (r != null) {
-        ok++;
-        final newId =
-            r['treatmentId'] ?? r['TreatmentId'] ?? r['id'] ?? r['Id'];
-        if (newId != null && _images.isNotEmpty) {
-          int treatmentId = 0;
-          if (newId is int) {
-            treatmentId = newId;
-          } else {
-            treatmentId = int.tryParse('$newId') ?? 0;
-          }
-          if (treatmentId > 0) {
-            for (final img in _images) {
-              await _api.uploadTreatmentImage(treatmentId, img.path);
-            }
-          }
-        }
-      } else {
-        failed.add(
-          _illnessName(
-            _illnesses.firstWhere(
-              (e) => _illnessId(e) == illnessId,
-              orElse: () => {'illnessName': '#$illnessId'},
-            ),
-          ),
-        );
+    final illnessId = _selectedIllnessId!;
+    // Build FormData to send both fields and files in one multipart request
+    final formMap = <String, dynamic>{
+      'illnessId': illnessId,
+      'treeStageId': _treeStageId,
+      'solutionName': name,
+      'solutionType': _solutionType,
+      if (desc.isNotEmpty) 'description': desc,
+      if (minConf != null) 'minConfidence': minConf,
+      if (priority != null) 'priority': priority,
+      if (ingredients.isNotEmpty) 'ingredients': ingredients,
+      if (shoppeUrl.isNotEmpty) 'shoppeUrl': shoppeUrl,
+      if (instructions.isNotEmpty) 'instructions': instructions,
+    };
+    if (_images.isNotEmpty) {
+      final imgs = <MultipartFile>[];
+      for (final img in _images) {
+        try {
+          imgs.add(await MultipartFile.fromFile(img.path, filename: img.name));
+        } catch (_) {}
       }
+      if (imgs.isNotEmpty) formMap['images'] = imgs;
+    }
+
+    final formData = FormData.fromMap(formMap);
+    final r = await _api.createTreatmentManagement(formData);
+    if (r != null) {
+      ok = 1;
+    } else {
+      failed.add(
+        _illnessName(
+          _illnesses.firstWhere(
+            (e) => _illnessId(e) == illnessId,
+            orElse: () => {'illnessName': '#$illnessId'},
+          ),
+        ),
+      );
     }
 
     if (!mounted) return;
     setState(() => _submitting = false);
 
     final theme = Theme.of(context);
-    if (ok == _selectedIllnessIds.length) {
+    if (ok == 1) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            ok == 1
-                ? 'Đã thêm giải pháp.'
-                : 'Đã thêm $ok giải pháp (mỗi giải pháp cho một loại bệnh).',
-          ),
+          content: const Text('Đã thêm giải pháp.'),
           backgroundColor: theme.colorScheme.primary,
           behavior: SnackBarBehavior.floating,
         ),
@@ -259,16 +252,13 @@ class _AdminTreatmentAddScreenState extends State<AdminTreatmentAddScreen> {
         SnackBar(
           content: Text(
             failed.isEmpty
-                ? 'Một số yêu cầu thất bại.'
-                : 'Đã tạo $ok trên ${_selectedIllnessIds.length}. Thất bại: ${failed.take(3).join(', ')}${failed.length > 3 ? '…' : ''}',
+                ? 'Tạo thất bại.'
+                : 'Thất bại: ${failed.take(3).join(', ')}${failed.length > 3 ? '…' : ''}',
           ),
           backgroundColor: theme.colorScheme.error,
           behavior: SnackBarBehavior.floating,
         ),
       );
-      if (ok > 0) {
-        Navigator.pop(context, true);
-      }
     }
   }
 
@@ -336,23 +326,13 @@ class _AdminTreatmentAddScreenState extends State<AdminTreatmentAddScreen> {
                   Row(
                     children: [
                       TextButton(
-                        onPressed: () {
-                          setState(() {
-                            _selectedIllnessIds.clear();
-                            for (final m in _illnesses) {
-                              _selectedIllnessIds.add(_illnessId(m));
-                            }
-                          });
-                        },
-                        child: const Text('Chọn tất cả'),
-                      ),
-                      TextButton(
-                        onPressed: () => setState(_selectedIllnessIds.clear),
+                        onPressed: () =>
+                            setState(() => _selectedIllnessId = null),
                         child: const Text('Xóa chọn'),
                       ),
                       const Spacer(),
                       Text(
-                        'Đã chọn ${_selectedIllnessIds.length}',
+                        'Đã chọn ${_selectedIllnessId == null ? 0 : 1}',
                         style: theme.textTheme.labelMedium?.copyWith(
                           color: AppColors.primary,
                           fontWeight: FontWeight.w600,
@@ -382,18 +362,11 @@ class _AdminTreatmentAddScreenState extends State<AdminTreatmentAddScreen> {
                         itemBuilder: (context, i) {
                           final m = _filteredIllnesses[i];
                           final id = _illnessId(m);
-                          final checked = _selectedIllnessIds.contains(id);
-                          return CheckboxListTile(
-                            value: checked,
-                            onChanged: (v) {
-                              setState(() {
-                                if (v == true) {
-                                  _selectedIllnessIds.add(id);
-                                } else {
-                                  _selectedIllnessIds.remove(id);
-                                }
-                              });
-                            },
+                          return RadioListTile<int>(
+                            value: id,
+                            groupValue: _selectedIllnessId,
+                            onChanged: (v) =>
+                                setState(() => _selectedIllnessId = v),
                             dense: true,
                             title: Text(
                               _illnessName(m),
@@ -537,7 +510,10 @@ class _AdminTreatmentAddScreenState extends State<AdminTreatmentAddScreen> {
                       controller: _shoppeUrlController,
                     ),
                     const SizedBox(height: 12),
-                    Text('Hướng dẫn sử dụng (tùy chọn)', style: theme.textTheme.titleMedium),
+                    Text(
+                      'Hướng dẫn sử dụng (tùy chọn)',
+                      style: theme.textTheme.titleMedium,
+                    ),
                     const SizedBox(height: 8),
                     TextFormField(
                       controller: _instructionsController,
@@ -613,13 +589,13 @@ class _AdminTreatmentAddScreenState extends State<AdminTreatmentAddScreen> {
                   AppButton(
                     label: _submitting
                         ? 'Đang lưu…'
-                        : _selectedIllnessIds.isEmpty
+                        : _selectedIllnessId == null
                         ? 'Hãy chọn bệnh hại trước'
-                        : 'Tạo cho ${_selectedIllnessIds.length} loại bệnh',
+                        : 'Tạo cho 1 loại bệnh',
                     onPressed: _submitting
                         ? null
                         : () {
-                            if (_selectedIllnessIds.isEmpty) {
+                            if (_selectedIllnessId == null) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
                                   content: Text(

@@ -30,17 +30,11 @@ namespace MyApp.Application.Features.Prediction
  public class MedicineDto
     {  
         public string Name { get; set; } = string.Empty;
-                public string Type { get; set; } = string.Empty;
-    
-                public string ImageUrl { get; set; } = string.Empty;
+        public string Type { get; set; } = string.Empty;
+        public List<MyApp.Application.Features.Technician.DTOs.SolutionImageDto> Images { get; set; } = new();
         public string? Ingredients { get; set; }
-
-        public List<string> ShoppeUrl { get; set; } = new List<string>();
-
+        public string? ShoppeUrl { get; set; }
         public string? Instructions { get; set; }
-
-     public string Description { get; set; } = string.Empty;
-
-
-    }
+        public string Description { get; set; } = string.Empty;
+        }
 }
