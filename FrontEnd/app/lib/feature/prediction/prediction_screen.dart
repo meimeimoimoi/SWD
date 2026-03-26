@@ -90,8 +90,8 @@ class PredictionResult {
       cause: _nonEmpty(item.causes) ?? 'Chưa có thông tin.',
       symptoms: _nonEmpty(item.symptoms) ?? 'Chưa có thông tin triệu chứng.',
       impact: DiseaseMapper.getImpact(d),
-      treatments: const [],
-      medicines: const [],
+      treatments: _mapTreatments(item.treatments),
+      medicines: _mapTreatments(item.medicines),
       isHealthy: DiseaseMapper.isHealthy(d),
     );
   }
@@ -163,7 +163,9 @@ class PredictionResult {
       final firstImage = imagesList.isNotEmpty ? imagesList.first : '';
 
       return TreatmentProduct(
-        solutionId: (map['solutionId'] as num?)?.toInt() ?? (map['id'] as num?)?.toInt(),
+        solutionId:
+            (map['solutionId'] as num?)?.toInt() ??
+            (map['id'] as num?)?.toInt(),
         name: (map['name'] ?? '') as String,
         imageUrl: firstImage,
         badge: isMedicine ? 'Medicine' : 'Care',
@@ -840,66 +842,75 @@ class _PredictionScreenState extends State<PredictionScreen> {
             width: 80,
             height: 80,
             decoration: BoxDecoration(
-              color: isDark ? AppColors.darkControlFill : const Color(0xFFF3F4F6),
+              color: isDark
+                  ? AppColors.darkControlFill
+                  : const Color(0xFFF3F4F6),
               borderRadius: BorderRadius.circular(12),
             ),
             clipBehavior: Clip.antiAlias,
-            child: Builder(builder: (context) {
-              final images = treatment.images.isNotEmpty ? treatment.images : (treatment.imageUrl.isNotEmpty ? [treatment.imageUrl] : []);
-              final keyId = (treatment.solutionId ?? treatment.name.hashCode).abs();
-              final currentIndex = _productImageIndex[keyId] ?? 0;
+            child: Builder(
+              builder: (context) {
+                final images = treatment.images.isNotEmpty
+                    ? treatment.images
+                    : (treatment.imageUrl.isNotEmpty
+                          ? [treatment.imageUrl]
+                          : []);
+                final keyId = (treatment.solutionId ?? treatment.name.hashCode)
+                    .abs();
+                final currentIndex = _productImageIndex[keyId] ?? 0;
 
-              if (images.isEmpty) {
-                return Icon(
-                  Icons.medication,
-                  size: 32,
-                  color: isDark ? Colors.white38 : Colors.black26,
-                );
-              }
+                if (images.isEmpty) {
+                  return Icon(
+                    Icons.medication,
+                    size: 32,
+                    color: isDark ? Colors.white38 : Colors.black26,
+                  );
+                }
 
-              return Stack(
-                fit: StackFit.expand,
-                children: [
-                  PageView.builder(
-                    itemCount: images.length,
-                    onPageChanged: (idx) {
-                      setState(() => _productImageIndex[keyId] = idx);
-                    },
-                    itemBuilder: (context, index) {
-                      return Image.network(
-                        images[index],
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => Icon(
-                          Icons.broken_image,
-                          color: isDark ? Colors.white38 : Colors.black26,
-                        ),
-                      );
-                    },
-                  ),
-                  if (images.length > 1)
-                    Positioned(
-                      bottom: 4,
-                      left: 0,
-                      right: 0,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: List.generate(images.length, (i) {
-                          final active = i == currentIndex;
-                          return Container(
-                            width: active ? 8 : 6,
-                            height: active ? 8 : 6,
-                            margin: const EdgeInsets.symmetric(horizontal: 2),
-                            decoration: BoxDecoration(
-                              color: active ? Colors.white : Colors.white54,
-                              shape: BoxShape.circle,
-                            ),
-                          );
-                        }),
-                      ),
+                return Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    PageView.builder(
+                      itemCount: images.length,
+                      onPageChanged: (idx) {
+                        setState(() => _productImageIndex[keyId] = idx);
+                      },
+                      itemBuilder: (context, index) {
+                        return Image.network(
+                          images[index],
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) => Icon(
+                            Icons.broken_image,
+                            color: isDark ? Colors.white38 : Colors.black26,
+                          ),
+                        );
+                      },
                     ),
-                ],
-              );
-            }),
+                    if (images.length > 1)
+                      Positioned(
+                        bottom: 4,
+                        left: 0,
+                        right: 0,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: List.generate(images.length, (i) {
+                            final active = i == currentIndex;
+                            return Container(
+                              width: active ? 8 : 6,
+                              height: active ? 8 : 6,
+                              margin: const EdgeInsets.symmetric(horizontal: 2),
+                              decoration: BoxDecoration(
+                                color: active ? Colors.white : Colors.white54,
+                                shape: BoxShape.circle,
+                              ),
+                            );
+                          }),
+                        ),
+                      ),
+                  ],
+                );
+              },
+            ),
           ),
           const SizedBox(width: 16),
           Expanded(

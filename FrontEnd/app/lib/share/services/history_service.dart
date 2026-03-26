@@ -22,6 +22,8 @@ class HistoryItem {
   final String? treeDescription;
   final String? treeImageUrl;
   final List<String> productImages;
+  final List<dynamic> treatments;
+  final List<dynamic> medicines;
 
   HistoryItem({
     required this.predictionId,
@@ -41,6 +43,8 @@ class HistoryItem {
     this.treeDescription,
     this.treeImageUrl,
     this.productImages = const [],
+    this.treatments = const [],
+    this.medicines = const [],
   });
 
   static String resolveImageUrl(String rawUrl) =>
@@ -73,9 +77,12 @@ class HistoryItem {
 
     // collect product images from medicines list
     final List<String> productImages = [];
+    final List<dynamic> treatments = [];
+    final List<dynamic> medicines = [];
     try {
       final meds = json['medicines'];
       if (meds is List) {
+        medicines.addAll(meds);
         for (final m in meds) {
           if (m is Map && m['images'] is List) {
             for (final img in (m['images'] as List)) {
@@ -89,6 +96,9 @@ class HistoryItem {
           }
         }
       }
+
+      final tr = json['treatments'];
+      if (tr is List) treatments.addAll(tr);
     } catch (_) {}
 
     return HistoryItem(
@@ -111,6 +121,8 @@ class HistoryItem {
       treeDescription: json['treeDescription'] as String?,
       treeImageUrl: treeImageUrl,
       productImages: productImages,
+      treatments: treatments,
+      medicines: medicines,
     );
   }
 }
