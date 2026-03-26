@@ -89,6 +89,9 @@ namespace MyApp.Application.Features.Technician.DTOs
         public string? ShoppeUrl { get; set; }
 
         public string? Instructions { get; set; }
+
+        // Thêm thuộc tính nhận danh sách ảnh khi tạo treatment
+        public List<IFormFile>? Images { get; set; }
     }
 
     public class AssignTreatmentToIllnessDto

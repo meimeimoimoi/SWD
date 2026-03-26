@@ -72,7 +72,7 @@ class _ScanScreenState extends State<ScanScreen> {
       } else {
         final msg = res.message;
         _historyError = msg.contains('login') || msg.contains('Unauthorized')
-            ? 'Sign in to see your recent scans.'
+            ? 'Đăng nhập để xem các bản quét gần đây.'
             : msg;
       }
     });
@@ -112,7 +112,7 @@ class _ScanScreenState extends State<ScanScreen> {
         _modelsError = result.errorMessage;
       } else {
         _modelsError =
-            'No AI models available. An admin must upload and activate a model.';
+            'Không có mô hình AI nào khả dụng. Quản trị viên cần tải lên và kích hoạt mô hình.';
       }
     });
   }
@@ -168,7 +168,7 @@ class _ScanScreenState extends State<ScanScreen> {
                       ),
                       Expanded(
                         child: Text(
-                          'Capture leaf',
+                          'Chụp ảnh lá',
                           textAlign: TextAlign.center,
                           style: theme.textTheme.titleLarge,
                         ),
@@ -203,13 +203,13 @@ class _ScanScreenState extends State<ScanScreen> {
                         ),
                         const SizedBox(height: 20),
                         Text(
-                          'Selected leaf image',
+                          'Ảnh lá đã chọn',
                           textAlign: TextAlign.center,
                           style: theme.textTheme.headlineSmall,
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Make sure the leaf is in focus and well lit for the best analysis.',
+                          'Đảm bảo lá được lấy nét và đủ ánh sáng để có kết quả phân tích tốt nhất.',
                           textAlign: TextAlign.center,
                           style: theme.textTheme.bodyMedium,
                         ),
@@ -226,7 +226,7 @@ class _ScanScreenState extends State<ScanScreen> {
                         children: [
                           Expanded(
                             child: AppButton(
-                              label: 'Retake',
+                              label: 'Chụp lại',
                               variant: AppButtonVariant.outlined,
                               onPressed: () => Navigator.of(
                                 context,
@@ -236,7 +236,7 @@ class _ScanScreenState extends State<ScanScreen> {
                           const SizedBox(width: 12),
                           Expanded(
                             child: AppButton(
-                              label: 'Confirm',
+                              label: 'Xác nhận',
                               onPressed: () => Navigator.of(
                                 context,
                               ).pop(_CaptureLeafAction.confirm),
@@ -267,7 +267,7 @@ class _ScanScreenState extends State<ScanScreen> {
         _uploadStatus = _UploadStatus.idle;
       });
     } catch (_) {
-      _setStatus(_UploadStatus.error, 'Could not pick image. Please try again.');
+      _setStatus(_UploadStatus.error, 'Không thể chọn ảnh. Vui lòng thử lại.');
     }
   }
 
@@ -292,7 +292,7 @@ class _ScanScreenState extends State<ScanScreen> {
     } catch (_) {
       _setStatus(
         _UploadStatus.error,
-        'Could not open file. Please try again.',
+        'Không thể mở tệp. Vui lòng thử lại.',
       );
     }
   }
@@ -321,7 +321,7 @@ class _ScanScreenState extends State<ScanScreen> {
                     4,
                   ),
                   child: Text(
-                    'Upload from device',
+                    'Tải lên từ thiết bị',
                     style: theme.textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w800,
                     ),
@@ -336,8 +336,8 @@ class _ScanScreenState extends State<ScanScreen> {
                       color: cs.onSecondaryContainer,
                     ),
                   ),
-                  title: const Text('Photo library'),
-                  subtitle: const Text('Pick from gallery'),
+                  title: const Text('Thư viện ảnh'),
+                  subtitle: const Text('Chọn từ bộ sưu tập'),
                   onTap: () {
                     Navigator.pop(ctx);
                     Future<void>.microtask(
@@ -353,8 +353,8 @@ class _ScanScreenState extends State<ScanScreen> {
                       color: cs.onTertiaryContainer,
                     ),
                   ),
-                  title: const Text('Files'),
-                  subtitle: const Text('Browse image files'),
+                  title: const Text('Tệp'),
+                  subtitle: const Text('Duyệt các tệp ảnh'),
                   onTap: () {
                     Navigator.pop(ctx);
                     Future<void>.microtask(_pickFromFiles);
@@ -376,7 +376,7 @@ class _ScanScreenState extends State<ScanScreen> {
 
     setState(() {
       _uploadStatus = _UploadStatus.uploading;
-      _statusMessage = 'Uploading image...';
+      _statusMessage = 'Đang tải ảnh lên...';
     });
 
     final result = await _uploadService.uploadImage(imageFile: _selectedImage!);
@@ -397,21 +397,21 @@ class _ScanScreenState extends State<ScanScreen> {
   Future<void> _predictImage() async {
     if (_selectedImage == null || _isUploading) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select an image first.')),
+        const SnackBar(content: Text('Vui lòng chọn ảnh trước.')),
       );
       return;
     }
 
     if (_predictionModels.isNotEmpty && _selectedModelId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select an AI model.')),
+        const SnackBar(content: Text('Vui lòng chọn mô hình AI.')),
       );
       return;
     }
 
     setState(() {
       _uploadStatus = _UploadStatus.uploading;
-      _statusMessage = 'Analyzing image...';
+      _statusMessage = 'Đang phân tích ảnh...';
     });
 
     try {
@@ -490,10 +490,10 @@ class _ScanScreenState extends State<ScanScreen> {
       centerContent: false,
       showUserBottomNav: true,
       selectedNavIndex: 1,
-      title: 'Scan',
+      title: 'Quét lá',
       actions: [
         IconButton(
-          tooltip: 'Scan history',
+          tooltip: 'Lịch sử quét',
           onPressed: () =>
               Navigator.pushNamed(context, AppRouter.history),
           icon: const Icon(Icons.history_rounded),
@@ -700,7 +700,7 @@ class _ScanWorkbenchCard extends StatelessWidget {
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: const Text(
-                        'LEAF SCAN',
+                        'QUÉT LÁ',
                         style: TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.w800,
@@ -713,7 +713,7 @@ class _ScanWorkbenchCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 14),
                 Text(
-                  'Analyze a sample',
+                  'Phân tích mẫu',
                   style: TextStyle(
                     color: AppColors.onPrimary,
                     fontSize: 22,
@@ -723,7 +723,7 @@ class _ScanWorkbenchCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'Add a clear leaf photo, then submit to run the model.',
+                  'Thêm ảnh lá rõ nét, sau đó nhấn gửi để chạy mô hình.',
                   style: TextStyle(color: muted, fontSize: 13, height: 1.4),
                 ),
                 const SizedBox(height: 18),
@@ -787,7 +787,7 @@ class _ScanWorkbenchCard extends StatelessWidget {
                                           ),
                                           const SizedBox(height: 10),
                                           Text(
-                                            'Tap to choose from device',
+                                            'Nhấn để chọn từ thiết bị',
                                             textAlign: TextAlign.center,
                                             style: theme.textTheme.titleSmall
                                                 ?.copyWith(
@@ -797,7 +797,7 @@ class _ScanWorkbenchCard extends StatelessWidget {
                                           ),
                                           const SizedBox(height: 4),
                                           Text(
-                                            'Or use Capture / Upload below',
+                                            'Hoặc sử dụng Chụp / Tải lên bên dưới',
                                             textAlign: TextAlign.center,
                                             style: theme.textTheme.bodySmall
                                                 ?.copyWith(
@@ -868,7 +868,7 @@ class _ScanWorkbenchCard extends StatelessWidget {
                     Expanded(
                       child: _WorkbenchOutlineButton(
                         icon: Icons.photo_camera_outlined,
-                        label: 'Capture',
+                        label: 'Chụp ảnh',
                         onPressed: isUploading ? null : onCapture,
                       ),
                     ),
@@ -876,7 +876,7 @@ class _ScanWorkbenchCard extends StatelessWidget {
                     Expanded(
                       child: _WorkbenchOutlineButton(
                         icon: Icons.upload_file_outlined,
-                        label: 'Upload',
+                        label: 'Tải lên',
                         onPressed: isUploading ? null : onUploadFromDevice,
                       ),
                     ),
@@ -916,7 +916,7 @@ class _ScanWorkbenchCard extends StatelessWidget {
                             const SizedBox(height: 6),
                             TextButton(
                               onPressed: onRetryLoadModels,
-                              child: const Text('Retry'),
+                              child: const Text('Thử lại'),
                             ),
                           ],
                         ],
@@ -1002,7 +1002,7 @@ class _ScanWorkbenchCard extends StatelessWidget {
                         : null,
                     icon: const Icon(Icons.auto_awesome_rounded, size: 22),
                     label: const Text(
-                      'Submit',
+                      'Gửi đi',
                       style: TextStyle(
                         fontWeight: FontWeight.w800,
                         fontSize: 16,
@@ -1028,8 +1028,8 @@ class _ScanWorkbenchCard extends StatelessWidget {
                 Text(
                   statusMessage ??
                       (hasImage
-                          ? 'Ready when you are — tap Submit to analyze.'
-                          : 'Choose or capture a leaf image to begin.'),
+                          ? 'Sẵn sàng — nhấn Gửi để phân tích.'
+                          : 'Chọn hoặc chụp ảnh lá để bắt đầu.'),
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: statusMessage != null
                             ? _statusColor()
@@ -1084,9 +1084,9 @@ class _ScanPageTipsCard extends StatelessWidget {
   const _ScanPageTipsCard();
 
   static const _tips = <String>[
-    'Fill the frame with one leaf; avoid harsh shadow on the spot you care about.',
-    'Natural daylight works best—avoid yellow indoor bulbs if you can.',
-    'Hold steady; blurry photos are harder for the model to read.',
+    'Chụp đầy khung hình với một chiếc lá; tránh bóng râm gay gắt tại điểm bạn quan tâm.',
+    'Ánh sáng ban ngày tự nhiên là tốt nhất—tránh bóng đèn vàng trong nhà nếu có thể.',
+    'Giữ chắc tay; ảnh bị nhòe sẽ khiến mô hình khó đọc hơn.',
   ];
 
   @override
@@ -1097,7 +1097,7 @@ class _ScanPageTipsCard extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
-          'GET A CLEAR SCAN',
+          'HƯỚNG DẪN QUÉT',
           style: Theme.of(context).textTheme.labelSmall?.copyWith(
                 letterSpacing: 1.2,
                 fontWeight: FontWeight.w700,
@@ -1127,7 +1127,7 @@ class _ScanPageTipsCard extends StatelessWidget {
                   ),
                   const SizedBox(width: 10),
                   Text(
-                    'Photo tips',
+                    'Mẹo chụp ảnh',
                     style: Theme.of(context).textTheme.titleSmall?.copyWith(
                           fontWeight: FontWeight.w700,
                         ),
@@ -1172,10 +1172,10 @@ class _ScanPageTipsCard extends StatelessWidget {
 
 String _scanRelativeTime(DateTime dt, DateTime now) {
   final diff = now.difference(dt);
-  if (diff.inSeconds < 60) return 'Just now';
-  if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
-  if (diff.inHours < 24) return '${diff.inHours}h ago';
-  if (diff.inDays < 7) return '${diff.inDays}d ago';
+  if (diff.inSeconds < 60) return 'Vừa xong';
+  if (diff.inMinutes < 60) return '${diff.inMinutes} phút trước';
+  if (diff.inHours < 24) return '${diff.inHours} giờ trước';
+  if (diff.inDays < 7) return '${diff.inDays} ngày trước';
   return '${dt.day}/${dt.month}/${dt.year}';
 }
 
@@ -1201,7 +1201,7 @@ class _RecentActivityCard extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
-          'SCAN HISTORY',
+          'LỊCH SỬ QUÉT',
           style: Theme.of(context).textTheme.labelSmall?.copyWith(
                 letterSpacing: 1.2,
                 fontWeight: FontWeight.w700,
@@ -1231,7 +1231,7 @@ class _RecentActivityCard extends StatelessWidget {
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    'Recent scans',
+                    'Các bản quét gần đây',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.w800,
                         ),
@@ -1258,7 +1258,7 @@ class _RecentActivityCard extends StatelessWidget {
                   padding: const EdgeInsets.only(bottom: 8),
                   child: Text(
                     errorMessage ??
-                        'No scans yet. Run an analysis above to see it here.',
+                        'Chưa có bản quét nào. Thực hiện phân tích ở trên để xem tại đây.',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: Theme.of(context).colorScheme.onSurfaceVariant,
                           height: 1.4,
@@ -1289,7 +1289,7 @@ class _RecentActivityCard extends StatelessWidget {
                       Icon(Icons.history_rounded, size: 20),
                       SizedBox(width: 8),
                       Text(
-                        'View all scan history',
+                        'Xem tất cả lịch sử quét',
                         style: TextStyle(fontWeight: FontWeight.w700),
                       ),
                     ],
@@ -1327,9 +1327,9 @@ class _ScanHistoryTile extends StatelessWidget {
     final healthy = DiseaseMapper.isHealthy(item.diseaseName);
     final accent = _accent(context, healthy);
     final title = DiseaseMapper.toDisplayName(
-      item.diseaseName.trim().isEmpty ? 'Leaf scan' : item.diseaseName,
+      item.diseaseName.trim().isEmpty ? 'Quét lá' : item.diseaseName,
     );
-    final statusLabel = healthy ? 'Healthy' : 'Review';
+    final statusLabel = healthy ? 'Khỏe mạnh' : 'Xem xét';
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),

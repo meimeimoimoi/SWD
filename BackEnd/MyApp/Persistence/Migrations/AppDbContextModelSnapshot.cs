@@ -74,6 +74,79 @@ namespace MyApp.Persistence.Migrations
                     b.ToTable("activity_logs", (string)null);
                 });
 
+            modelBuilder.Entity("MyApp.Domain.Entities.Cart", b =>
+                {
+                    b.Property<int>("CartId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("cart_id");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CartId"));
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("(getdate())");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("(getdate())");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("CartId")
+                        .HasName("PK_carts");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("carts", (string)null);
+                });
+
+            modelBuilder.Entity("MyApp.Domain.Entities.CartItem", b =>
+                {
+                    b.Property<int>("CartItemId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("cart_item_id");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CartItemId"));
+
+                    b.Property<DateTime?>("AddedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("added_at")
+                        .HasDefaultValueSql("(getdate())");
+
+                    b.Property<int>("CartId")
+                        .HasColumnType("int")
+                        .HasColumnName("cart_id");
+
+                    b.Property<int>("Quantity")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(1)
+                        .HasColumnName("quantity");
+
+                    b.Property<int>("SolutionId")
+                        .HasColumnType("int")
+                        .HasColumnName("solution_id");
+
+                    b.HasKey("CartItemId")
+                        .HasName("PK_cart_items");
+
+                    b.HasIndex("CartId");
+
+                    b.HasIndex("SolutionId");
+
+                    b.ToTable("cart_items", (string)null);
+                });
+
             modelBuilder.Entity("MyApp.Domain.Entities.ImageUpload", b =>
                 {
                     b.Property<int>("UploadId")
@@ -1007,6 +1080,39 @@ namespace MyApp.Persistence.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("MyApp.Domain.Entities.Cart", b =>
+                {
+                    b.HasOne("MyApp.Domain.Entities.User", "User")
+                        .WithOne("Cart")
+                        .HasForeignKey("MyApp.Domain.Entities.Cart", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_cart_user");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("MyApp.Domain.Entities.CartItem", b =>
+                {
+                    b.HasOne("MyApp.Domain.Entities.Cart", "Cart")
+                        .WithMany("CartItems")
+                        .HasForeignKey("CartId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_cart_item_cart");
+
+                    b.HasOne("MyApp.Domain.Entities.TreatmentSolution", "Solution")
+                        .WithMany()
+                        .HasForeignKey("SolutionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("FK_cart_item_solution");
+
+                    b.Navigation("Cart");
+
+                    b.Navigation("Solution");
+                });
+
             modelBuilder.Entity("MyApp.Domain.Entities.ImageUpload", b =>
                 {
                     b.HasOne("MyApp.Domain.Entities.User", "User")
@@ -1157,6 +1263,11 @@ namespace MyApp.Persistence.Migrations
                     b.Navigation("Tree");
                 });
 
+            modelBuilder.Entity("MyApp.Domain.Entities.Cart", b =>
+                {
+                    b.Navigation("CartItems");
+                });
+
             modelBuilder.Entity("MyApp.Domain.Entities.ImageUpload", b =>
                 {
                     b.Navigation("Predictions");
@@ -1204,6 +1315,8 @@ namespace MyApp.Persistence.Migrations
 
             modelBuilder.Entity("MyApp.Domain.Entities.User", b =>
                 {
+                    b.Navigation("Cart");
+
                     b.Navigation("ImageUploads");
                 });
 #pragma warning restore 612, 618

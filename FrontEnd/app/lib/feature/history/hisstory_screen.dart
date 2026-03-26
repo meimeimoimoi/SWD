@@ -57,7 +57,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
     });
   }
 
-
   String _dateGroupKey(DateTime dt) {
     return '${dt.year}-${dt.month}-${dt.day}';
   }
@@ -69,14 +68,13 @@ class _HistoryScreenState extends State<HistoryScreen> {
     final d = DateTime(dt.year, dt.month, dt.day);
     final formatted =
         '${dt.day.toString().padLeft(2, '0')}/${dt.month.toString().padLeft(2, '0')}/${dt.year}';
-    if (d == today) return 'Today - $formatted';
-    if (d == yesterday) return 'Yesterday - $formatted';
+    if (d == today) return 'Hôm nay - $formatted';
+    if (d == yesterday) return 'Hôm qua - $formatted';
     return formatted;
   }
 
   String _timeOf(DateTime dt) =>
       '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
-
 
   List<MapEntry<String, List<HistoryItem>>> _grouped() {
     final map = <String, List<HistoryItem>>{};
@@ -87,12 +85,11 @@ class _HistoryScreenState extends State<HistoryScreen> {
     return map.entries.toList();
   }
 
-
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return AppScaffold(
-      title: 'Scan history',
+      title: 'Lịch sử quét',
       actions: [
         IconButton(
           onPressed: _loadHistory,
@@ -173,7 +170,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
     );
   }
 
-
   Widget _buildCard(HistoryItem item, bool isDark) {
     final severity = _severityOf(item.diseaseName);
     final displayName = DiseaseMapper.toDisplayName(item.diseaseName);
@@ -207,9 +203,16 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 child: SizedBox(
                   width: 80,
                   height: 80,
-                  child: item.imageUrl.isNotEmpty
-                      ? Image.network(
-                          item.imageUrl,
+                  child: Builder(
+                    builder: (context) {
+                      final images = item.productImages.isNotEmpty
+                          ? item.productImages
+                          : (item.imageUrl.isNotEmpty ? [item.imageUrl] : []);
+                      if (images.isEmpty) return _placeholderThumb(isDark);
+
+                      if (images.length == 1) {
+                        return Image.network(
+                          images.first,
                           fit: BoxFit.cover,
                           loadingBuilder: (context, child, progress) {
                             if (progress == null) return child;
@@ -227,8 +230,24 @@ class _HistoryScreenState extends State<HistoryScreen> {
                           },
                           errorBuilder: (_, __, ___) =>
                               _placeholderThumb(isDark),
-                        )
-                      : _placeholderThumb(isDark),
+                        );
+                      }
+
+                      // multiple images: show a small PageView
+                      return PageView.builder(
+                        itemCount: images.length,
+                        controller: PageController(viewportFraction: 1.0),
+                        itemBuilder: (context, index) {
+                          return Image.network(
+                            images[index],
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) =>
+                                _placeholderThumb(isDark),
+                          );
+                        },
+                      );
+                    },
+                  ),
                 ),
               ),
               const SizedBox(width: 14),
@@ -290,7 +309,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                         _buildSeverityBadge(severity, isDark),
                         const SizedBox(width: 8),
                         Text(
-                          'Severity',
+                          'Mức độ',
                           style: TextStyle(
                             fontSize: 11,
                             fontStyle: FontStyle.italic,
@@ -360,19 +379,19 @@ class _HistoryScreenState extends State<HistoryScreen> {
             ? AppColors.accent.withOpacity(0.2)
             : AppColors.accent.withOpacity(0.13);
         fg = isDark ? AppColors.accent : AppColors.primary;
-        label = 'Low';
+        label = 'Thấp';
       case _Severity.medium:
         bg = isDark
             ? AppColors.warning.withOpacity(0.2)
             : AppColors.warning.withOpacity(0.15);
         fg = isDark ? AppColors.warning : const Color(0xFFB45309);
-        label = 'Medium';
+        label = 'Trung bình';
       case _Severity.high:
         bg = isDark
             ? const Color(0xFFEF4444).withOpacity(0.2)
             : const Color(0xFFEF4444).withOpacity(0.12);
         fg = isDark ? const Color(0xFFF87171) : const Color(0xFFB91C1C);
-        label = 'High';
+        label = 'Nghiêm trọng';
     }
 
     return Container(
@@ -393,7 +412,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
     );
   }
 
-
   Widget _buildEmptyState(bool isDark) {
     return Center(
       child: Column(
@@ -408,7 +426,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
           ),
           const SizedBox(height: 16),
           Text(
-            'No scan history yet',
+            'Chưa có lịch sử quét',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
@@ -419,7 +437,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
           ),
           const SizedBox(height: 6),
           Text(
-            'Scan a leaf to get started.',
+            'Hãy quét lá cây để bắt đầu.',
             style: TextStyle(
               fontSize: 14,
               color: isDark
@@ -448,7 +466,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
             ),
             const SizedBox(height: 16),
             Text(
-              'Could not load data',
+              'Không thể tải dữ liệu',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
@@ -472,7 +490,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
             ElevatedButton.icon(
               onPressed: _loadHistory,
               icon: const Icon(Icons.refresh, size: 18),
-              label: const Text('Retry'),
+              label: const Text('Thử lại'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: AppColors.onPrimary,
@@ -490,7 +508,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
       ),
     );
   }
-
 
   void _openDetail(HistoryItem item) {
     final result = PredictionResult.fromHistoryItem(item);

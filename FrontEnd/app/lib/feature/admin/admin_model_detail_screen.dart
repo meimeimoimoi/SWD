@@ -49,12 +49,12 @@ class _AdminModelDetailScreenState extends State<AdminModelDetailScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Model detail',
+          'Chi tiết mô hình',
           style: theme.textTheme.titleLarge?.copyWith(color: textPrimary),
         ),
         actions: [
           IconButton(
-            tooltip: 'Refresh',
+            tooltip: 'Làm mới',
             onPressed: _load,
             icon: const Icon(Icons.refresh),
           ),
@@ -73,7 +73,7 @@ class _AdminModelDetailScreenState extends State<AdminModelDetailScreen> {
                           AppCard(
                             padding: const EdgeInsets.all(20),
                             child: Text(
-                              'Model detail is not available. Pull to refresh or use the app bar refresh.',
+                              'Chi tiết mô hình không khả dụng. Kéo để làm mới hoặc sử dụng nút trên thanh công cụ.',
                               style: theme.textTheme.bodyMedium?.copyWith(
                                 color: textSecondary,
                               ),
@@ -153,7 +153,7 @@ class _AdminModelDetailScreenState extends State<AdminModelDetailScreen> {
                       ),
                     ),
                     Text(
-                      'Version ${d.version} · ID ${d.modelVersionId}',
+                      'Phiên bản ${d.version} · ID ${d.modelVersionId}',
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: textSecondary,
                       ),
@@ -170,26 +170,26 @@ class _AdminModelDetailScreenState extends State<AdminModelDetailScreen> {
             children: [
               if (d.isActive == true)
                 Chip(
-                  label: const Text('Active'),
+                  label: const Text('Hoạt động'),
                   visualDensity: VisualDensity.compact,
                   avatar: const Icon(Icons.play_circle_outline, size: 18),
                 ),
               if (d.isDefault == true)
                 Chip(
-                  label: const Text('Default'),
+                  label: const Text('Mặc định'),
                   visualDensity: VisualDensity.compact,
                   avatar: const Icon(Icons.star_outline, size: 18),
                 ),
               if (d.isActive != true)
                 Chip(
-                  label: const Text('Inactive'),
+                  label: const Text('Không hoạt động'),
                   visualDensity: VisualDensity.compact,
                 ),
             ],
           ),
           if (d.modelType != null && d.modelType!.isNotEmpty) ...[
             const SizedBox(height: 8),
-            _kv(theme, 'Type', d.modelType!, textPrimary, textSecondary),
+            _kv(theme, 'Loại', d.modelType!, textPrimary, textSecondary),
           ],
           if (d.description != null && d.description!.isNotEmpty) ...[
             const SizedBox(height: 8),
@@ -201,7 +201,7 @@ class _AdminModelDetailScreenState extends State<AdminModelDetailScreen> {
           if (d.createdAt != null)
             _kv(
               theme,
-              'Registered',
+              'Đã đăng ký',
               d.createdAt!.toUtc().toIso8601String(),
               textPrimary,
               textSecondary,
@@ -226,22 +226,22 @@ class _AdminModelDetailScreenState extends State<AdminModelDetailScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Usage & quality',
+            'Sử dụng & chất lượng',
             style: theme.textTheme.titleMedium?.copyWith(
               color: textPrimary,
               fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 12),
-          _kv(theme, 'Total predictions', '${d.totalPredictions}', textPrimary,
+          _kv(theme, 'Tổng lượt dự đoán', '${d.totalPredictions}', textPrimary,
               textSecondary),
-          _kv(theme, 'Today', '${d.predictionsToday}', textPrimary,
+          _kv(theme, 'Hôm nay', '${d.predictionsToday}', textPrimary,
               textSecondary),
-          _kv(theme, 'Last 7 days', '${d.predictionsLast7Days}', textPrimary,
+          _kv(theme, '7 ngày qua', '${d.predictionsLast7Days}', textPrimary,
               textSecondary),
           const SizedBox(height: 8),
           Text(
-            'Avg confidence',
+            'Độ tin cậy trung bình',
             style: theme.textTheme.labelLarge?.copyWith(color: textPrimary),
           ),
           const SizedBox(height: 6),
@@ -260,7 +260,7 @@ class _AdminModelDetailScreenState extends State<AdminModelDetailScreen> {
           ),
           const SizedBox(height: 12),
           Text(
-            'Positive ratings (${d.totalRatings} total)',
+            'Đánh giá tích cực (${d.totalRatings} tổng cộng)',
             style: theme.textTheme.labelLarge?.copyWith(color: textPrimary),
           ),
           const SizedBox(height: 6),
@@ -275,14 +275,14 @@ class _AdminModelDetailScreenState extends State<AdminModelDetailScreen> {
           const SizedBox(height: 4),
           Text(
             d.totalRatings > 0
-                ? '${ratePct.toStringAsFixed(1)}% · ${d.positiveRatings} positive'
-                : 'No ratings yet',
+                ? '${ratePct.toStringAsFixed(1)}% · ${d.positiveRatings} tích cực'
+                : 'Chưa có đánh giá',
             style: theme.textTheme.bodySmall?.copyWith(color: textSecondary),
           ),
           if (d.topPredictedClasses.isNotEmpty) ...[
             const SizedBox(height: 12),
             Text(
-              'Top predicted classes',
+              'Các lớp dự đoán hàng đầu',
               style: theme.textTheme.labelLarge?.copyWith(color: textPrimary),
             ),
             const SizedBox(height: 8),
@@ -328,26 +328,26 @@ class _AdminModelDetailScreenState extends State<AdminModelDetailScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Artifact on disk',
+            'Tệp tin trên ổ đĩa',
             style: theme.textTheme.titleMedium?.copyWith(
               color: textPrimary,
               fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 10),
-          _kv(theme, 'Exists', d.fileExists ? 'Yes' : 'No', textPrimary,
+          _kv(theme, 'Tồn tại', d.fileExists ? 'Có' : 'Không', textPrimary,
               textSecondary),
           if (d.relativeFilePath != null)
-            _kv(theme, 'Relative path', d.relativeFilePath!, textPrimary,
+            _kv(theme, 'Đường dẫn tương đối', d.relativeFilePath!, textPrimary,
                 textSecondary, selectable: true),
           if (d.absolutePath != null)
-            _kv(theme, 'Full path', d.absolutePath!, textPrimary, textSecondary,
+            _kv(theme, 'Đường dẫn đầy đủ', d.absolutePath!, textPrimary, textSecondary,
                 selectable: true),
-          _kv(theme, 'Size', d.fileSizeHuman, textPrimary, textSecondary),
+          _kv(theme, 'Kích thước', d.fileSizeHuman, textPrimary, textSecondary),
           if (d.fileLastModifiedUtc != null)
             _kv(
               theme,
-              'Modified (UTC)',
+              'Đã chỉnh sửa (UTC)',
               d.fileLastModifiedUtc!.toIso8601String(),
               textPrimary,
               textSecondary,
@@ -369,7 +369,7 @@ class _AdminModelDetailScreenState extends State<AdminModelDetailScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'ONNX metadata',
+            'Siêu dữ liệu ONNX',
             style: theme.textTheme.titleMedium?.copyWith(
               color: textPrimary,
               fontWeight: FontWeight.w700,
@@ -383,18 +383,18 @@ class _AdminModelDetailScreenState extends State<AdminModelDetailScreen> {
             ),
           if (d.onnxMetadataError == null) ...[
             if (d.onnxProducerName != null)
-              _kv(theme, 'Producer', d.onnxProducerName!, textPrimary,
+              _kv(theme, 'Nhà sản xuất', d.onnxProducerName!, textPrimary,
                   textSecondary),
             if (d.onnxGraphName != null)
-              _kv(theme, 'Graph', d.onnxGraphName!, textPrimary, textSecondary),
+              _kv(theme, 'Biểu đồ', d.onnxGraphName!, textPrimary, textSecondary),
             if (d.onnxDomain != null)
-              _kv(theme, 'Domain', d.onnxDomain!, textPrimary, textSecondary),
+              _kv(theme, 'Miền', d.onnxDomain!, textPrimary, textSecondary),
             if (d.onnxModelVersion != null)
-              _kv(theme, 'Model version', '${d.onnxModelVersion}', textPrimary,
+              _kv(theme, 'Phiên bản mô hình', '${d.onnxModelVersion}', textPrimary,
                   textSecondary),
             const SizedBox(height: 8),
             Text(
-              'Inputs',
+              'Đầu vào',
               style: theme.textTheme.labelLarge?.copyWith(color: textPrimary),
             ),
             const SizedBox(height: 4),
@@ -404,7 +404,7 @@ class _AdminModelDetailScreenState extends State<AdminModelDetailScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Outputs',
+              'Đầu ra',
               style: theme.textTheme.labelLarge?.copyWith(color: textPrimary),
             ),
             const SizedBox(height: 4),
@@ -415,7 +415,7 @@ class _AdminModelDetailScreenState extends State<AdminModelDetailScreen> {
             if (d.onnxClassLabelCount != null)
               _kv(
                 theme,
-                'Class labels',
+                'Nhãn lớp',
                 '${d.onnxClassLabelCount}',
                 textPrimary,
                 textSecondary,
@@ -424,14 +424,14 @@ class _AdminModelDetailScreenState extends State<AdminModelDetailScreen> {
               Padding(
                 padding: const EdgeInsets.only(top: 8),
                 child: Text(
-                  'Labels: ${d.onnxClassLabelsError}',
+                  'Nhãn: ${d.onnxClassLabelsError}',
                   style: TextStyle(color: Colors.orange.shade800, fontSize: 12),
                 ),
               ),
             if (d.onnxClassLabelsSample.isNotEmpty) ...[
               const SizedBox(height: 8),
               Text(
-                'Label sample',
+                'Mẫu nhãn',
                 style: theme.textTheme.labelSmall?.copyWith(color: textSecondary),
               ),
               const SizedBox(height: 6),
@@ -467,7 +467,7 @@ class _AdminModelDetailScreenState extends State<AdminModelDetailScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Inference runtime',
+            'Môi trường thực thi',
             style: theme.textTheme.titleMedium?.copyWith(
               color: textPrimary,
               fontWeight: FontWeight.w700,
@@ -476,21 +476,21 @@ class _AdminModelDetailScreenState extends State<AdminModelDetailScreen> {
           const SizedBox(height: 10),
           _kv(
             theme,
-            'Loaded model ID',
+            'Mã mô hình đang tải',
             d.currentlyLoadedModelVersionId?.toString() ?? '—',
             textPrimary,
             textSecondary,
           ),
           _kv(
             theme,
-            'This model is loaded',
-            d.isCurrentInferenceModel ? 'Yes' : 'No',
+            'Mô hình này đã được tải',
+            d.isCurrentInferenceModel ? 'Có' : 'Không',
             textPrimary,
             textSecondary,
           ),
           const SizedBox(height: 6),
           Text(
-            'The API keeps one ONNX session; it reloads when the default/active model changes or after the first prediction.',
+            'API duy trì một phiên làm việc ONNX; nó sẽ tải lại khi mô hình mặc định/hoạt động thay đổi hoặc sau lần dự đoán đầu tiên.',
             style: theme.textTheme.bodySmall?.copyWith(color: textSecondary),
           ),
         ],

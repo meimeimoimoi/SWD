@@ -50,15 +50,15 @@ class _AdminFeedbackListScreenState extends State<AdminFeedbackListScreen> {
   }
 
   static String _timeAgo(dynamic createdAt) {
-    if (createdAt == null) return 'Just now';
+    if (createdAt == null) return 'Vừa xong';
     try {
       final date = DateTime.parse(createdAt.toString());
       final diff = DateTime.now().difference(date);
-      if (diff.inDays > 0) return '${diff.inDays}d ago';
-      if (diff.inHours > 0) return '${diff.inHours}h ago';
-      if (diff.inMinutes > 0) return '${diff.inMinutes}m ago';
+      if (diff.inDays > 0) return '${diff.inDays} ngày trước';
+      if (diff.inHours > 0) return '${diff.inHours} giờ trước';
+      if (diff.inMinutes > 0) return '${diff.inMinutes} phút trước';
     } catch (_) {}
-    return 'Just now';
+    return 'Vừa xong';
   }
 
   static (String?, String?) _actionsFor(int score, String comment) {
@@ -69,7 +69,7 @@ class _AdminFeedbackListScreenState extends State<AdminFeedbackListScreen> {
         c.contains('refund') ||
         c.contains('billed') ||
         c.contains('billing')) {
-      return ('Contact User', 'Refund');
+      return ('Liên hệ người dùng', 'Hoàn tiền');
     }
     if (score <= 2 &&
         (c.contains('diagnos') ||
@@ -77,7 +77,7 @@ class _AdminFeedbackListScreenState extends State<AdminFeedbackListScreen> {
             c.contains('wrong') ||
             c.contains('not ') ||
             c.contains('clearly'))) {
-      return ('Review Diagnosis', 'Dismiss');
+      return ('Xem lại chẩn đoán', 'Bỏ qua');
     }
     return (null, null);
   }
@@ -166,13 +166,13 @@ class _AdminFeedbackListScreenState extends State<AdminFeedbackListScreen> {
 
     final stats = <_FeedbackStatItem>[
       _FeedbackStatItem(
-        title: 'Total Feedback',
+        title: 'Tổng phản hồi',
         value: valueStr,
-        delta: totalCount > 0 ? '$recentPct% last 7d' : '—',
+        delta: totalCount > 0 ? '$recentPct% trong 7 ngày qua' : '—',
         deltaColor: AppColors.primary,
       ),
       _FeedbackStatItem(
-        title: 'Average Rating',
+        title: 'Đánh giá trung bình',
         value: avgRating.toStringAsFixed(1),
         delta: deltaAvg != null
             ? '${deltaAvg >= 0 ? '+' : ''}${deltaAvg.toStringAsFixed(1)}'
@@ -180,9 +180,9 @@ class _AdminFeedbackListScreenState extends State<AdminFeedbackListScreen> {
         deltaColor: AppColors.primary,
       ),
       _FeedbackStatItem(
-        title: 'Pending',
+        title: 'Đang chờ',
         value: pending.toString(),
-        delta: pending > 0 ? 'Urgent' : '—',
+        delta: pending > 0 ? 'Khẩn cấp' : '—',
         deltaColor: pending > 0 ? Colors.orange.shade800 : AppColors.primary,
       ),
     ];
@@ -199,7 +199,7 @@ class _AdminFeedbackListScreenState extends State<AdminFeedbackListScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          'Feedback',
+          'Phản hồi',
           style: theme.textTheme.titleLarge?.copyWith(color: textPrimary),
         ),
         actions: [
@@ -252,19 +252,19 @@ class _AdminFeedbackListScreenState extends State<AdminFeedbackListScreen> {
                       scrollDirection: Axis.horizontal,
                       children: [
                         _FilterPill(
-                          label: 'All Reviews',
+                          label: 'Tất cả',
                           isActive: _filter == _FeedbackFilter.all,
                           onTap: () =>
                               setState(() => _filter = _FeedbackFilter.all),
                         ),
                         _FilterPill(
-                          label: 'Critical (1-2★)',
+                          label: 'Nghiêm trọng (1-2★)',
                           isActive: _filter == _FeedbackFilter.critical,
                           onTap: () =>
                               setState(() => _filter = _FeedbackFilter.critical),
                         ),
                         _FilterPill(
-                          label: 'Negative (3★)',
+                          label: 'Tiêu cực (3★)',
                           isActive: _filter == _FeedbackFilter.negative,
                           onTap: () =>
                               setState(() => _filter = _FeedbackFilter.negative),
@@ -274,7 +274,7 @@ class _AdminFeedbackListScreenState extends State<AdminFeedbackListScreen> {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'Recent Feedback',
+                    'Phản hồi gần đây',
                     style: theme.textTheme.labelLarge?.copyWith(
                       letterSpacing: 1.4,
                       color: textSecondary.withValues(alpha: 0.7),
@@ -293,7 +293,7 @@ class _AdminFeedbackListScreenState extends State<AdminFeedbackListScreen> {
                       child: Padding(
                         padding: const EdgeInsets.only(top: 40),
                         child: Text(
-                          'No feedback in this filter',
+                          'Không có phản hồi nào trong bộ lọc này',
                           style: TextStyle(color: textSecondary),
                         ),
                       ),
@@ -303,7 +303,7 @@ class _AdminFeedbackListScreenState extends State<AdminFeedbackListScreen> {
                       final score = _score(data);
                       final uid = data['userId'];
                       final userLabel = uid != null
-                          ? 'User #$uid'
+                          ? 'Người dùng #$uid'
                           : (data['userName']?.toString().trim().isNotEmpty ==
                                   true)
                               ? data['userName'].toString()
@@ -313,7 +313,7 @@ class _AdminFeedbackListScreenState extends State<AdminFeedbackListScreen> {
                       final comment =
                           data['comment']?.toString().trim().isNotEmpty == true
                               ? data['comment'].toString()
-                              : 'No comment provided.';
+                              : 'Không có bình luận.';
                       final imageUrl = _resolvedImageUrl(data);
                       final tone = score <= 2
                           ? _FeedbackTone.critical
@@ -321,7 +321,7 @@ class _AdminFeedbackListScreenState extends State<AdminFeedbackListScreen> {
                               ? _FeedbackTone.warning
                               : _FeedbackTone.positive);
                       final badge =
-                          score <= 2 ? 'Needs Attention' : null;
+                          score <= 2 ? 'Cần chú ý' : null;
                       final actions = _actionsFor(score, comment);
 
                       final item = _FeedbackItem(

@@ -73,7 +73,7 @@ class _UnifiedAccountScreenState extends State<UnifiedAccountScreen> {
     } else {
       setState(() {
         _loading = false;
-        _error = response['message']?.toString() ?? 'Could not load profile';
+        _error = response['message']?.toString() ?? 'Không thể tải hồ sơ';
       });
     }
 
@@ -128,23 +128,23 @@ class _UnifiedAccountScreenState extends State<UnifiedAccountScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(
-          'Sign out?',
+          'Đăng xuất?',
           style: GoogleFonts.spaceGrotesk(fontWeight: FontWeight.w700),
         ),
         content: Text(
-          'You will need to sign in again to continue.',
+          'Bạn sẽ cần đăng nhập lại để tiếp tục.',
           style: GoogleFonts.spaceGrotesk(),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: Text('Cancel', style: GoogleFonts.spaceGrotesk()),
+            child: Text('Hủy', style: GoogleFonts.spaceGrotesk()),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: FilledButton.styleFrom(backgroundColor: AppColors.brandAccent),
             child: Text(
-              'Sign out',
+              'Đăng xuất',
               style: GoogleFonts.spaceGrotesk(fontWeight: FontWeight.w700),
             ),
           ),
@@ -196,7 +196,7 @@ class _UnifiedAccountScreenState extends State<UnifiedAccountScreen> {
     final u = _user();
 
     final displayName = _t(u, ['fullName', 'name', 'username']) ?? '—';
-    final role = _t(u, ['role']) ?? (widget.isAdminShell ? 'Admin' : 'User');
+    final role = _t(u, ['role']) ?? (widget.isAdminShell ? 'Quản trị viên' : 'Người dùng');
     final avatar = _t(u, ['avatarUrl', 'avatar', 'profileImagePath']);
     final lastLogin = _t(u, ['lastLoginAt', 'lastLogin', 'LastLoginAt']);
     String lastLoginLabel = '—';
@@ -249,7 +249,7 @@ class _UnifiedAccountScreenState extends State<UnifiedAccountScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'System settings',
+                              'Cài đặt hệ thống',
                               style: GoogleFonts.spaceGrotesk(
                                 fontSize: 24,
                                 fontWeight: FontWeight.w700,
@@ -260,7 +260,7 @@ class _UnifiedAccountScreenState extends State<UnifiedAccountScreen> {
                             ),
                             const SizedBox(height: 6),
                             Text(
-                              'Manage your ${AppBrand.name} account and customize your experience.',
+                              'Quản lý tài khoản ${AppBrand.name} và tùy chỉnh trải nghiệm của bạn.',
                               style: GoogleFonts.spaceGrotesk(
                                 fontSize: 13,
                                 height: 1.35,
@@ -323,7 +323,7 @@ class _UnifiedAccountScreenState extends State<UnifiedAccountScreen> {
                               builder: (context, snap) {
                                 final canUsers = snap.data == true;
                                 return _SectionCard(
-                                  title: 'CONTROL CENTER',
+                                  title: 'TRUNG TÂM ĐIỀU KHIỂN',
                                   icon: Icons.dashboard_outlined,
                                   isDark: isDark,
                                   child: Column(
@@ -331,8 +331,8 @@ class _UnifiedAccountScreenState extends State<UnifiedAccountScreen> {
                                       if (canUsers) ...[
                                         _QuickLink(
                                           icon: Icons.groups_outlined,
-                                          title: 'Users',
-                                          subtitle: 'Manage accounts',
+                                          title: 'Người dùng',
+                                          subtitle: 'Quản lý tài khoản',
                                           isDark: isDark,
                                           onTap: () => Navigator.pushNamed(
                                             context,
@@ -343,8 +343,8 @@ class _UnifiedAccountScreenState extends State<UnifiedAccountScreen> {
                                       ],
                                       _QuickLink(
                                         icon: Icons.psychology_outlined,
-                                        title: 'AI models',
-                                        subtitle: 'ONNX & accuracy',
+                                        title: 'Mô hình AI',
+                                        subtitle: 'ONNX & Độ chính xác',
                                         isDark: isDark,
                                         onTap: () => Navigator.pushNamed(
                                           context,
@@ -354,8 +354,8 @@ class _UnifiedAccountScreenState extends State<UnifiedAccountScreen> {
                                       _div(isDark),
                                       _QuickLink(
                                         icon: Icons.coronavirus_outlined,
-                                        title: 'Diseases',
-                                        subtitle: 'Disease library',
+                                        title: 'Bệnh hại',
+                                        subtitle: 'Thư viện bệnh hại',
                                         isDark: isDark,
                                         onTap: () => Navigator.pushNamed(
                                           context,
@@ -373,22 +373,22 @@ class _UnifiedAccountScreenState extends State<UnifiedAccountScreen> {
                         padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
                         sliver: SliverToBoxAdapter(
                           child: _SectionCard(
-                            title: 'ACCOUNT & SECURITY',
+                            title: 'TÀI KHOẢN & BẢO MẬT',
                             icon: Icons.lock_person_outlined,
                             isDark: isDark,
                             child: Column(
                               children: [
                                 _SecurityRow(
                                   icon: Icons.password_outlined,
-                                  title: 'Change password',
+                                  title: 'Đổi mật khẩu',
                                   subtitle:
-                                      'Update your password regularly for security',
+                                      'Cập nhật mật khẩu thường xuyên để bảo mật',
                                   isDark: isDark,
                                   onTap: () {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       const SnackBar(
                                         content: Text(
-                                          'Change password — coming soon',
+                                          'Đổi mật khẩu — sắp ra mắt',
                                         ),
                                         behavior: SnackBarBehavior.floating,
                                       ),
@@ -398,9 +398,9 @@ class _UnifiedAccountScreenState extends State<UnifiedAccountScreen> {
                                 _div(isDark),
                                 _SecurityRow(
                                   icon: Icons.verified_user_outlined,
-                                  title: 'Two-factor authentication',
+                                  title: 'Xác thực 2 lớp',
                                   subtitle:
-                                      'Protect your account with SMS or email codes',
+                                      'Bảo vệ tài khoản bằng mã SMS hoặc email',
                                   isDark: isDark,
                                   trailing: Container(
                                     padding: const EdgeInsets.symmetric(
@@ -412,7 +412,7 @@ class _UnifiedAccountScreenState extends State<UnifiedAccountScreen> {
                                       borderRadius: BorderRadius.circular(6),
                                     ),
                                     child: Text(
-                                      'SOON',
+                                      'SẮP RA MẮT',
                                       style: GoogleFonts.spaceGrotesk(
                                         fontSize: 9,
                                         fontWeight: FontWeight.w800,
@@ -423,7 +423,7 @@ class _UnifiedAccountScreenState extends State<UnifiedAccountScreen> {
                                   onTap: () {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       const SnackBar(
-                                        content: Text('2FA — coming soon'),
+                                        content: Text('Xác thực 2 lớp — sắp ra mắt'),
                                         behavior: SnackBarBehavior.floating,
                                       ),
                                     );
@@ -438,15 +438,15 @@ class _UnifiedAccountScreenState extends State<UnifiedAccountScreen> {
                         padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
                         sliver: SliverToBoxAdapter(
                           child: _SectionCard(
-                            title: 'NOTIFICATIONS',
+                            title: 'THÔNG BÁO',
                             icon: Icons.notifications_active_outlined,
                             isDark: isDark,
                             child: Column(
                               children: [
                                 _ToggleRow(
                                   icon: Icons.app_registration_outlined,
-                                  title: 'Push notifications',
-                                  subtitle: 'Get pest and disease alerts instantly',
+                                  title: 'Thông báo đẩy',
+                                  subtitle: 'Nhận thông báo dịch bệnh ngay lập tức',
                                   value: _pushEnabled,
                                   isDark: isDark,
                                   onChanged: (v) {
@@ -457,8 +457,8 @@ class _UnifiedAccountScreenState extends State<UnifiedAccountScreen> {
                                 _div(isDark),
                                 _ToggleRow(
                                   icon: Icons.email_outlined,
-                                  title: 'Email digest',
-                                  subtitle: 'Periodic summaries from the app',
+                                  title: 'Tóm tắt qua Email',
+                                  subtitle: 'Các bản tóm tắt định kỳ từ ứng dụng',
                                   value: _emailEnabled,
                                   isDark: isDark,
                                   onChanged: (v) {
@@ -478,7 +478,7 @@ class _UnifiedAccountScreenState extends State<UnifiedAccountScreen> {
                                         : const Color(0xFF64748B),
                                   ),
                                   title: Text(
-                                    'View all notifications',
+                                    'Xem tất cả thông báo',
                                     style: GoogleFonts.spaceGrotesk(
                                       fontWeight: FontWeight.w600,
                                       fontSize: 14,
@@ -501,7 +501,7 @@ class _UnifiedAccountScreenState extends State<UnifiedAccountScreen> {
                           child: Consumer<ThemeModeProvider>(
                             builder: (context, tm, _) {
                               return _SectionCard(
-                                title: 'APP PREFERENCES',
+                                title: 'TÙY CHỈNH ỨNG DỤNG',
                                 icon: Icons.tune_outlined,
                                 isDark: isDark,
                                 child: Column(
@@ -515,7 +515,7 @@ class _UnifiedAccountScreenState extends State<UnifiedAccountScreen> {
                                         color: AppColors.brandAccent,
                                       ),
                                       title: Text(
-                                        'Language',
+                                        'Ngôn ngữ',
                                         style: GoogleFonts.spaceGrotesk(
                                           fontWeight: FontWeight.w600,
                                           color: isDark
@@ -533,7 +533,7 @@ class _UnifiedAccountScreenState extends State<UnifiedAccountScreen> {
                                           borderRadius: BorderRadius.circular(8),
                                         ),
                                         child: Text(
-                                          'English',
+                                          'Tiếng Việt',
                                           style: GoogleFonts.spaceGrotesk(
                                             fontWeight: FontWeight.w700,
                                             fontSize: 12,
@@ -544,7 +544,7 @@ class _UnifiedAccountScreenState extends State<UnifiedAccountScreen> {
                                       onTap: () {
                                         ScaffoldMessenger.of(context).showSnackBar(
                                           const SnackBar(
-                                            content: Text('Multiple languages — coming soon'),
+                                            content: Text('Hỗ trợ đa ngôn ngữ — sắp ra mắt'),
                                             behavior: SnackBarBehavior.floating,
                                           ),
                                         );
@@ -567,7 +567,7 @@ class _UnifiedAccountScreenState extends State<UnifiedAccountScreen> {
                                           ),
                                           const SizedBox(width: 8),
                                           Text(
-                                            'APPEARANCE',
+                                            'GIAO DIỆN',
                                             style: GoogleFonts.spaceGrotesk(
                                               fontSize: 11,
                                               letterSpacing: 1.1,
@@ -586,7 +586,7 @@ class _UnifiedAccountScreenState extends State<UnifiedAccountScreen> {
                                         8,
                                       ),
                                       child: Text(
-                                        'Follow system, or choose light or dark theme.',
+                                        'Theo hệ thống, hoặc chọn chế độ sáng hoặc tối.',
                                         style: GoogleFonts.spaceGrotesk(
                                           fontSize: 12,
                                           height: 1.35,
@@ -597,7 +597,7 @@ class _UnifiedAccountScreenState extends State<UnifiedAccountScreen> {
                                       ),
                                     ),
                                     _ThemePick(
-                                      title: 'System default',
+                                      title: 'Mặc định hệ thống',
                                       selected: tm.themeMode == ThemeMode.system,
                                       isDark: isDark,
                                       onTap: () =>
@@ -605,7 +605,7 @@ class _UnifiedAccountScreenState extends State<UnifiedAccountScreen> {
                                     ),
                                     _div(isDark),
                                     _ThemePick(
-                                      title: 'Light',
+                                      title: 'Sáng',
                                       selected: tm.themeMode == ThemeMode.light,
                                       isDark: isDark,
                                       onTap: () =>
@@ -613,7 +613,7 @@ class _UnifiedAccountScreenState extends State<UnifiedAccountScreen> {
                                     ),
                                     _div(isDark),
                                     _ThemePick(
-                                      title: 'Dark',
+                                      title: 'Tối',
                                       selected: tm.themeMode == ThemeMode.dark,
                                       isDark: isDark,
                                       onTap: () =>
@@ -630,7 +630,7 @@ class _UnifiedAccountScreenState extends State<UnifiedAccountScreen> {
                         padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
                         sliver: SliverToBoxAdapter(
                           child: _SectionCard(
-                            title: 'ABOUT',
+                            title: 'THÔNG TIN',
                             icon: Icons.info_outline_rounded,
                             isDark: isDark,
                             child: Column(
@@ -641,7 +641,7 @@ class _UnifiedAccountScreenState extends State<UnifiedAccountScreen> {
                                   ),
                                   leading: const Icon(Icons.tag_outlined),
                                   title: Text(
-                                    'Current version',
+                                    'Phiên bản hiện tại',
                                     style: GoogleFonts.spaceGrotesk(
                                       fontWeight: FontWeight.w600,
                                     ),
@@ -661,7 +661,7 @@ class _UnifiedAccountScreenState extends State<UnifiedAccountScreen> {
                                   ),
                                   leading: const Icon(Icons.open_in_new_outlined),
                                   title: Text(
-                                    'Privacy policy',
+                                    'Chính sách bảo mật',
                                     style: GoogleFonts.spaceGrotesk(
                                       fontWeight: FontWeight.w600,
                                     ),
@@ -670,7 +670,7 @@ class _UnifiedAccountScreenState extends State<UnifiedAccountScreen> {
                                   onTap: () {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       const SnackBar(
-                                        content: Text('Link coming soon'),
+                                        content: Text('Liên kết sắp ra mắt'),
                                         behavior: SnackBarBehavior.floating,
                                       ),
                                     );
@@ -683,7 +683,7 @@ class _UnifiedAccountScreenState extends State<UnifiedAccountScreen> {
                                   ),
                                   leading: const Icon(Icons.eco_outlined),
                                   title: Text(
-                                    'About ${AppBrand.name}',
+                                    'Về ${AppBrand.name}',
                                     style: GoogleFonts.spaceGrotesk(
                                       fontWeight: FontWeight.w600,
                                     ),
@@ -703,7 +703,7 @@ class _UnifiedAccountScreenState extends State<UnifiedAccountScreen> {
                             child: ListTile(
                               leading: const Icon(Icons.feedback_outlined),
                               title: Text(
-                                'Send feedback',
+                                'Gửi phản hồi',
                                 style: GoogleFonts.spaceGrotesk(
                                   fontWeight: FontWeight.w600,
                                 ),
@@ -734,7 +734,7 @@ class _UnifiedAccountScreenState extends State<UnifiedAccountScreen> {
                             ),
                             icon: const Icon(Icons.logout_rounded),
                             label: Text(
-                              'Sign out of the app',
+                              'Đăng xuất khỏi ứng dụng',
                               style: GoogleFonts.spaceGrotesk(
                                 fontWeight: FontWeight.w700,
                               ),
@@ -808,12 +808,12 @@ class _TopBrandBar extends StatelessWidget {
             itemBuilder: (ctx) => [
               const PopupMenuItem(
                 value: 'notif',
-                child: Text('Notifications'),
+                child: Text('Thông báo'),
               ),
               if (showAdminShortcuts)
                 const PopupMenuItem(
                   value: 'feedback',
-                  child: Text('Admin feedback'),
+                  child: Text('Phản hồi Admin'),
                 ),
             ],
           ),
@@ -952,7 +952,7 @@ class _ProfileHeroCard extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            'Last sign-in: $lastLoginLabel',
+            'Lần đăng nhập cuối: $lastLoginLabel',
             style: TextStyle(
               fontSize: 10,
               color: isDark ? AppColors.darkMuted : const Color(0xFF94A3B8),
@@ -973,7 +973,7 @@ class _ProfileHeroCard extends StatelessWidget {
               ),
               icon: const Icon(Icons.badge_outlined, size: 20),
               label: Text(
-                'Edit profile',
+                'Chỉnh sửa hồ sơ',
                 style: GoogleFonts.spaceGrotesk(
                   fontWeight: FontWeight.w700,
                   fontSize: 14,
@@ -1025,7 +1025,7 @@ class _AiStatusCard extends StatelessWidget {
               Icon(Icons.bolt_rounded, color: const Color(0xFFA4F69C), size: 22),
               const SizedBox(width: 8),
               Text(
-                'AI STATUS',
+                'TRẠNG THÁI AI',
                 style: GoogleFonts.spaceGrotesk(
                   fontSize: 11,
                   fontWeight: FontWeight.w800,
@@ -1040,7 +1040,7 @@ class _AiStatusCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Model accuracy',
+                'Độ chính xác mô hình',
                 style: TextStyle(
                   fontSize: 12,
                   color: AppColors.onPrimary.withValues(alpha: 0.7),

@@ -41,7 +41,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   static String _scanTrendSubtitle(Map<String, dynamic>? predStats, int todayPredictions) {
     final trend = predStats?['dailyTrend'];
     if (trend is! List || trend.length < 4) {
-      return '$todayPredictions today';
+      return '$todayPredictions hôm nay';
     }
     int sum(List<Map<String, dynamic>> slice) {
       var t = 0;
@@ -57,11 +57,11 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     final recent = sum(maps.sublist(half));
     final older = sum(maps.sublist(0, half));
     if (older == 0) {
-      return recent > 0 ? '+$recent this week' : '$todayPredictions today';
+      return recent > 0 ? '+$recent tuần này' : '$todayPredictions hôm nay';
     }
     final pct = ((recent - older) / older * 100).round();
     final sign = pct >= 0 ? '+' : '';
-    return '$sign$pct% vs prior week · $todayPredictions today';
+    return '$sign$pct% so với tuần trước · $todayPredictions hôm nay';
   }
 
   static _ActivityUi _mapLogToActivity(ActivityLogItem log) {
@@ -95,7 +95,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         builder: (ctx) {
           final theme = Theme.of(ctx);
           return Scaffold(
-            appBar: AppBar(title: const Text('All activity')),
+            appBar: AppBar(title: const Text('Toàn bộ hoạt động')),
             body: ListView.separated(
               padding: const EdgeInsets.all(16),
               itemCount: logs.length,
@@ -106,8 +106,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 final when = _relativeTime(log.createdAt);
                 final uid = log.userId;
                 final sub = uid != null
-                    ? 'User ID: #$uid • $when'
-                    : 'System • $when';
+                    ? 'Mã người dùng: #$uid • $when'
+                    : 'Hệ thống • $when';
                 return ListTile(
                   tileColor: theme.cardColor,
                   shape: RoundedRectangleBorder(
@@ -166,7 +166,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     final modelSubtitle = activeModel != null
         ? '${activeModel['modelName'] ?? 'Model'} v${activeModel['version'] ?? ''}'
             .trim()
-        : 'No active model';
+        : 'Không có mô hình hoạt động';
 
     final warnings = provider.criticalFeedbackCount;
 
@@ -179,7 +179,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           elevation: isDark ? 0 : 1,
           shadowColor: appBarShadow,
           title: Text(
-            'Dashboard',
+            'Bảng điều khiển',
             style: theme.textTheme.titleLarge?.copyWith(color: textPrimary),
           ),
           actions: adminSecondaryAppBarActions(context),
@@ -195,7 +195,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                       padding: const EdgeInsets.fromLTRB(16, 12, 16, 88),
                       children: [
                         Text(
-                          'Overview',
+                          'Tổng quan',
                           style: theme.textTheme.labelLarge?.copyWith(
                             color: textSecondary,
                             letterSpacing: 1.2,
@@ -211,15 +211,15 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                           childAspectRatio: 1.15,
                           children: [
                             _MetricCard(
-                              title: 'Total Users',
+                              title: 'Tổng người dùng',
                               value: nf.format(totalUsers),
-                              subtitle: '$activeUsers active accounts',
+                              subtitle: '$activeUsers tài khoản hoạt động',
                               subtitleColor: AppColors.primary,
                               icon: Icons.groups_outlined,
                               iconBackground: AppColors.primary.withValues(alpha: 0.12),
                             ),
                             _MetricCard(
-                              title: 'Total Scans',
+                              title: 'Tổng lượt quét',
                               value: nf.format(totalScans),
                               subtitle:
                                   _scanTrendSubtitle(pred, todayScans),
@@ -228,7 +228,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                               iconBackground: AppColors.primary.withValues(alpha: 0.12),
                             ),
                             _MetricCard(
-                              title: 'Accuracy',
+                              title: 'Độ chính xác',
                               value: '${accuracyPct.toStringAsFixed(1)}%',
                               subtitle: modelSubtitle,
                               subtitleColor: AppColors.primary,
@@ -236,11 +236,11 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                               iconBackground: AppColors.primary.withValues(alpha: 0.12),
                             ),
                             _MetricCard(
-                              title: 'Warnings',
+                              title: 'Cảnh báo',
                               value: warnings.toString().padLeft(2, '0'),
                               subtitle: warnings > 0
-                                  ? 'Needs immediate action'
-                                  : 'No critical feedback',
+                                  ? 'Cần xử lý ngay'
+                                  : 'Không có phản hồi khẩn cấp',
                               subtitleColor: warnings > 0
                                   ? Colors.red.shade400
                                   : textSecondary,
@@ -256,7 +256,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                           children: [
                             Expanded(
                               child: Text(
-                                'Recent activity',
+                                'Hoạt động gần đây',
                                 style: theme.textTheme.titleMedium?.copyWith(
                                   color: textPrimary,
                                   fontWeight: FontWeight.w700,
@@ -265,7 +265,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                             ),
                             TextButton(
                               onPressed: () => _openAllActivity(context),
-                              child: const Text('See all'),
+                              child: const Text('Xem tất cả'),
                             ),
                           ],
                         ),
@@ -279,7 +279,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                               ? Padding(
                                   padding: const EdgeInsets.all(20),
                                   child: Text(
-                                    'No activity yet',
+                                    'Chưa có hoạt động nào',
                                     style: TextStyle(color: textSecondary),
                                   ),
                                 )
@@ -306,7 +306,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                               AppRouter.adminFeedback,
                             ),
                             icon: const Icon(Icons.rate_review_outlined),
-                            label: const Text('Open feedback'),
+                            label: const Text('Mở phản hồi'),
                           ),
                         ),
                       ],
@@ -428,17 +428,17 @@ class _ActivityRow extends StatelessWidget {
       _ActivityBadgeKind.detected => (
           const Color(0xFFFFF4E5),
           const Color(0xFFB45309),
-          'Detected',
+          'Đã phát hiện',
         ),
       _ActivityBadgeKind.normal => (
           AppColors.primary.withValues(alpha: 0.1),
           AppColors.primary,
-          'Normal',
+          'Bình thường',
         ),
       _ActivityBadgeKind.warning => (
           Colors.red.withValues(alpha: 0.08),
           Colors.red.shade700,
-          'Warning',
+          'Cảnh báo',
         ),
     };
 
@@ -447,8 +447,8 @@ class _ActivityRow extends StatelessWidget {
     final when = _relativeTime(log.createdAt);
     final uid = log.userId;
     final sub = uid != null
-        ? 'User ID: #$uid • $when'
-        : 'System • $when';
+        ? 'Mã người dùng: #$uid • $when'
+        : 'Hệ thống • $when';
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
@@ -518,8 +518,8 @@ class _ActivityRow extends StatelessWidget {
 
 String _relativeTime(DateTime dt) {
   final diff = DateTime.now().difference(dt);
-  if (diff.inDays >= 1) return '${diff.inDays}d ago';
-  if (diff.inHours >= 1) return '${diff.inHours}h ago';
-  if (diff.inMinutes >= 1) return '${diff.inMinutes}m ago';
-  return 'Just now';
+  if (diff.inDays >= 1) return '${diff.inDays} ngày trước';
+  if (diff.inHours >= 1) return '${diff.inHours} giờ trước';
+  if (diff.inMinutes >= 1) return '${diff.inMinutes} phút trước';
+  return 'Vừa xong';
 }

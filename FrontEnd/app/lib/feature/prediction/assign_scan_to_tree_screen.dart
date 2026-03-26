@@ -122,7 +122,7 @@ class _AssignScanToTreeScreenState extends State<AssignScanToTreeScreen>
     if (!created.success || created.tree == null) {
       setState(() => _submitting = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(created.message.isEmpty ? 'Could not create plant.' : created.message)),
+        SnackBar(content: Text(created.message.isEmpty ? 'Không thể tạo cây trồng.' : created.message)),
       );
       return;
     }
@@ -149,11 +149,11 @@ class _AssignScanToTreeScreenState extends State<AssignScanToTreeScreen>
 
     if (r.predictionId <= 0) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Assign to plant')),
+        appBar: AppBar(title: const Text('Gán cho cây trồng')),
         body: const Center(
           child: Padding(
             padding: EdgeInsets.all(24),
-            child: Text('This preview has no prediction id. Run a real scan first.'),
+            child: Text('Bản xem trước này không có mã dự đoán. Vui lòng thực hiện quét thực tế trước.'),
           ),
         ),
       );
@@ -163,7 +163,7 @@ class _AssignScanToTreeScreenState extends State<AssignScanToTreeScreen>
       backgroundColor:
           isDark ? AppColors.darkBackground : const Color(0xFFF4F4F5),
       appBar: AppBar(
-        title: const Text('Assign to a plant'),
+        title: const Text('Gán cho cây trồng'),
         backgroundColor: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
         foregroundColor: isDark ? AppColors.textPrimaryDark : const Color(0xFF111827),
       ),
@@ -190,8 +190,8 @@ class _AssignScanToTreeScreenState extends State<AssignScanToTreeScreen>
                         isDark ? Colors.white54 : Colors.black54,
                     indicatorColor: AppColors.brandAccent,
                     tabs: const [
-                      Tab(text: 'Choose existing'),
-                      Tab(text: 'New plant'),
+                      Tab(text: 'Chọn cây hiện có'),
+                      Tab(text: 'Cây trồng mới'),
                     ],
                   ),
                   const SizedBox(height: 12),
@@ -227,7 +227,7 @@ class _AssignScanToTreeScreenState extends State<AssignScanToTreeScreen>
     if (_trees.isEmpty) {
       return Center(
         child: Text(
-          'You have no plants yet from past scans. Create a plant in the next tab, then this list will show plants you have used before.',
+          'Bạn chưa có cây nào từ các lần quét trước. Hãy tạo cây mới ở tab bên cạnh, sau đó danh sách này sẽ hiển thị các cây bạn đã từng sử dụng.',
           textAlign: TextAlign.center,
           style: TextStyle(
             color: isDark ? Colors.white70 : const Color(0xFF52525B),
@@ -269,7 +269,7 @@ class _AssignScanToTreeScreenState extends State<AssignScanToTreeScreen>
                   width: 22,
                   child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                 )
-              : const Text('Link scan to selected plant'),
+              : const Text('Liên kết kết quả quét với cây đã chọn'),
         ),
       ],
     );
@@ -283,13 +283,13 @@ class _AssignScanToTreeScreenState extends State<AssignScanToTreeScreen>
           TextFormField(
             controller: _nameCtrl,
             decoration: const InputDecoration(
-              labelText: 'Plant name',
-              hintText: 'e.g. Backyard lemon',
+              labelText: 'Tên cây trồng',
+              hintText: 'vd: Chanh sau nhà',
               border: OutlineInputBorder(),
             ),
             textCapitalization: TextCapitalization.words,
             validator: (v) {
-              if (v == null || v.trim().isEmpty) return 'Enter a name';
+              if (v == null || v.trim().isEmpty) return 'Vui lòng nhập tên';
               return null;
             },
           ),
@@ -297,7 +297,7 @@ class _AssignScanToTreeScreenState extends State<AssignScanToTreeScreen>
           TextFormField(
             controller: _sciCtrl,
             decoration: const InputDecoration(
-              labelText: 'Scientific name (optional)',
+              labelText: 'Tên khoa học (không bắt buộc)',
               border: OutlineInputBorder(),
             ),
           ),
@@ -305,7 +305,7 @@ class _AssignScanToTreeScreenState extends State<AssignScanToTreeScreen>
           TextFormField(
             controller: _descCtrl,
             decoration: const InputDecoration(
-              labelText: 'Notes (optional)',
+              labelText: 'Ghi chú (không bắt buộc)',
               border: OutlineInputBorder(),
             ),
             maxLines: 2,
@@ -324,7 +324,7 @@ class _AssignScanToTreeScreenState extends State<AssignScanToTreeScreen>
                     width: 22,
                     child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                   )
-                : const Text('Create plant & link scan'),
+                : const Text('Tạo cây & Liên kết kết quả quét'),
           ),
         ],
       ),
@@ -381,7 +381,7 @@ class _SummaryCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Prediction #${result.predictionId}',
+                  'Dự đoán #${result.predictionId}',
                   style: TextStyle(
                     fontSize: 12,
                     color: isDark ? Colors.white54 : const Color(0xFF6B7280),
@@ -423,7 +423,7 @@ class _LinkedBanner extends StatelessWidget {
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              'Already linked to: $treeName. You can pick another plant to reassign.',
+              'Đã liên kết với: $treeName. Bạn có thể chọn cây khác để gán lại.',
               style: TextStyle(
                 fontSize: 13,
                 height: 1.35,

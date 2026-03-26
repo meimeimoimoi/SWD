@@ -31,6 +31,7 @@ namespace MyApp.Infrastructure
             services.AddScoped<IMonitoringService, MonitoringService>();
             services.AddScoped<IReviewService, ReviewService>();
             services.AddScoped<IRatingService, RatingService>();
+            services.AddScoped<ICartService, CartService>();
             services.AddScoped<ISystemSettingService, SystemSettingService>();
             services.AddScoped<EfMigrationHistoryChecksumService>();
             services.AddScoped<DataSeeder>();

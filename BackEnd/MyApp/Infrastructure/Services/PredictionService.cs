@@ -191,13 +191,23 @@ public class PredictionService : IPredictionService, IDisposable
             Medicines = illnessInfo?.TreatmentSolutions.Where(m => m.SolutionType == "MEDICINE")
                 .Select(m => new MedicineDto
                 {
+                    solutionId = m.SolutionId,
                     Name = m.SolutionName ?? "Medicine",
                     Type = m.SolutionType ?? "MEDICINE",
                     Description = m.Description ?? string.Empty,
                     Ingredients = m.Ingredients,
                     ShoppeUrl = m.ShoppeUrl,
                     Instructions = m.Instructions,
-                    ImageUrl = m.Images.OrderBy(i => i.DisplayOrder).FirstOrDefault()?.ImageUrl ?? string.Empty
+                    Images = m.Images?.OrderBy(i => i.DisplayOrder).Select(i => new MyApp.Application.Features.Technician.DTOs.SolutionImageDto
+                    {
+                        ImageId = i.ImageId,
+                        ImageUrl = i.ImageUrl,
+                        DisplayOrder = i.DisplayOrder,
+                        UploadedAt = i.UploadedAt,
+                        FileSize = i.FileSize,
+                        Width = i.Width,
+                        Height = i.Height
+                    }).ToList() ?? new List<MyApp.Application.Features.Technician.DTOs.SolutionImageDto>()
                 }).ToList() ?? []
         };
     }

@@ -302,6 +302,49 @@ namespace MyApp.Infrastructure.Services
             await _context.SaveChangesAsync();
             _logger.LogInformation("Treatment solution created - Id={Id}, Name='{Name}'", solution.SolutionId, solution.SolutionName);
 
+            // Lưu danh sách ảnh nếu có
+            if (dto.Images != null && dto.Images.Count > 0)
+            {
+                int displayOrder = 1;
+                foreach (var file in dto.Images)
+                {
+                    // Lưu file vào thư mục uploads/images
+                    var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "uploads", "images");
+                    if (!Directory.Exists(uploadsFolder))
+                        Directory.CreateDirectory(uploadsFolder);
+                    var fileName = $"solution_{solution.SolutionId}_{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
+                    var filePath = Path.Combine(uploadsFolder, fileName);
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await file.CopyToAsync(stream);
+                    }
+                    long? fileSize = null;
+                    int? width = null;
+                    int? height = null;
+                    try
+                    {
+                        var fi = new FileInfo(filePath);
+                        fileSize = fi.Length;
+                        using var image = Image.Load(filePath);
+                        width = image.Width;
+                        height = image.Height;
+                    }
+                    catch { }
+                    var entity = new SolutionImage
+                    {
+                        SolutionId = solution.SolutionId,
+                        ImageUrl = Path.Combine("uploads/images", fileName).Replace('\\','/'),
+                        DisplayOrder = displayOrder++,
+                        UploadedAt = DateTime.UtcNow,
+                        FileSize = fileSize,
+                        Width = width,
+                        Height = height
+                    };
+                    _context.SolutionImages.Add(entity);
+                }
+                await _context.SaveChangesAsync();
+            }
+
             await _context.Entry(solution).Reference(s => s.Illness).LoadAsync();
             await _context.Entry(solution).Reference(s => s.TreeStage).LoadAsync();
             return MapToTreatmentDto(solution);
@@ -396,7 +439,17 @@ namespace MyApp.Infrastructure.Services
             TreeStageName = s.TreeStage?.StageName,
             MinConfidence = s.MinConfidence,
             Priority      = s.Priority,
-            CreatedAt     = s.CreatedAt
+            CreatedAt     = s.CreatedAt,
+            Images = s.Images?.OrderBy(i => i.DisplayOrder).Select(i => new MyApp.Application.Features.Technician.DTOs.SolutionImageDto
+            {
+                ImageId = i.ImageId,
+                ImageUrl = i.ImageUrl,
+                DisplayOrder = i.DisplayOrder,
+                UploadedAt = i.UploadedAt,
+                FileSize = i.FileSize,
+                Width = i.Width,
+                Height = i.Height
+            }).ToList() ?? new List<MyApp.Application.Features.Technician.DTOs.SolutionImageDto>()
         };
     }
 }

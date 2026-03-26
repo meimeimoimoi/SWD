@@ -68,9 +68,7 @@ class _TreesScreenState extends State<TreesScreen> {
       if (q.isEmpty) return true;
       if (t.displayName.toLowerCase().contains(q)) return true;
       if ((t.scientificName ?? '').toLowerCase().contains(q)) return true;
-      return t.predictions.any(
-        (p) => p.diseaseName.toLowerCase().contains(q),
-      );
+      return t.predictions.any((p) => p.diseaseName.toLowerCase().contains(q));
     }).toList();
   }
 
@@ -79,8 +77,9 @@ class _TreesScreenState extends State<TreesScreen> {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final bg = isDark ? AppColors.darkBackground : _kBgLight;
-    final onSurface =
-        isDark ? AppColors.textPrimaryDark : const Color(0xFF0F172A);
+    final onSurface = isDark
+        ? AppColors.textPrimaryDark
+        : const Color(0xFF0F172A);
 
     return Scaffold(
       backgroundColor: bg,
@@ -88,129 +87,124 @@ class _TreesScreenState extends State<TreesScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            _TreesAppBar(
-              title: 'My plant',
-              onSurface: onSurface,
-            ),
+            _TreesAppBar(title: 'Cây trồng của tôi', onSurface: onSurface),
             Expanded(
               child: _loading
                   ? const Center(
-                      child: CircularProgressIndicator(color: AppColors.brandAccent),
+                      child: CircularProgressIndicator(
+                        color: AppColors.brandAccent,
+                      ),
                     )
                   : _error != null
-                      ? _ErrorBody(
-                          message: _error!,
-                          onRetry: _load,
-                          isDark: isDark,
-                        )
-                      : Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.fromLTRB(
-                                AppLayout.screenPaddingH,
-                                AppLayout.screenPaddingV,
-                                AppLayout.screenPaddingH,
-                                0,
-                              ),
-                              child: _SearchField(
-                                controller: _search,
-                                isDark: isDark,
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            SizedBox(
-                              height: 40,
-                              child: ListView(
-                                scrollDirection: Axis.horizontal,
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 16),
-                                children: TreeListFilter.values.map((f) {
-                                  final selected = _filter == f;
-                                  return Padding(
-                                    padding: const EdgeInsets.only(right: 8),
-                                    child: FilterChip(
-                                      label: Text(
-                                        _filterLabelVi(f),
-                                        style: GoogleFonts.spaceGrotesk(
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.w600,
-                                          color: selected
-                                              ? AppColors.textPrimaryDark
-                                              : (isDark
-                                                  ? const Color(0xFFCBD5E1)
-                                                  : const Color(0xFF475569)),
-                                        ),
-                                      ),
-                                      selected: selected,
-                                      onSelected: (_) =>
-                                          setState(() => _filter = f),
-                                      selectedColor: AppColors.brandAccent,
-                                      backgroundColor: isDark
-                                          ? AppColors.surfaceDark
-                                          : AppColors.surfaceLight,
-                                      side: BorderSide(
-                                        color: selected
-                                            ? AppColors.brandAccent
-                                            : AppColors.brandAccent.withValues(alpha: 0.12),
-                                      ),
-                                      showCheckmark: false,
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 12,
-                                      ),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(20),
-                                      ),
-                                    ),
-                                  );
-                                }).toList(),
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Expanded(
-                              child: _filtered.isEmpty
-                                  ? _EmptyBody(
-                                      hasNoTrees: _all.isEmpty,
-                                      isDark: isDark,
-                                      onScan: () => Navigator.pushNamed(
-                                        context,
-                                        AppRouter.scan,
-                                      ),
-                                    )
-                                  : RefreshIndicator(
-                                      color: AppColors.brandAccent,
-                                      onRefresh: _load,
-                                      child: ListView.builder(
-                                        padding: const EdgeInsets.fromLTRB(
-                                          16,
-                                          8,
-                                          16,
-                                          100,
-                                        ),
-                                        itemCount: _filtered.length,
-                                        itemBuilder: (context, i) {
-                                          final t = _filtered[i];
-                                          return Padding(
-                                            padding: const EdgeInsets.only(
-                                              bottom: 16,
-                                            ),
-                                            child: _TreeCard(
-                                              summary: t,
-                                              isDark: isDark,
-                                              onDetails: () =>
-                                                  Navigator.pushNamed(
-                                                context,
-                                                AppRouter.treeDetail,
-                                                arguments: t,
-                                              ),
-                                            ),
-                                          );
-                                        },
-                                      ),
-                                    ),
-                            ),
-                          ],
+                  ? _ErrorBody(message: _error!, onRetry: _load, isDark: isDark)
+                  : Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(
+                            AppLayout.screenPaddingH,
+                            AppLayout.screenPaddingV,
+                            AppLayout.screenPaddingH,
+                            0,
+                          ),
+                          child: _SearchField(
+                            controller: _search,
+                            isDark: isDark,
+                          ),
                         ),
+                        const SizedBox(height: 12),
+                        SizedBox(
+                          height: 40,
+                          child: ListView(
+                            scrollDirection: Axis.horizontal,
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            children: TreeListFilter.values.map((f) {
+                              final selected = _filter == f;
+                              return Padding(
+                                padding: const EdgeInsets.only(right: 8),
+                                child: FilterChip(
+                                  label: Text(
+                                    _filterLabelVi(f),
+                                    style: GoogleFonts.spaceGrotesk(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                      color: selected
+                                          ? AppColors.textPrimaryDark
+                                          : (isDark
+                                                ? const Color(0xFFCBD5E1)
+                                                : const Color(0xFF475569)),
+                                    ),
+                                  ),
+                                  selected: selected,
+                                  onSelected: (_) =>
+                                      setState(() => _filter = f),
+                                  selectedColor: AppColors.brandAccent,
+                                  backgroundColor: isDark
+                                      ? AppColors.surfaceDark
+                                      : AppColors.surfaceLight,
+                                  side: BorderSide(
+                                    color: selected
+                                        ? AppColors.brandAccent
+                                        : AppColors.brandAccent.withValues(
+                                            alpha: 0.12,
+                                          ),
+                                  ),
+                                  showCheckmark: false,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Expanded(
+                          child: _filtered.isEmpty
+                              ? _EmptyBody(
+                                  hasNoTrees: _all.isEmpty,
+                                  isDark: isDark,
+                                  onScan: () => Navigator.pushNamed(
+                                    context,
+                                    AppRouter.scan,
+                                  ),
+                                )
+                              : RefreshIndicator(
+                                  color: AppColors.brandAccent,
+                                  onRefresh: _load,
+                                  child: ListView.builder(
+                                    padding: const EdgeInsets.fromLTRB(
+                                      16,
+                                      8,
+                                      16,
+                                      100,
+                                    ),
+                                    itemCount: _filtered.length,
+                                    itemBuilder: (context, i) {
+                                      final t = _filtered[i];
+                                      return Padding(
+                                        padding: const EdgeInsets.only(
+                                          bottom: 16,
+                                        ),
+                                        child: _TreeCard(
+                                          summary: t,
+                                          isDark: isDark,
+                                          onDetails: () => Navigator.pushNamed(
+                                            context,
+                                            AppRouter.treeDetail,
+                                            arguments: t,
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                        ),
+                      ],
+                    ),
             ),
           ],
         ),
@@ -229,19 +223,16 @@ class _TreesScreenState extends State<TreesScreen> {
 String _filterLabelVi(TreeListFilter f) {
   switch (f) {
     case TreeListFilter.all:
-      return 'All';
+      return 'Tất cả';
     case TreeListFilter.concern:
-      return 'Needs attention';
+      return 'Cần chú ý';
     case TreeListFilter.healthy:
-      return 'Healthy';
+      return 'Khỏe mạnh';
   }
 }
 
 class _TreesAppBar extends StatelessWidget {
-  const _TreesAppBar({
-    required this.title,
-    required this.onSurface,
-  });
+  const _TreesAppBar({required this.title, required this.onSurface});
 
   final String title;
   final Color onSurface;
@@ -255,7 +246,10 @@ class _TreesAppBar extends StatelessWidget {
           if (Navigator.of(context).canPop())
             IconButton(
               onPressed: () => Navigator.of(context).pop(),
-              icon: Icon(Icons.arrow_back_rounded, color: AppColors.brandAccent),
+              icon: Icon(
+                Icons.arrow_back_rounded,
+                color: AppColors.brandAccent,
+              ),
               tooltip: 'Back',
             )
           else
@@ -278,10 +272,7 @@ class _TreesAppBar extends StatelessWidget {
 }
 
 class _SearchField extends StatelessWidget {
-  const _SearchField({
-    required this.controller,
-    required this.isDark,
-  });
+  const _SearchField({required this.controller, required this.isDark});
 
   final TextEditingController controller;
   final bool isDark;
@@ -295,12 +286,15 @@ class _SearchField extends StatelessWidget {
         color: isDark ? AppColors.textPrimaryDark : const Color(0xFF0F172A),
       ),
       decoration: InputDecoration(
-        hintText: 'Search plant or disease name…',
+        hintText: 'Tìm kiếm tên cây hoặc bệnh hại…',
         hintStyle: GoogleFonts.spaceGrotesk(
           fontSize: 14,
           color: isDark ? Colors.white38 : Colors.grey.shade500,
         ),
-        prefixIcon: Icon(Icons.search_rounded, color: AppColors.brandAccent.withValues(alpha: 0.85)),
+        prefixIcon: Icon(
+          Icons.search_rounded,
+          color: AppColors.brandAccent.withValues(alpha: 0.85),
+        ),
         filled: true,
         fillColor: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
         border: OutlineInputBorder(
@@ -357,7 +351,7 @@ class _ErrorBody extends StatelessWidget {
                 foregroundColor: AppColors.onPrimary,
               ),
               child: Text(
-                'Retry',
+                'Thử lại',
                 style: GoogleFonts.spaceGrotesk(fontWeight: FontWeight.w700),
               ),
             ),
@@ -394,13 +388,15 @@ class _EmptyBody extends StatelessWidget {
         const SizedBox(height: 16),
         Text(
           hasNoTrees
-              ? 'No plants yet. Scan leaves to start tracking on ${AppBrand.name}.'
-              : 'No plants match this filter.',
+              ? 'Chưa có cây nào. Hãy quét lá để bắt đầu theo dõi trên ${AppBrand.name}.'
+              : 'Không có cây nào khớp với bộ lọc này.',
           textAlign: TextAlign.center,
           style: GoogleFonts.spaceGrotesk(
             fontSize: 15,
             height: 1.4,
-            color: isDark ? AppColors.textSecondaryDark : const Color(0xFF64748B),
+            color: isDark
+                ? AppColors.textSecondaryDark
+                : const Color(0xFF64748B),
           ),
         ),
         if (hasNoTrees) ...[
@@ -414,7 +410,7 @@ class _EmptyBody extends StatelessWidget {
             ),
             icon: const Icon(Icons.document_scanner_outlined),
             label: Text(
-              'Scan now',
+              'Quét ngay',
               style: GoogleFonts.spaceGrotesk(fontWeight: FontWeight.w700),
             ),
           ),
@@ -439,7 +435,7 @@ class _TreeCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final latest = summary.predictions.first;
     final diseaseLine = latest.diseaseName.trim().isEmpty
-        ? 'Unknown'
+        ? 'Không xác định'
         : latest.diseaseName;
     final sci = (summary.scientificName ?? latest.scientificName ?? '').trim();
     final desc = (latest.treeDescription ?? latest.illnessDescription ?? '')
@@ -480,7 +476,9 @@ class _TreeCard extends StatelessWidget {
                             child: Icon(
                               Icons.park_rounded,
                               size: 56,
-                              color: isDark ? Colors.white24 : Colors.grey.shade500,
+                              color: isDark
+                                  ? Colors.white24
+                                  : Colors.grey.shade500,
                             ),
                           )
                         : Image.network(
@@ -495,7 +493,10 @@ class _TreeCard extends StatelessWidget {
                   Positioned(
                     top: 12,
                     right: 12,
-                    child: _SeverityBadge(level: summary.health, isDark: isDark),
+                    child: _SeverityBadge(
+                      level: summary.health,
+                      isDark: isDark,
+                    ),
                   ),
                 ],
               ),
@@ -534,7 +535,7 @@ class _TreeCard extends StatelessWidget {
                             PopupMenuItem(
                               value: 'detail',
                               child: Text(
-                                'Details',
+                                'Chi tiết',
                                 style: GoogleFonts.spaceGrotesk(),
                               ),
                             ),
@@ -562,7 +563,9 @@ class _TreeCard extends StatelessWidget {
                                     fontSize: 12,
                                     fontStyle: FontStyle.italic,
                                     fontWeight: FontWeight.w500,
-                                    color: AppColors.brandAccent.withValues(alpha: 0.85),
+                                    color: AppColors.brandAccent.withValues(
+                                      alpha: 0.85,
+                                    ),
                                   ),
                                 ),
                               ],
@@ -607,7 +610,7 @@ class _TreeCard extends StatelessWidget {
                             ),
                           ),
                           child: Text(
-                            'Edit',
+                            'Sửa',
                             style: GoogleFonts.spaceGrotesk(
                               fontWeight: FontWeight.w700,
                               fontSize: 13,
@@ -618,7 +621,9 @@ class _TreeCard extends StatelessWidget {
                         FilledButton.tonal(
                           onPressed: onDetails,
                           style: FilledButton.styleFrom(
-                            backgroundColor: AppColors.brandAccent.withValues(alpha: 0.12),
+                            backgroundColor: AppColors.brandAccent.withValues(
+                              alpha: 0.12,
+                            ),
                             foregroundColor: AppColors.brandAccent,
                             padding: const EdgeInsets.symmetric(
                               horizontal: 16,
@@ -629,7 +634,7 @@ class _TreeCard extends StatelessWidget {
                             ),
                           ),
                           child: Text(
-                            'Details',
+                            'Chi tiết',
                             style: GoogleFonts.spaceGrotesk(
                               fontWeight: FontWeight.w700,
                               fontSize: 13,
@@ -670,28 +675,28 @@ class _SeverityBadge extends StatelessWidget {
             ? const Color(0xFF14532D).withValues(alpha: 0.85)
             : Colors.green.shade100;
         fg = isDark ? const Color(0xFF86EFAC) : Colors.green.shade800;
-        text = 'HEALTHY';
+        text = 'KHỎE MẠNH';
         break;
       case TreeHealthLevel.low:
         bg = isDark
             ? const Color(0xFF14532D).withValues(alpha: 0.5)
             : Colors.lightGreen.shade100;
         fg = isDark ? const Color(0xFFBBF7D0) : Colors.green.shade900;
-        text = 'LEVEL: LOW';
+        text = 'MỨC ĐỘ: THẤP';
         break;
       case TreeHealthLevel.medium:
         bg = isDark
             ? const Color(0xFF7C2D12).withValues(alpha: 0.45)
             : Colors.orange.shade100;
         fg = isDark ? const Color(0xFFFDBA74) : Colors.orange.shade900;
-        text = 'LEVEL: MEDIUM';
+        text = 'MỨC ĐỘ: TRUNG BÌNH';
         break;
       case TreeHealthLevel.high:
         bg = isDark
             ? const Color(0xFF7F1D1D).withValues(alpha: 0.55)
             : Colors.red.shade100;
         fg = isDark ? const Color(0xFFFECACA) : Colors.red.shade900;
-        text = 'LEVEL: HIGH';
+        text = 'MỨC ĐỘ: NGHIÊM TRỌNG';
         break;
     }
     return Container(

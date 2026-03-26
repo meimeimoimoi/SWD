@@ -33,4 +33,6 @@ public partial class User
     public DateTime? UpdatedAt { get; set; }
 
     public virtual ICollection<ImageUpload> ImageUploads { get; set; } = new List<ImageUpload>();
+
+    public virtual Cart? Cart { get; set; }
 }

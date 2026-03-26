@@ -28,7 +28,7 @@ class AdminFeedbackDetailScreen extends StatelessWidget {
           icon: const Icon(Icons.arrow_back),
         ),
         title: Text(
-          'Feedback Detail',
+          'Chi tiết phản hồi',
           style: theme.textTheme.titleLarge?.copyWith(color: textPrimary),
         ),
         actions: [
@@ -100,7 +100,7 @@ class _HeroSection extends StatelessWidget {
                   borderRadius: BorderRadius.circular(999),
                 ),
                 child: Text(
-                  'High Alert',
+                  'Cảnh báo cao',
                   style: theme.textTheme.labelSmall?.copyWith(
                     color: AppColors.onPrimary,
                     fontWeight: FontWeight.w700,
@@ -116,7 +116,7 @@ class _HeroSection extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              'Blight Detected',
+              'Phát hiện bệnh',
               style: theme.textTheme.displaySmall?.copyWith(
                 color: textPrimary,
                 fontWeight: FontWeight.w700,
@@ -140,7 +140,7 @@ class _HeroSection extends StatelessWidget {
         ),
         const SizedBox(height: 4),
         Text(
-          'Automated classification triggered user report.',
+          'Phân loại tự động đã kích hoạt báo cáo người dùng.',
           style: theme.textTheme.bodySmall?.copyWith(color: textSecondary),
         ),
       ],
@@ -167,7 +167,7 @@ class _ScanMetadataCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Scan Information',
+            'Thông tin quét',
             style: theme.textTheme.labelLarge?.copyWith(
               color: AppColors.primary,
               letterSpacing: 1.2,
@@ -175,7 +175,7 @@ class _ScanMetadataCard extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           _MetaRow(
-            label: 'Scan ID',
+            label: 'Mã quét',
             value: '',
             trailing: Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -192,9 +192,9 @@ class _ScanMetadataCard extends StatelessWidget {
               ),
             ),
           ),
-          _MetaRow(label: 'Date', value: 'Oct 24, 2023, 14:22'),
+          _MetaRow(label: 'Ngày', value: 'Oct 24, 2023, 14:22'),
           _MetaRow(
-            label: 'User ID',
+            label: 'Mã người dùng',
             value: 'USR-4402',
             valueColor: AppColors.primary,
           ),
@@ -269,7 +269,7 @@ class _AccuracyRow extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
-            'Model Accuracy',
+            'Độ chính xác mô hình',
             style: theme.textTheme.bodySmall?.copyWith(color: textSecondary),
           ),
           Row(
@@ -324,7 +324,7 @@ class _SentimentRow extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
-            'User Sentiment',
+            'Thái độ người dùng',
             style: theme.textTheme.bodySmall?.copyWith(color: textSecondary),
           ),
           Row(
@@ -336,7 +336,7 @@ class _SentimentRow extends StatelessWidget {
               ),
               const SizedBox(width: 6),
               Text(
-                'Frustrated',
+                'Thất vọng',
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: Colors.orange,
                   fontWeight: FontWeight.w600,
@@ -366,7 +366,7 @@ class _UserCommentCard extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'User Comment',
+          'Bình luận người dùng',
           style: theme.textTheme.labelLarge?.copyWith(
             color: AppColors.primary,
             letterSpacing: 1.2,
@@ -376,7 +376,7 @@ class _UserCommentCard extends StatelessWidget {
         AppCard(
           padding: const EdgeInsets.all(16),
           child: Text(
-            '"The app identified this as Early Blight, but I\'m fairly certain it\'s Late Blight based on the stem lesions. The care instructions might be wrong for my specific climate zone."',
+            '"Ứng dụng xác định đây là Bệnh đốm vòng, nhưng tôi khá chắc chắn đó là Bệnh sương mai dựa trên các vết loét ở thân. Hướng dẫn chăm sóc có thể sai đối với vùng khí hậu của tôi."',
             style: theme.textTheme.bodyMedium?.copyWith(
               color: textPrimary,
               fontStyle: FontStyle.italic,
